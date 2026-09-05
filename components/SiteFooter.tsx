@@ -21,6 +21,10 @@ export function SiteFooter() {
             Liga
           </Link>
           {" · "}
+          <Link href="/hall-of-fame" className="text-paper/90 hover:text-paper">
+            Hall of Fame
+          </Link>
+          {" · "}
           <Link href="/analyse" className="text-paper/90 hover:text-paper">
             Analyse
           </Link>

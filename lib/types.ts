@@ -132,6 +132,8 @@ export type LiveEvent = {
   lofthus_owners?: number;
   lofthus_captains?: number;
   lofthus_headline?: string;
+  lofthus_winner?: { entry: number; manager: string; swing: number } | null;
+  lofthus_loser?: { entry: number; manager: string; swing: number } | null;
 };
 
 export type ManagerOption = {
@@ -266,6 +268,7 @@ export type RivalPayload = {
   provisional: boolean;
   is_live: boolean;
   event_id: number;
+  strategy?: { context: string; text: string; gap: number; threshold: number };
 };
 
 export type ComparePayload = {
@@ -376,5 +379,11 @@ export const analysisEntries = [
     kicker: "Side om side",
     title: "Compare",
     line: "To managere. Bred sammenligning, ikke live-duell.",
+  },
+  {
+    href: "/analyse/odds",
+    kicker: "Marked",
+    title: "Odds",
+    line: "Før-sesongprior oppdatert med live tabell — ikke gamblingtips.",
   },
 ];

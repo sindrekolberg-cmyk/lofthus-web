@@ -3,15 +3,16 @@
 import Link from "next/link";
 import { ManagerSearch } from "@/components/ManagerSearch";
 import { useSelectedManager } from "@/lib/selected-manager";
-import { moveLabel, place } from "@/lib/format";
-import type { ManagerOption, Status } from "@/lib/types";
+import { moveLabel, place, storyHref } from "@/lib/format";
+import type { ManagerOption, Status, Story } from "@/lib/types";
 
 type Props = {
   managers: ManagerOption[];
   status: Status | null;
+  stories?: Story[];
 };
 
-export function MinLofthus({ managers, status }: Props) {
+export function MinLofthus({ managers, status, stories = [] }: Props) {
   const { entryId, setEntryId } = useSelectedManager();
   const ranked = [...managers].sort((a, b) => (a.rank || 999) - (b.rank || 999));
   const me = ranked.find((m) => m.entry === entryId);
@@ -19,6 +20,7 @@ export function MinLofthus({ managers, status }: Props) {
     ? ranked.find((m) => m.rank === me.rank - 1) ||
       ranked.find((m) => m.rank === me.rank + 1)
     : null;
+  const mine = me ? stories.filter((s) => s.manager_entry === me.entry).slice(0, 2) : [];
 
   return (
     <section className="border-t border-rule bg-white/40">
@@ -72,6 +74,18 @@ export function MinLofthus({ managers, status }: Props) {
               </dd>
             </div>
           </dl>
+        ) : null}
+
+        {mine.length ? (
+          <ul className="mt-6 space-y-2 text-sm">
+            {mine.map((s) => (
+              <li key={s.key}>
+                <Link href={storyHref(s)} className="hover:underline">
+                  {s.headline}
+                </Link>
+              </li>
+            ))}
+          </ul>
         ) : null}
 
         <div className="mt-6 flex flex-wrap gap-4 font-condensed text-[12px] tracking-[0.14em] uppercase">

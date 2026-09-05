@@ -15,8 +15,10 @@ function CompareInner() {
   const managers = useLofthus("managers", () => api.managers(), { live: false });
   const options = managers.data?.managers || [];
   const a = Number(params.get("a") || options[0]?.entry || 0);
-  const b = Number(params.get("b") || options[1]?.entry || 0);
-  const cmp = useLofthus(a && b ? ["compare", a, b] : null, () => api.compare(a, b), {
+  const bCandidate = Number(params.get("b") || options[1]?.entry || 0);
+  const b = bCandidate && bCandidate !== a ? bCandidate : options.find((m) => m.entry !== a)?.entry || 0;
+  const same = Boolean(a && b && a === b);
+  const cmp = useLofthus(a && b && !same ? ["compare", a, b] : null, () => api.compare(a, b), {
     live: true,
   });
   const data = cmp.data;
@@ -53,6 +55,8 @@ function CompareInner() {
         ))}
       </div>
 
+      {same ? <p className="mt-6 text-sm text-muted">Velg to ulike managere.</p> : null}
+
       {cmp.loading && !data ? <LoadingBlock /> : null}
       {cmp.error && !data ? <ApiState message={cmp.error} /> : null}
 
@@ -68,8 +72,8 @@ function CompareInner() {
               <dd className="font-condensed text-3xl">{signed(data.gw_gap)}</dd>
             </div>
             <div>
-              <dt className="text-xs text-muted">Squad overlap</dt>
-              <dd className="font-condensed text-3xl">{data.overlap}</dd>
+              <dt className="text-xs text-muted">Plassgap</dt>
+              <dd className="font-condensed text-3xl">{signed(data.rank_gap)}</dd>
             </div>
             <div>
               <dt className="text-xs text-muted">Unike</dt>
@@ -78,6 +82,7 @@ function CompareInner() {
               </dd>
             </div>
           </dl>
+          <p className="mt-3 text-sm text-muted">Squad overlap: {data.overlap}</p>
           <div className="mt-8 grid gap-8 sm:grid-cols-2">
             {[data.a, data.b].map((m, i) => (
               <section key={m.entry}>
@@ -108,6 +113,7 @@ function CompareInner() {
             ))}
           </div>
           <p className="mt-8 text-sm text-muted">
+            {data.provisional ? "Tallene er foreløpige. " : ""}
             <Link href={`/analyse/rivalradar?me=${data.a.entry}&rival=${data.b.entry}`}>
               Åpne samme par i Rivalradar →
             </Link>

@@ -29,9 +29,10 @@ export function QueryTabs({
           <Link
             key={tab.id}
             href={href}
-            className={`-mb-px border-b-2 px-3 pb-3 font-condensed text-[13px] tracking-[0.16em] uppercase ${
+            className={`-mb-px min-h-11 border-b-2 px-3 pb-3 pt-2 font-condensed text-[13px] tracking-[0.16em] uppercase ${
               active ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink"
             }`}
+            aria-current={active ? "page" : undefined}
           >
             {tab.label}
           </Link>

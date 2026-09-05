@@ -30,6 +30,7 @@ function HallInner() {
             { id: "seasons", label: "Sesonger" },
             { id: "month", label: "Måned" },
             { id: "cup", label: "Cup" },
+            { id: "random", label: "Random" },
             { id: "managers", label: "Managere" },
           ]}
         />
@@ -38,6 +39,24 @@ function HallInner() {
         {hof.error && !data ? <ApiState message={hof.error} /> : null}
 
         {data && tab === "overview" ? (
+          <>
+            {data.records ? (
+              <dl className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {Object.values(data.records)
+                  .filter(Boolean)
+                  .map((rec) =>
+                    rec ? (
+                      <div key={rec.field} className="border border-rule p-4">
+                        <dt className="font-condensed text-[11px] tracking-[0.14em] text-muted uppercase">
+                          {rec.label}
+                        </dt>
+                        <dd className="mt-2 font-serif text-2xl">{rec.manager}</dd>
+                        <dd className="font-condensed text-sm text-muted">{rec.value}</dd>
+                      </div>
+                    ) : null,
+                  )}
+              </dl>
+            ) : null}
           <div className="mt-10 overflow-x-auto">
             <table className="w-full min-w-[720px] text-left text-sm">
               <thead>
@@ -66,6 +85,7 @@ function HallInner() {
               </tbody>
             </table>
           </div>
+          </>
         ) : null}
 
         {data && tab === "seasons" ? (
@@ -106,6 +126,24 @@ function HallInner() {
               </li>
             ))}
           </ul>
+        ) : null}
+
+        {data && tab === "random" ? (
+          (data.random || []).length ? (
+            <ul className="mt-8 divide-y divide-rule border-y border-rule">
+              {(data.random || []).map((row) => (
+                <li key={`${row.season}-${row.winner}`} className="grid gap-1 py-4 sm:grid-cols-12">
+                  <span className="font-condensed sm:col-span-2">{row.season}</span>
+                  <span className="sm:col-span-4">{row.winner || "ukjent"}</span>
+                  <span className="text-muted sm:col-span-6">
+                    {row.placement || row.note || ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-8 text-sm text-muted">Ingen random-resultater i arkivet ennå.</p>
+          )
         ) : null}
 
         {data && tab === "managers" ? (

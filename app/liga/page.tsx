@@ -19,7 +19,9 @@ function LigaInner() {
   const live = useLofthus("live", () => api.live(), {
     refreshInterval: (d) => (d?.status.is_live ? 20_000 : 180_000),
   });
-  const month = useLofthus("month", () => api.month(), { live: false });
+  const month = useLofthus("month", () => api.month(), {
+    refreshInterval: (d) => (d?.status.is_live ? 20_000 : 180_000),
+  });
   const { entryId } = useSelectedManager();
   const status = league.data?.status || live.data?.status || month.data?.status || null;
 
@@ -64,7 +66,10 @@ function LigaInner() {
                       <p className="font-condensed text-sm">
                         {f.home} {f.home_score ?? "–"}–{f.away_score ?? "–"} {f.away}
                       </p>
-                      <p className="text-[11px] text-muted">{f.status_label}</p>
+                      <p className="text-[11px] text-muted">
+                        {f.lofthus_headline || f.status_label}
+                        {f.lofthus_winner ? ` · ${f.lofthus_winner.manager}` : ""}
+                      </p>
                     </div>
                   ))}
                 </div>

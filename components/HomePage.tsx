@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useLofthus } from "@/lib/useLofthus";
-import { moveLabel, storyHref } from "@/lib/format";
+import { moveLabel, signed, storyHref } from "@/lib/format";
 import { ApiState, LoadingBlock } from "@/components/ApiState";
 import { LeagueTable } from "@/components/LeagueTable";
 import { MinLofthus } from "@/components/MinLofthus";
@@ -39,7 +39,10 @@ export function HomePage() {
   const story = data.hero?.story;
   const player = data.hero?.player;
 
-  const snakkiser = data.news.filter((s) => s.key !== story?.key).slice(0, 3);
+  const snakkiser = data.news
+    .filter((s) => s.key !== story?.key)
+    .filter((s) => !/(måned|month)/i.test(s.category || ""))
+    .slice(0, 3);
   const climbers = data.movers?.climbers || [];
   const fallers = data.movers?.fallers || [];
 
@@ -99,6 +102,9 @@ export function HomePage() {
                 {f.lofthus_headline || f.status_label}
                 {f.lofthus_owners
                   ? ` · ${f.lofthus_owners} eiere${f.lofthus_captains ? ` · ${f.lofthus_captains} C` : ""}`
+                  : ""}
+                {f.lofthus_winner
+                  ? ` · ${f.lofthus_winner.manager} ${signed(f.lofthus_winner.swing)}`
                   : ""}
               </p>
             </div>
@@ -220,7 +226,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <MinLofthus managers={data.managers} status={status} />
+      <MinLofthus managers={data.managers} status={status} stories={data.news} />
 
       <section className="border-t border-rule">
         <div className="mx-auto max-w-[1400px] px-4 py-12 sm:px-6">

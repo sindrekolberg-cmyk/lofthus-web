@@ -96,6 +96,10 @@ export const api = {
   hallOfFame: () =>
     apiGet<{
       rows: HallOfFameRow[];
+      records?: Record<
+        string,
+        { manager: string; value: number; label: string; field: string } | null
+      >;
       overall?: HistoryPayload["overall"];
       cup?: HistoryPayload["cup"];
       monthly?: HistoryPayload["monthly"];
@@ -112,5 +116,19 @@ export const api = {
     ),
   analysisDifferentials: () =>
     apiGet<{ players: PlayerCard[] }>("/api/analysis/differentials"),
+  odds: () =>
+    apiGet<{
+      rows: {
+        entry: number;
+        manager: string;
+        rank: number;
+        win_pct: number;
+        odds: number;
+        preseason_odds: number;
+        note: string;
+      }[];
+      ready: boolean;
+      note?: string;
+    }>("/api/odds"),
   archive: () => apiGet<{ snapshots: unknown[] }>("/api/archive"),
 };

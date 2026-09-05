@@ -46,7 +46,7 @@ export function SiteHeader() {
 
         <button
           type="button"
-          className="flex h-8 w-8 items-center justify-center md:hidden"
+          className="flex h-11 w-11 items-center justify-center md:hidden"
           aria-expanded={open}
           aria-label={open ? "Lukk meny" : "Åpne meny"}
           onClick={() => setOpen((v) => !v)}

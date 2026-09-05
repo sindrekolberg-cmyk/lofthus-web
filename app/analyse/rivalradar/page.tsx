@@ -29,7 +29,7 @@ function RivalInner() {
     () => api.rival(a, b),
     { live: true },
   );
-  const [depth, setDepth] = useState(false);
+  const [section, setSection] = useState<"duell" | "unike" | "strategi">("duell");
   const radar = duel.data;
   const labels = useMemo(
     () => Object.fromEntries(options.map((m) => [m.entry, `${m.manager} · ${m.team}`])),
@@ -115,7 +115,11 @@ function RivalInner() {
             </div>
           </div>
 
-          <dl className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-4">
+          <dl className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-5">
+            <div>
+              <dt className="text-xs text-muted">Live gap</dt>
+              <dd className="font-condensed text-3xl">{signed(radar.live_gap)}</dd>
+            </div>
             <div>
               <dt className="text-xs text-muted">Total gap</dt>
               <dd className="font-condensed text-3xl">{signed(radar.total_gap)}</dd>
@@ -140,6 +144,29 @@ function RivalInner() {
             {radar.provisional ? " · tallene er foreløpige" : ""}
           </p>
 
+          <div className="mt-10 flex flex-wrap gap-2 border-b border-ink">
+            {(
+              [
+                ["duell", "Duell"],
+                ["unike", "Unike"],
+                ["strategi", "Strategi"],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                aria-current={section === id ? "page" : undefined}
+                className={`-mb-px min-h-11 border-b-2 px-3 font-condensed text-[13px] tracking-[0.16em] uppercase ${
+                  section === id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink"
+                }`}
+                onClick={() => setSection(id)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {section === "duell" ? (
           <div className="mt-12 grid gap-10 lg:grid-cols-2">
             <section>
               <h3 className="font-condensed text-[12px] tracking-[0.2em] text-[#2f6a32] uppercase">
@@ -180,18 +207,11 @@ function RivalInner() {
               </ul>
             </section>
           </div>
+          ) : null}
 
-          <button
-            type="button"
-            className="mt-10 font-condensed text-[12px] tracking-[0.16em] uppercase text-muted hover:text-ink"
-            onClick={() => setDepth((v) => !v)}
-          >
-            {depth ? "Skjul dybde" : "Vis unike spillere og forslag"}
-          </button>
-
-          {depth ? (
+          {section === "unike" ? (
             <>
-              <h3 className="mt-6 font-serif text-2xl">Unike spillere</h3>
+              <h3 className="mt-8 font-serif text-2xl">Unike spillere</h3>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full min-w-[640px] text-left text-sm">
                   <thead>
@@ -231,6 +251,18 @@ function RivalInner() {
                 </p>
               ) : null}
             </>
+          ) : null}
+
+          {section === "strategi" ? (
+            <section className="mt-8 max-w-2xl">
+              <h3 className="font-serif text-2xl">Strategisk kontekst</h3>
+              <p className="mt-3 text-base leading-7">
+                {radar.strategy?.text || "Gapet er beregnet fra live-tabellen."}
+              </p>
+              <p className="mt-4 text-sm text-muted">
+                Dette er en lesning av live-gapet, ikke overføringer eller anbefalte bytter.
+              </p>
+            </section>
           ) : null}
         </>
       ) : null}
