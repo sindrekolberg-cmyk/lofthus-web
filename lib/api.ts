@@ -19,7 +19,15 @@ function configuredBase() {
 
 export function getApiBase() {
   const explicit = configuredBase();
-  if (explicit) return explicit;
+  if (explicit) {
+    if (
+      process.env.NODE_ENV === "production" &&
+      /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(explicit)
+    ) {
+      return "";
+    }
+    return explicit;
+  }
   if (process.env.NODE_ENV !== "production") return "http://localhost:8000";
   return "";
 }
