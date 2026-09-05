@@ -3,18 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { nav } from "@/lib/data";
+import { nav } from "@/lib/types";
+import { ManagerSearch } from "@/components/ManagerSearch";
 
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-ink text-paper">
-      <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between gap-6 px-4 sm:px-6">
+    <header className="sticky top-0 z-50 border-b border-ink/10 bg-paper/95 text-ink backdrop-blur">
+      <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between gap-4 px-4 sm:px-6">
         <Link
           href="/"
-          className="shrink-0 font-condensed text-[15px] font-semibold tracking-[0.18em] text-paper"
+          className="shrink-0 font-condensed text-[15px] font-semibold tracking-[0.18em]"
         >
           LOFTHUS ROAD OPEN
         </Link>
@@ -30,7 +31,7 @@ export function SiteHeader() {
                 key={item.href}
                 href={item.href}
                 className={`font-condensed text-[13px] tracking-[0.14em] uppercase transition-colors ${
-                  active ? "text-paper" : "text-paper/55 hover:text-paper"
+                  active ? "text-ink" : "text-ink/45 hover:text-ink"
                 }`}
               >
                 {item.label}
@@ -38,6 +39,10 @@ export function SiteHeader() {
             );
           })}
         </nav>
+
+        <div className="hidden min-w-[14rem] md:block">
+          <ManagerSearch compact />
+        </div>
 
         <button
           type="button"
@@ -48,31 +53,33 @@ export function SiteHeader() {
         >
           <span className="sr-only">Meny</span>
           <span className="flex flex-col gap-1.5">
-            <span className="block h-px w-5 bg-paper" />
-            <span className="block h-px w-5 bg-paper" />
+            <span className="block h-px w-5 bg-ink" />
+            <span className="block h-px w-5 bg-ink" />
           </span>
         </button>
       </div>
 
       {open ? (
-        <nav
-          className="border-t border-white/10 px-4 py-4 md:hidden"
-          aria-label="Mobilmeny"
-        >
-          <ul className="flex flex-col gap-3">
-            {nav.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className="font-condensed text-sm tracking-[0.14em] uppercase text-paper/80"
-                  onClick={() => setOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <div className="border-t border-rule px-4 py-4 md:hidden">
+          <nav aria-label="Mobilmeny">
+            <ul className="flex flex-col gap-3">
+              {nav.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="font-condensed text-sm tracking-[0.14em] uppercase"
+                    onClick={() => setOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <div className="mt-4">
+            <ManagerSearch onPick={() => setOpen(false)} />
+          </div>
+        </div>
       ) : null}
     </header>
   );

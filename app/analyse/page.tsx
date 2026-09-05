@@ -1,5 +1,32 @@
-import { ComingSoon } from "@/components/ComingSoon";
+import Link from "next/link";
+import { analysisEntries } from "@/lib/types";
 
-export default function AnalysePage() {
-  return <ComingSoon title="Analyse" kicker="Verktøy" />;
+export default function AnalyseHubPage() {
+  return (
+    <main className="flex-1 bg-paper">
+      <div className="mx-auto max-w-[1100px] px-4 py-16 sm:px-6">
+        <p className="font-condensed text-xs tracking-[0.22em] text-muted uppercase">Verktøy</p>
+        <h1 className="mt-3 font-serif text-5xl leading-none sm:text-7xl">Analyse</h1>
+        <p className="mt-5 max-w-xl text-lg leading-8 text-muted">
+          Ett verktøy om gangen. Velg hva du vil grave i.
+        </p>
+        <ul className="mt-14 grid gap-4 sm:grid-cols-2">
+          {analysisEntries.map((entry) => (
+            <li key={entry.href}>
+              <Link
+                href={entry.href}
+                className="block h-full border border-rule bg-white/40 p-6 transition-colors hover:border-ink"
+              >
+                <p className="font-condensed text-[11px] tracking-[0.18em] text-muted uppercase">
+                  {entry.kicker}
+                </p>
+                <p className="mt-3 font-serif text-3xl leading-none">{entry.title}</p>
+                <p className="mt-3 text-sm leading-6 text-muted">{entry.line}</p>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </main>
+  );
 }

@@ -1,5 +1,5 @@
-import { ComingSoon } from "@/components/ComingSoon";
+import { redirect } from "next/navigation";
 
-export default function LivePage() {
-  return <ComingSoon title="Live" kicker="Gameweek" />;
+export default function LiveRedirect() {
+  redirect("/liga?view=live");
 }

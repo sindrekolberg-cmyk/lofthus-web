@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Barlow_Condensed, Geist, Newsreader } from "next/font/google";
-import { SiteFooter } from "@/components/SiteFooter";
-import { SiteHeader } from "@/components/SiteHeader";
+import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,7 +23,7 @@ const barlow = Barlow_Condensed({
 export const metadata: Metadata = {
   title: "Lofthus Road Open",
   description:
-    "Fantasy Premier League-miniligaen Lofthus Road Open — live-tabell, rivaler og sportsjournalistikk.",
+    "Lofthus Road Open — miniligaen som skal føles som et mesterskap.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -34,9 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${newsreader.variable} ${barlow.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-paper text-ink">
-        <SiteHeader />
-        {children}
-        <SiteFooter />
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

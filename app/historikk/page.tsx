@@ -1,5 +1,5 @@
-import { ComingSoon } from "@/components/ComingSoon";
+import { redirect } from "next/navigation";
 
-export default function HistorikkPage() {
-  return <ComingSoon title="Historikk" kicker="Sesonger" />;
+export default function HistorikkRedirect() {
+  redirect("/hall-of-fame");
 }
