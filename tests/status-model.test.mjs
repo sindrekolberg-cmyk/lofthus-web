@@ -42,6 +42,14 @@ test("homepage uses Topp 5 sammenlagt and API talkers", () => {
   assert.match(home, /data\.popular/);
   assert.match(home, /Hele ligaen/);
   assert.match(home, /Hele måneden/);
+  assert.match(home, /Snakkiser/);
+  assert.equal((home.match(/Topp 5 sammenlagt/g) || []).length, 1);
+  assert.equal((home.match(/Hele måneden/g) || []).length, 1);
+  const body = home.slice(home.indexOf("return ("));
+  assert.ok(body.indexOf("Topp 5 sammenlagt") < body.indexOf("<MatchStrip"));
+  assert.ok(body.indexOf("<MatchStrip") < body.indexOf("Snakkiser"));
+  assert.doesNotMatch(home, /pulseLine/);
+  assert.doesNotMatch(home, /data\.hero/);
   assert.doesNotMatch(home, /MinLofthus/);
   assert.doesNotMatch(home, /Velg deg selv/);
   assert.doesNotMatch(home, /isThisRoundPulse/);
