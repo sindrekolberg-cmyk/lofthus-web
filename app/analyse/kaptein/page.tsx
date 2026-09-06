@@ -4,6 +4,7 @@ import { AnalysisShell } from "@/components/AnalysisShell";
 import { ApiState, LoadingBlock } from "@/components/ApiState";
 import { api } from "@/lib/api";
 import { useLofthus } from "@/lib/useLofthus";
+import { isPlayerUpcoming } from "@/lib/status";
 
 export default function KapteinPage() {
   const { data, error, loading } = useLofthus("captain", () => api.analysisCaptain(), {
@@ -35,7 +36,7 @@ export default function KapteinPage() {
                 <td className="py-2 text-right font-condensed">{p.captain_count}</td>
                 <td className="py-2 text-right font-condensed">{p.triple_captain_count}</td>
                 <td className="py-2 text-right font-condensed">
-                  {p.fixture_status === "not_started" ? "ikke spilt" : p.event_points}
+                  {isPlayerUpcoming(p.fixture_status) ? "ikke spilt" : p.event_points}
                 </td>
                 <td className="py-2">{p.fixture_status_label}</td>
               </tr>

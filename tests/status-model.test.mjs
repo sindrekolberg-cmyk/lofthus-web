@@ -1,0 +1,42 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { test } from "node:test";
+import {
+  fixtureNeverOngoing,
+  isPlayerFinished,
+  isPlayerPlaying,
+  isPlayerUpcoming,
+} from "../lib/status.ts";
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+test("finished fixture never displays pågår", () => {
+  assert.equal(fixtureNeverOngoing("finished", "Ferdig"), true);
+  assert.equal(fixtureNeverOngoing("finished", "Pågår"), false);
+  assert.equal(fixtureNeverOngoing("live", "Pågår"), true);
+});
+
+test("completed player is not treated as currently playing", () => {
+  assert.equal(isPlayerPlaying("finished"), false);
+  assert.equal(isPlayerFinished("finished"), true);
+  assert.equal(isPlayerUpcoming("not_started"), true);
+  assert.equal(isPlayerPlaying("live"), true);
+  assert.equal(isPlayerPlaying("pause"), true);
+});
+
+test("correct navigation labels", () => {
+  const types = readFileSync(join(root, "lib/types.ts"), "utf8");
+  assert.match(types, /label: "Analyseverktøy"/);
+  assert.match(types, /label: "Forside"/);
+  assert.match(types, /label: "Liga"/);
+  assert.match(types, /label: "Hall of Fame"/);
+});
+
+test("homepage uses Topp 5 sammenlagt and API talkers", () => {
+  const home = readFileSync(join(root, "components/HomePage.tsx"), "utf8");
+  assert.match(home, /Topp 5 sammenlagt/);
+  assert.match(home, /data\.popular/);
+  assert.doesNotMatch(home, /isThisRoundPulse/);
+});

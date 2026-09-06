@@ -23,6 +23,7 @@ export type Status = {
   phase?: string;
   seq?: number;
   stale?: boolean;
+  gw_active?: boolean;
   round_kicker?: string;
 };
 
@@ -123,6 +124,11 @@ export type Story = {
   player_element: number;
   image_url?: string;
   source_event?: number;
+  source_gw?: number;
+  source_fixture?: number;
+  created_at?: string;
+  updated_at?: string;
+  expires_at?: string;
 };
 
 export type LiveEvent = {

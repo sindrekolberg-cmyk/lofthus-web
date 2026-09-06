@@ -5,6 +5,7 @@ import Link from "next/link";
 import { signed, ownersLabel, captainsLabel } from "@/lib/format";
 import type { MatchImpact } from "@/lib/types";
 import { LoadingBlock } from "@/components/ApiState";
+import { isPlayerUpcoming } from "@/lib/status";
 
 export function MatchDetail({
   data,
@@ -128,7 +129,7 @@ export function MatchDetail({
                   <li key={player.element} className="py-3">
                     <p className="font-serif text-xl">{player.player}</p>
                     <p className="text-sm text-muted">
-                      {player.fixture_status === "not_started"
+                      {isPlayerUpcoming(player.fixture_status)
                         ? "ikke spilt"
                         : `${player.event_points} poeng`}
                       {" · "}

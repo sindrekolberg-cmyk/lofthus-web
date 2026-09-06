@@ -24,8 +24,8 @@ function LigaInner() {
   return (
     <main className="flex-1 bg-paper">
       <div className="mx-auto max-w-[1400px] px-4 py-12 sm:px-6">
-        {status?.is_live ? (
-          <LiveIndicator gw={status.event_id} live />
+          {status?.is_live ? (
+          <LiveIndicator gw={status.event_id} live label={status.round_kicker} />
         ) : (
           <p className="font-condensed text-xs tracking-[0.22em] text-muted uppercase">
             {status?.round_kicker || (status ? `Runde ${status.event_id}` : "Liga")}

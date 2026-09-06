@@ -2,6 +2,7 @@
 
 import type { Squad, SquadPlayer } from "@/lib/types";
 import { PlayerImage } from "@/components/PlayerImage";
+import { isPlayerUpcoming } from "@/lib/status";
 
 function Badge({ player, onPitch }: { player: SquadPlayer; onPitch?: boolean }) {
   if (player.is_triple_captain) return <span className="text-live">TC</span>;
@@ -11,7 +12,7 @@ function Badge({ player, onPitch }: { player: SquadPlayer; onPitch?: boolean }) 
 }
 
 function Slot({ player, onPitch }: { player: SquadPlayer; onPitch?: boolean }) {
-  const unplayed = player.fixture_status === "not_started";
+  const unplayed = isPlayerUpcoming(player.fixture_status);
   const nameColor = onPitch ? "text-paper" : "text-ink";
   const metaColor = onPitch ? "text-paper/70" : "text-muted";
   return (

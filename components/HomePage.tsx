@@ -10,12 +10,6 @@ import { LiveIndicator } from "@/components/LiveIndicator";
 import { MinLofthus } from "@/components/MinLofthus";
 import { PlayerImage } from "@/components/PlayerImage";
 import { useSelectedManager } from "@/lib/selected-manager";
-import type { Status, Story } from "@/lib/types";
-
-function isThisRoundPulse(story: Story, status: Status) {
-  if (story.category === "movement" || story.category === "round") return false;
-  return !story.source_event || story.source_event === status.event_id;
-}
 
 export function HomePage() {
   const { entryId } = useSelectedManager();
@@ -41,15 +35,12 @@ export function HomePage() {
 
   const status = data.status;
   const leader = data.top5[0];
-  const pulse = data.news.find((s) => isThisRoundPulse(s, status));
+  const pulse = data.hero?.story;
   const snakkiser = data.news.slice(0, 5);
   const me = data.managers.find((m) => m.entry === entryId);
   const climbers = data.movers?.climbers || [];
   const fallers = data.movers?.fallers || [];
-  const talkers = [...data.popular]
-    .filter((p) => p.event_points > 0 || p.fixture_status === "live")
-    .sort((a, b) => b.event_points - a.event_points || b.ownership_count - a.ownership_count)
-    .slice(0, 5);
+  const talkers = data.popular || [];
   const pulseLine = pulse?.headline
     || (leader ? `${leader.manager} leder · ${leader.total} p` : "Det skjer i Lofthus");
 
@@ -59,7 +50,7 @@ export function HomePage() {
         <div className="mx-auto grid max-w-[1400px] gap-6 px-4 py-4 sm:px-6 lg:grid-cols-12 lg:gap-8 lg:py-5">
           <div className="lg:col-span-8">
             {status.is_live ? (
-              <LiveIndicator gw={status.event_id} live />
+              <LiveIndicator gw={status.event_id} live label={status.round_kicker} />
             ) : (
               <p className="font-condensed text-[12px] tracking-[0.16em] text-live uppercase">
                 {status.round_kicker || `Runde ${status.event_id}`}
@@ -77,7 +68,7 @@ export function HomePage() {
             ) : null}
 
             <div className="mt-4 flex items-end justify-between">
-              <h2 className="font-condensed text-[11px] tracking-[0.16em] text-muted uppercase">Topp 5</h2>
+              <h2 className="font-condensed text-[11px] tracking-[0.16em] text-muted uppercase">Topp 5 sammenlagt</h2>
               <Link href="/liga" className="font-condensed text-[11px] tracking-[0.14em] uppercase text-muted hover:text-ink">
                 Hele ligaen →
               </Link>
