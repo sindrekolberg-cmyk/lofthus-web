@@ -17,10 +17,11 @@ export function SiteHeader() {
     <header>
       <div className="sticky top-0 z-50 border-b border-ink/10 bg-paper/95 text-ink backdrop-blur">
         <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between gap-4 px-4 sm:px-6">
-          <Link href="/" className="shrink-0" aria-label="Lofthus Road Open">
-            <span className="inline-flex h-9 items-center bg-live px-2.5 font-condensed text-[15px] font-semibold tracking-[0.18em] text-paper">
-              LOFTHUS
-            </span>
+          <Link
+            href="/"
+            className="shrink-0 font-condensed text-[15px] font-semibold tracking-[0.18em]"
+          >
+            LOFTHUS ROAD OPEN
           </Link>
 
           <nav className="hidden items-center gap-7 md:flex" aria-label="Hovedmeny">
