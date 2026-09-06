@@ -248,7 +248,10 @@ export default function ManagerPage() {
                     {row.is_live ? " · live" : ""}
                   </p>
                   <p className="font-condensed text-2xl">{row.points}</p>
-                  <p className="text-xs text-muted">{place(row.league_rank)} i Lofthus</p>
+                  <p className="text-xs text-muted">{place(row.league_rank)} sammenlagt</p>
+                  {row.round_rank ? (
+                    <p className="text-xs text-muted">{place(row.round_rank)} best i runden</p>
+                  ) : null}
                 </div>
               ))}
             </div>

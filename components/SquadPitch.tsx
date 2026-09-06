@@ -15,6 +15,7 @@ function Slot({ player, onPitch }: { player: SquadPlayer; onPitch?: boolean }) {
   const unplayed = isPlayerUpcoming(player.fixture_status);
   const nameColor = onPitch ? "text-paper" : "text-ink";
   const metaColor = onPitch ? "text-paper/70" : "text-muted";
+  const points = onPitch ? player.gw_contribution : player.event_points;
   return (
     <div className="flex w-[4.35rem] flex-col items-center sm:w-20">
       <div className={`relative h-11 w-11 overflow-hidden rounded-full sm:h-16 sm:w-16 ${onPitch ? "bg-[#1a1a1a]" : "bg-[#d8d1c4]"}`}>
@@ -24,8 +25,8 @@ function Slot({ player, onPitch }: { player: SquadPlayer; onPitch?: boolean }) {
         {player.player}
       </p>
       <p className={`font-condensed text-[11px] tabular-nums ${metaColor}`}>
-        {unplayed ? "–" : player.gw_contribution}
-        {player.multiplier > 1 ? ` ×${player.multiplier}` : ""}
+        {unplayed ? "–" : points}
+        {onPitch && player.multiplier > 1 ? ` ×${player.multiplier}` : ""}
       </p>
       <p className={`font-condensed text-[9px] tracking-wide uppercase ${onPitch ? "text-paper/45" : "text-muted"}`}>
         <Badge player={player} onPitch={onPitch} /> {player.club} · {fixtureStatusLabel(player.fixture_status, player.fixture_status_label)}
@@ -33,8 +34,7 @@ function Slot({ player, onPitch }: { player: SquadPlayer; onPitch?: boolean }) {
       {player.autosub_status === "confirmed" ? (
         <p className="mt-0.5 text-center font-condensed text-[9px] leading-tight tracking-wide text-live uppercase">
           AUTO IN
-          {player.replaced_player ? ` · ${player.player} inn for ${player.replaced_player}` : ""}
-          {player.gw_contribution ? ` · +${player.gw_contribution} p` : ""}
+          {player.replaced_player ? ` · inn for ${player.replaced_player}` : ""}
         </p>
       ) : null}
       {player.autosub_status === "pending" ? (

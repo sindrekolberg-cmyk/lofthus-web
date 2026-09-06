@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { ManagerRow, Status } from "@/lib/types";
 import { moveLabel } from "@/lib/format";
 
-type SortKey = "rank" | "total" | "gw" | "month" | "up" | "down";
+type SortKey = "total" | "gw" | "month" | "up" | "down";
 
 type Props = {
   rows: ManagerRow[];
@@ -17,7 +17,6 @@ type Props = {
 };
 
 const SORTS: { id: SortKey; label: string }[] = [
-  { id: "rank", label: "Plass" },
   { id: "total", label: "Totalpoeng" },
   { id: "gw", label: "Rundepoeng" },
   { id: "month", label: "Måned" },
@@ -27,7 +26,7 @@ const SORTS: { id: SortKey; label: string }[] = [
 
 export function LeagueTable({ rows, status, compact, highlight, remaining, sortable }: Props) {
   const provisional = Boolean(status?.provisional);
-  const [sort, setSort] = useState<SortKey>("rank");
+  const [sort, setSort] = useState<SortKey>("total");
   const prevTops = useRef(new Map<number, number>());
   const prevRanks = useRef(new Map<number, number>());
 
@@ -39,7 +38,7 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
       if (sort === "month") return b.month_points - a.month_points || a.rank - b.rank;
       if (sort === "up") return b.rank_change - a.rank_change || a.rank - b.rank;
       if (sort === "down") return a.rank_change - b.rank_change || a.rank - b.rank;
-      return a.rank - b.rank;
+      return b.total - a.total || a.rank - b.rank;
     });
     return copy;
   }, [rows, sort]);
