@@ -136,55 +136,52 @@ export function HomePage() {
       ) : null}
 
       <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6">
-        <section>
-          <h2 className="font-serif text-2xl sm:text-3xl">Snakkiser</h2>
-          {snakkiser.length ? (
-            <ul className="mt-4 divide-y divide-rule border-y border-rule">
-              {snakkiser.map((s) => (
-                <li key={s.key}>
-                  <Link href={storyHref(s)} className="flex min-h-11 items-baseline gap-3 py-3 hover:bg-black/[0.02] sm:gap-4">
-                    <span className="w-20 shrink-0 font-condensed text-[11px] tracking-[0.16em] text-live uppercase sm:w-28">
-                      {storyCategory(s.category)}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block font-serif text-lg leading-snug sm:text-xl">{s.headline}</span>
-                      {s.meta ? <span className="mt-0.5 block text-sm text-muted">{s.meta}</span> : null}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-3 text-sm text-muted">Ingen sterke historier akkurat nå.</p>
-          )}
-        </section>
+        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.85fr)_minmax(12rem,1fr)] lg:gap-10">
+          <section>
+            <h2 className="font-serif text-2xl sm:text-3xl">Snakkiser</h2>
+            {snakkiser.length ? (
+              <ul className="mt-3 divide-y divide-rule border-y border-rule">
+                {snakkiser.map((s) => (
+                  <li key={s.key}>
+                    <Link href={storyHref(s)} className="flex min-h-11 items-baseline gap-3 py-2.5 hover:bg-black/[0.02] sm:gap-4">
+                      <span className="w-20 shrink-0 font-condensed text-[11px] tracking-[0.16em] text-live uppercase sm:w-28">
+                        {storyCategory(s.category)}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block font-serif text-lg leading-snug sm:text-xl">{s.headline}</span>
+                        {s.meta ? <span className="mt-0.5 block text-sm text-muted">{s.meta}</span> : null}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-sm text-muted">Ingen sterke historier akkurat nå.</p>
+            )}
+          </section>
 
-        <section className="mt-10">
-          <h2 className="font-serif text-2xl">Største utslag</h2>
-          <p className="mt-1 text-sm text-muted">
-            {status.provisional ? "Foreløpig endring akkurat nå" : "Etter ferdig runde"}
-          </p>
-          <div className="mt-3 grid gap-6 sm:grid-cols-2">
-            <ul className="space-y-1">
-              <li className="font-condensed text-[11px] tracking-[0.16em] text-[#2f6a32] uppercase">Største gevinst</li>
+          <section>
+            <h2 className="font-serif text-2xl">Største utslag</h2>
+            <ul className="mt-3 space-y-1">
+              <li className="font-condensed text-[11px] tracking-[0.16em] text-[#2f6a32] uppercase">Største klatrere</li>
               {climbers.length ? climbers.map((m) => (
-                <li key={m.entry} className="flex justify-between border-b border-rule py-1.5 text-sm">
+                <li key={m.entry} className="flex justify-between border-b border-rule py-1 text-sm">
                   <Link href={`/manager/${m.entry}`} className="hover:underline">{m.manager}</Link>
-                  <span className="font-condensed text-[#2f6a32]">{moveLabel(m.rank_change, status.provisional)}</span>
+                  <span className="font-condensed tabular-nums text-[#2f6a32]">{moveLabel(m.rank_change, status.provisional)}</span>
                 </li>
               )) : <li className="text-sm text-muted">Ingen ennå</li>}
             </ul>
-            <ul className="space-y-1">
-              <li className="font-condensed text-[11px] tracking-[0.16em] text-live uppercase">Største tap</li>
+            <ul className="mt-4 space-y-1">
+              <li className="font-condensed text-[11px] tracking-[0.16em] text-live uppercase">Største fall</li>
               {fallers.length ? fallers.map((m) => (
-                <li key={m.entry} className="flex justify-between border-b border-rule py-1.5 text-sm">
+                <li key={m.entry} className="flex justify-between border-b border-rule py-1 text-sm">
                   <Link href={`/manager/${m.entry}`} className="hover:underline">{m.manager}</Link>
-                  <span className="font-condensed text-live">{moveLabel(m.rank_change, status.provisional)}</span>
+                  <span className="font-condensed tabular-nums text-live">{moveLabel(m.rank_change, status.provisional)}</span>
                 </li>
               )) : <li className="text-sm text-muted">Ingen ennå</li>}
             </ul>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
     </main>
   );

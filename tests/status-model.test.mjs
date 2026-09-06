@@ -48,6 +48,11 @@ test("homepage uses Topp 5 sammenlagt and API talkers", () => {
   const body = home.slice(home.indexOf("return ("));
   assert.ok(body.indexOf("<MatchStrip") < body.indexOf("Topp 5 sammenlagt"));
   assert.ok(body.indexOf("Topp 5 sammenlagt") < body.indexOf("Snakkiser"));
+  assert.ok(body.indexOf("Snakkiser") < body.indexOf("Største utslag"));
+  assert.match(home, /lg:grid-cols-\[minmax\(0,1\.85fr\)_minmax\(12rem,1fr\)\]/);
+  assert.match(home, /Største klatrere/);
+  assert.match(home, /Største fall/);
+  assert.doesNotMatch(home, /Foreløpig endring akkurat nå/);
   assert.match(home, /data\.pulse\?\.fixtures/);
   assert.doesNotMatch(home, /data\.events\?\.length/);
   assert.doesNotMatch(home, /pulseLine/);

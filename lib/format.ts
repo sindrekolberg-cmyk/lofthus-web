@@ -48,8 +48,10 @@ export function storyCategory(category: string) {
   if (value === "leader" || value === "month" || value.includes("måned")) return "Tabell";
   if (value === "round" || value === "runde") return "Forrige runde";
   if (value === "movement_live" || value === "movement" || value === "bevegelse") return "Tabell";
-  if (value === "captain" || value === "kaptein" || value === "chip") return "Kaptein";
-  if (value === "differential") return "Differensial";
+  if (value === "captain" || value === "kaptein") return "Kaptein";
+  if (value === "chip") return "Chip";
+  if (value === "bench" || value === "benk") return "Benk";
+  if (value === "differential" || value === "unique") return "Differensial";
   if (value === "autosub") return "Autosub";
   if (value === "ownership") return "Eierskap";
   return category;
