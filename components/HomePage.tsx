@@ -6,9 +6,16 @@ import { useLofthus } from "@/lib/useLofthus";
 import { moveLabel, storyHref, storyCategory } from "@/lib/format";
 import { ApiState, LoadingBlock } from "@/components/ApiState";
 import { LeagueTable } from "@/components/LeagueTable";
+import { LiveIndicator } from "@/components/LiveIndicator";
 import { MinLofthus } from "@/components/MinLofthus";
 import { PlayerImage } from "@/components/PlayerImage";
 import { useSelectedManager } from "@/lib/selected-manager";
+import type { Status, Story } from "@/lib/types";
+
+function isThisRoundPulse(story: Story, status: Status) {
+  if (story.category === "movement" || story.category === "round") return false;
+  return !story.source_event || story.source_event === status.event_id;
+}
 
 export function HomePage() {
   const { entryId } = useSelectedManager();
@@ -34,10 +41,8 @@ export function HomePage() {
 
   const status = data.status;
   const leader = data.top5[0];
-  const thisRound = data.news.filter(
-    (s) => !s.source_event || s.source_event === status.event_id,
-  );
-  const snakkiser = (thisRound.length ? thisRound : data.news).slice(0, 5);
+  const pulse = data.news.find((s) => isThisRoundPulse(s, status));
+  const snakkiser = data.news.slice(0, 5);
   const me = data.managers.find((m) => m.entry === entryId);
   const climbers = data.movers?.climbers || [];
   const fallers = data.movers?.fallers || [];
@@ -45,56 +50,63 @@ export function HomePage() {
     .filter((p) => p.event_points > 0 || p.fixture_status === "live")
     .sort((a, b) => b.event_points - a.event_points || b.ownership_count - a.ownership_count)
     .slice(0, 5);
-  const liveMatches = data.pulse.fixtures.filter((f) => f.status === "live").length;
-  const biggestUp = climbers[0];
+  const pulseLine = pulse?.headline
+    || (leader ? `${leader.manager} leder · ${leader.total} p` : "Det skjer i Lofthus");
 
   return (
     <main className="flex-1">
       <section className="border-b border-ink/10 bg-[#f6e4d8]">
-        <div className="mx-auto max-w-[1400px] px-4 py-4 sm:px-6">
-          <h1 className="sr-only">Lofthus Road Open</h1>
-          {me ? (
-            <p className="mb-3 font-condensed text-[12px] tracking-[0.14em] text-ink uppercase">
-              Du er nr. {me.rank} {moveLabel(me.rank_change || 0, status.provisional)}
-              {me.players_remaining != null ? ` · ${me.players_remaining} spillere gjenstår` : ""}
-            </p>
-          ) : null}
-          <dl className="flex flex-wrap gap-x-8 gap-y-2 font-condensed text-sm">
-            <div>
-              <dt className="text-[10px] tracking-[0.16em] text-muted uppercase">Leder</dt>
-              <dd className="text-base">
-                {leader ? (
-                  <Link href={`/manager/${leader.entry}`} className="hover:underline">
-                    {leader.manager}
-                  </Link>
-                ) : (
-                  "–"
-                )}
-                {leader ? (
-                  <span className="ml-2 tabular-nums text-muted">
-                    {leader.total} p
-                    {leader.rank_change
-                      ? ` · ${moveLabel(leader.rank_change, status.provisional)}`
-                      : ""}
-                  </span>
-                ) : null}
-              </dd>
+        <div className="mx-auto grid max-w-[1400px] gap-6 px-4 py-4 sm:px-6 lg:grid-cols-12 lg:gap-8 lg:py-5">
+          <div className="lg:col-span-8">
+            {status.is_live ? (
+              <LiveIndicator gw={status.event_id} live />
+            ) : (
+              <p className="font-condensed text-[12px] tracking-[0.16em] text-live uppercase">
+                {status.round_kicker || `Runde ${status.event_id}`}
+              </p>
+            )}
+            <h1 className="mt-2 max-w-2xl font-serif text-[1.15rem] leading-snug text-ink sm:text-[1.35rem]">
+              {pulseLine}
+            </h1>
+            {pulse?.meta ? <p className="mt-1 text-sm text-muted">{pulse.meta}</p> : null}
+            {me ? (
+              <p className="mt-2 font-condensed text-[11px] tracking-[0.12em] text-muted uppercase">
+                Du er nr. {me.rank} {moveLabel(me.rank_change || 0, status.provisional)}
+                {me.players_remaining != null ? ` · ${me.players_remaining} spillere gjenstår` : ""}
+              </p>
+            ) : null}
+
+            <div className="mt-4 flex items-end justify-between">
+              <h2 className="font-condensed text-[11px] tracking-[0.16em] text-muted uppercase">Topp 5</h2>
+              <Link href="/liga" className="font-condensed text-[11px] tracking-[0.14em] uppercase text-muted hover:text-ink">
+                Hele ligaen →
+              </Link>
             </div>
-            <div>
-              <dt className="text-[10px] tracking-[0.16em] text-muted uppercase">Kamper i spill</dt>
-              <dd className="text-lg tabular-nums">{liveMatches}</dd>
+            <div className="mt-2">
+              <LeagueTable rows={data.top5} status={status} compact highlight={entryId} />
             </div>
-            <div>
-              <dt className="text-[10px] tracking-[0.16em] text-muted uppercase">Størst løft</dt>
-              <dd className="text-lg tabular-nums text-[#2f6a32]">
-                {biggestUp ? `${biggestUp.manager.split(" ")[0]} ${moveLabel(biggestUp.rank_change)}` : "–"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-[10px] tracking-[0.16em] text-muted uppercase">{data.month.name || "Måned"}</dt>
-              <dd className="text-lg">{data.month.table[0]?.manager.split(" ")[0] || "–"}</dd>
-            </div>
-          </dl>
+          </div>
+
+          <aside className="lg:col-span-4">
+            <h2 className="font-condensed text-[11px] tracking-[0.16em] text-muted uppercase">
+              Spillerne alle snakker om
+            </h2>
+            <ul className="mt-2 divide-y divide-rule border-y border-rule">
+              {talkers.length ? talkers.map((p) => (
+                <li key={p.element} className="flex items-center gap-2.5 py-1.5">
+                  <div className="relative h-8 w-8 shrink-0 overflow-hidden bg-[#d8d1c4]">
+                    <PlayerImage src={p.image_url} alt={p.player} variant="squad" />
+                  </div>
+                  <p className="min-w-0 flex-1 truncate text-sm">{p.player}</p>
+                  <p className="shrink-0 font-condensed text-[11px] tabular-nums text-muted">
+                    {Math.round(p.ownership_pct)}% · {p.event_points} p
+                  </p>
+                </li>
+              )) : (
+                <li className="py-2 text-sm text-muted">Ingen har spilt ennå.</li>
+              )}
+            </ul>
+          </aside>
         </div>
       </section>
 
@@ -105,39 +117,6 @@ export function HomePage() {
       ) : null}
 
       <div className="mx-auto grid max-w-[1400px] gap-8 px-4 py-8 sm:px-6 lg:grid-cols-12">
-        <section className="lg:col-span-8">
-          <div className="flex items-end justify-between">
-            <h2 className="font-serif text-2xl sm:text-3xl">Topp 5 sammenlagt</h2>
-            <Link href="/liga" className="font-condensed text-[12px] tracking-[0.14em] uppercase text-muted hover:text-ink">
-              Hele ligaen →
-            </Link>
-          </div>
-          <div className="mt-3">
-            <LeagueTable rows={data.top5} status={status} compact highlight={entryId} />
-          </div>
-        </section>
-
-        <section className="lg:col-span-4">
-          <h2 className="font-serif text-2xl sm:text-3xl">Spillerne alle snakker om</h2>
-          <ul className="mt-3 divide-y divide-rule border-y border-rule">
-            {talkers.length ? talkers.map((p) => (
-              <li key={p.element} className="flex items-center gap-3 py-2">
-                <div className="relative h-10 w-10 shrink-0 overflow-hidden bg-[#d8d1c4]">
-                  <PlayerImage src={p.image_url} alt={p.player} variant="squad" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-serif leading-tight">{p.player}</p>
-                  <p className="font-condensed text-[11px] text-muted uppercase">
-                    {p.event_points} p · {Math.round(p.ownership_pct)}% · {p.fixture_status_label}
-                  </p>
-                </div>
-              </li>
-            )) : (
-              <li className="py-3 text-sm text-muted">Ingen har spilt ennå.</li>
-            )}
-          </ul>
-        </section>
-
         <section className="lg:col-span-12">
           <h2 className="font-serif text-2xl">Største utslag</h2>
           <p className="mt-1 text-sm text-muted">
