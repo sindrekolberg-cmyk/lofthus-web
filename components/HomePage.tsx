@@ -40,12 +40,14 @@ export function HomePage() {
   const talkers = data.popular || [];
   const monthName = data.month.name || "Måned";
   const monthTop = (data.month.table || []).slice(0, 5);
-  const fixtures = data.events?.length ? data.events : data.pulse?.fixtures || [];
+  const fixtures = (data.pulse?.fixtures || []).filter(
+    (row) => row.id && row.home && row.away && row.status,
+  );
 
   return (
     <main className="flex-1">
       <section className="border-b border-ink/10 bg-[#f6e4d8]">
-        <div className="mx-auto max-w-[1400px] px-4 py-4 sm:px-6">
+        <div className="mx-auto max-w-[1400px] px-4 py-2.5 sm:px-6">
           {status.is_live ? (
             <LiveIndicator gw={status.event_id} live label={status.round_kicker} />
           ) : (
@@ -53,8 +55,20 @@ export function HomePage() {
               {status.round_kicker || `Runde ${status.event_id}`}
             </p>
           )}
+        </div>
+      </section>
 
-          <div className="mt-4 grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+      {fixtures.length ? (
+        <section className="border-b border-rule bg-white/80">
+          <div className="mx-auto max-w-[1400px] px-4 py-2.5 sm:px-6">
+            <MatchStrip fixtures={fixtures} />
+          </div>
+        </section>
+      ) : null}
+
+      <section className="border-b border-ink/10 bg-[#f6e4d8]">
+        <div className="mx-auto max-w-[1400px] px-4 py-4 sm:px-6">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
             <section>
               <div className="flex items-end justify-between gap-3">
                 <h2 className="font-condensed text-[11px] tracking-[0.16em] text-muted uppercase">
@@ -114,14 +128,6 @@ export function HomePage() {
           </div>
         </div>
       </section>
-
-      {fixtures.length ? (
-        <section className="border-b border-rule bg-white/80">
-          <div className="mx-auto max-w-[1400px] px-4 py-2.5 sm:px-6">
-            <MatchStrip fixtures={fixtures} />
-          </div>
-        </section>
-      ) : null}
 
       {polled.error ? (
         <div className="mx-auto max-w-[1400px] px-4 pt-6 sm:px-6">

@@ -16,7 +16,7 @@ test("finished fixture stays Ferdig even when shown as recent", () => {
 test("match card click opens portal detail for the fixture id", () => {
   const strip = readFileSync(join(root, "components/MatchStrip.tsx"), "utf8");
   const detail = readFileSync(join(root, "components/MatchDetail.tsx"), "utf8");
-  assert.match(strip, /setOpenId\(fixture\.id\)/);
+  assert.match(strip, /setOpenId\(id\)/);
   assert.match(strip, /api\.match\(openId/);
   assert.match(strip, /match\.data\?\.fixture\?\.id === openId/);
   assert.match(strip, /createPortal/);

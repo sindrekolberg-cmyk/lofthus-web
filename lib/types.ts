@@ -144,6 +144,7 @@ export type Story = {
 
 export type LiveEvent = {
   id: number;
+  fixture_id?: number;
   kickoff: string;
   minutes: number;
   status: string;

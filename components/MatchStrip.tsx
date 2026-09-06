@@ -22,7 +22,9 @@ export function MatchStrip({ fixtures }: { fixtures: LiveEvent[] }) {
   }, []);
 
   const open = useCallback((fixture: LiveEvent) => {
-    setOpenId(fixture.id);
+    const id = fixture.id;
+    if (!id || !fixture.home || !fixture.away) return;
+    setOpenId(id);
   }, []);
 
   const close = useCallback(() => {
