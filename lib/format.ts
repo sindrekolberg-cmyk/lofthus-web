@@ -25,6 +25,14 @@ export function storyHref(story: { manager_entry?: number; category?: string }) 
   return "/liga";
 }
 
+export function leagueOwnership(pct: number, count: number, size: number) {
+  const share = Number(pct || 0).toLocaleString("nb-NO", {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 0,
+  });
+  return `${share} % (${count} av ${size})`;
+}
+
 export function ownersLabel(n: number) {
   return n === 1 ? "1 eier" : `${n} eiere`;
 }

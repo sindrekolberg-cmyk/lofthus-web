@@ -2,7 +2,7 @@
 
 import type { Squad, SquadPlayer } from "@/lib/types";
 import { PlayerImage } from "@/components/PlayerImage";
-import { isPlayerUpcoming } from "@/lib/status";
+import { fixtureStatusLabel, isPlayerUpcoming } from "@/lib/status";
 
 function Badge({ player, onPitch }: { player: SquadPlayer; onPitch?: boolean }) {
   if (player.is_triple_captain) return <span className="text-live">TC</span>;
@@ -28,7 +28,7 @@ function Slot({ player, onPitch }: { player: SquadPlayer; onPitch?: boolean }) {
         {player.multiplier > 1 ? ` ×${player.multiplier}` : ""}
       </p>
       <p className={`font-condensed text-[9px] tracking-wide uppercase ${onPitch ? "text-paper/45" : "text-muted"}`}>
-        <Badge player={player} onPitch={onPitch} /> {player.club} · {player.fixture_status_label}
+        <Badge player={player} onPitch={onPitch} /> {player.club} · {fixtureStatusLabel(player.fixture_status, player.fixture_status_label)}
       </p>
       {player.autosub_status === "confirmed" ? (
         <p className="mt-0.5 text-center font-condensed text-[9px] leading-tight tracking-wide text-live uppercase">

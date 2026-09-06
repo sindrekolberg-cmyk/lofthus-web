@@ -30,6 +30,20 @@ export function isPlayerUpcoming(status: string | undefined) {
   return isFixtureUpcoming(status);
 }
 
+export function fixtureStatusLabel(status?: string, label?: string) {
+  const mapped: Record<string, string> = {
+    live: "Pågår",
+    pause: "Pause",
+    finished: "Ferdig",
+    not_started: "Ikke startet",
+    postponed: "Utsatt",
+  };
+  if (status && mapped[status]) return mapped[status];
+  const text = String(label || "").trim();
+  if (text && !/\d/.test(text)) return text;
+  return mapped.not_started;
+}
+
 export function fixtureNeverOngoing(status: string | undefined, label: string | undefined) {
   if (!isFixtureFinished(status)) return true;
   return !String(label || "").toLowerCase().includes("pågår");

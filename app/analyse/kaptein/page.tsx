@@ -4,7 +4,7 @@ import { AnalysisShell } from "@/components/AnalysisShell";
 import { ApiState, LoadingBlock } from "@/components/ApiState";
 import { api } from "@/lib/api";
 import { useLofthus } from "@/lib/useLofthus";
-import { isPlayerUpcoming } from "@/lib/status";
+import { fixtureStatusLabel, isPlayerUpcoming } from "@/lib/status";
 
 export default function KapteinPage() {
   const { data, error, loading } = useLofthus("captain", () => api.analysisCaptain(), {
@@ -19,13 +19,13 @@ export default function KapteinPage() {
       {loading && !data ? <LoadingBlock /> : null}
       {error && !data ? <ApiState message={error} /> : null}
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-left text-sm">
+        <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-ink font-condensed text-[11px] tracking-[0.14em] text-muted uppercase">
               <th className="py-2">Spiller</th>
               <th className="py-2 text-right">C</th>
               <th className="py-2 text-right">TC</th>
-              <th className="py-2 text-right">Poeng</th>
+              <th className="py-2 text-right">GW</th>
               <th className="py-2">Status</th>
             </tr>
           </thead>
@@ -35,10 +35,10 @@ export default function KapteinPage() {
                 <td className="py-2">{p.player}</td>
                 <td className="py-2 text-right font-condensed">{p.captain_count}</td>
                 <td className="py-2 text-right font-condensed">{p.triple_captain_count}</td>
-                <td className="py-2 text-right font-condensed">
-                  {isPlayerUpcoming(p.fixture_status) ? "ikke spilt" : p.event_points}
+                <td className="py-2 text-right font-condensed tabular-nums">
+                  {isPlayerUpcoming(p.fixture_status) ? "–" : p.event_points}
                 </td>
-                <td className="py-2">{p.fixture_status_label}</td>
+                <td className="py-2">{fixtureStatusLabel(p.fixture_status, p.fixture_status_label)}</td>
               </tr>
             ))}
           </tbody>

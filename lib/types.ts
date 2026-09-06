@@ -70,9 +70,20 @@ export type PlayerCard = {
   fixture_status_label: string;
   impact_score: number;
   image_url: string;
+  league_size?: number;
+  owners?: PlayerOwner[];
   kicker?: string;
   headline?: string;
   dek?: string;
+};
+
+export type PlayerOwner = {
+  entry: number;
+  manager: string;
+  team: string;
+  is_captain: boolean;
+  is_triple_captain: boolean;
+  on_bench: boolean;
 };
 
 export type SquadPlayer = {

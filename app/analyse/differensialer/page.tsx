@@ -4,6 +4,7 @@ import { AnalysisShell } from "@/components/AnalysisShell";
 import { ApiState, LoadingBlock } from "@/components/ApiState";
 import { api } from "@/lib/api";
 import { useLofthus } from "@/lib/useLofthus";
+import { fixtureStatusLabel } from "@/lib/status";
 
 export default function DifferensialerPage() {
   const { data, error, loading } = useLofthus(
@@ -35,8 +36,8 @@ export default function DifferensialerPage() {
               <td className="py-2">{p.player}</td>
               <td className="py-2 text-muted">{p.club}</td>
               <td className="py-2 text-right font-condensed">{p.ownership_pct}%</td>
-              <td className="py-2 text-right font-condensed">{p.event_points}</td>
-              <td className="py-2">{p.fixture_status_label}</td>
+              <td className="py-2 text-right font-condensed tabular-nums">{p.event_points}</td>
+              <td className="py-2">{fixtureStatusLabel(p.fixture_status, p.fixture_status_label)}</td>
             </tr>
           ))}
         </tbody>

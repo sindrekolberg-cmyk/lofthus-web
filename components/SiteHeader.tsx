@@ -25,10 +25,14 @@ export function SiteHeader() {
         className="sticky top-0 z-50 border-b border-ink/10 bg-paper/95 text-ink backdrop-blur"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
-        <div className="mx-auto flex h-11 max-w-[1400px] items-center justify-between gap-3 px-4 md:h-14 sm:px-6">
+        <div className="mx-auto flex h-11 max-w-[1400px] items-center justify-between gap-3 px-4 md:h-[72px] sm:px-6">
           <Link href="/" className="shrink-0" aria-label="Lofthus Road Open">
-            <span className="inline-flex h-8 items-center bg-live px-2 font-condensed text-[13px] font-semibold tracking-[0.18em] text-paper md:h-9 md:px-2.5 md:text-[15px]">
+            <span className="inline-flex h-8 items-center bg-live px-2 font-condensed text-[13px] font-semibold tracking-[0.18em] text-paper md:hidden">
               LOFTHUS
+            </span>
+            <span className="hidden md:flex flex-col justify-center leading-none">
+              <span className="font-condensed text-[22px] font-semibold tracking-[0.18em]">LOFTHUS</span>
+              <span className="mt-1 font-condensed text-[11px] tracking-[0.28em] text-muted">ROAD OPEN</span>
             </span>
           </Link>
 
@@ -43,7 +47,7 @@ export function SiteHeader() {
             )}
           </p>
 
-          <nav className="hidden items-center gap-7 md:flex" aria-label="Hovedmeny">
+          <nav className="hidden items-center gap-5 lg:gap-10 md:flex" aria-label="Hovedmeny">
             {nav.map((item) => {
               const active =
                 item.href === "/"
@@ -53,17 +57,20 @@ export function SiteHeader() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`font-condensed text-[13px] tracking-[0.14em] uppercase transition-colors ${
-                    active ? "text-ink" : "text-ink/45 hover:text-ink"
+                  className={`relative font-condensed text-[15px] tracking-[0.16em] uppercase transition-colors ${
+                    active ? "text-ink" : "text-ink/40 hover:text-ink"
                   }`}
                 >
                   {item.label}
+                  {active ? (
+                    <span className="absolute inset-x-0 -bottom-2 h-px bg-live" aria-hidden />
+                  ) : null}
                 </Link>
               );
             })}
           </nav>
 
-          <div className="hidden min-w-[14rem] md:block">
+          <div className="hidden w-[12rem] lg:w-[16rem] md:block">
             <ManagerSearch compact />
           </div>
 
@@ -89,14 +96,14 @@ export function SiteHeader() {
         ) : null}
       </div>
 
-      <div className="relative hidden h-[88px] overflow-hidden bg-[#2c4aa0] md:block sm:h-[112px] lg:h-[128px]">
+      <div className="relative hidden h-[64px] overflow-hidden bg-[#2c4aa0] md:block lg:h-[72px]">
         <Image
           src="/header-premier-league.jpg"
           alt="Premier League"
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[center_18%]"
+          className="object-cover object-[center_32%]"
         />
       </div>
 

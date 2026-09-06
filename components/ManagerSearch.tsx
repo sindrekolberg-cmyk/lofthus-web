@@ -61,8 +61,8 @@ export function ManagerSearch({ managers, compact, onPick }: Props) {
           window.setTimeout(() => setOpen(false), 180);
         }}
         placeholder="Finn meg…"
-        className={`w-full border border-rule bg-white/70 px-3 text-sm outline-none placeholder:text-muted focus:border-ink ${
-          compact ? "h-11 md:h-9" : "h-11"
+        className={`w-full border border-ink/15 bg-white px-3 text-sm outline-none placeholder:text-muted focus:border-ink ${
+          compact ? "h-11" : "h-11"
         }`}
       />
       {open && hits.length ? (

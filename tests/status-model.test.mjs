@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import {
   fixtureNeverOngoing,
+  fixtureStatusLabel,
   isPlayerFinished,
   isPlayerPlaying,
   isPlayerUpcoming,
@@ -16,6 +17,7 @@ test("finished fixture never displays pågår", () => {
   assert.equal(fixtureNeverOngoing("finished", "Ferdig"), true);
   assert.equal(fixtureNeverOngoing("finished", "Pågår"), false);
   assert.equal(fixtureNeverOngoing("live", "Pågår"), true);
+  assert.equal(fixtureStatusLabel("finished", "Pågår"), "Ferdig");
 });
 
 test("completed player is not treated as currently playing", () => {
