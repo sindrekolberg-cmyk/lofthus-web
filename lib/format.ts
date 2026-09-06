@@ -36,10 +36,15 @@ export function captainsLabel(n: number) {
 
 export function storyCategory(category: string) {
   const value = (category || "").toLowerCase();
-  if (value === "live") return "Live";
+  if (value === "live") return "Denne runden";
+  if (value === "leader") return "Tabellen";
   if (value === "round" || value === "runde") return "Forrige runde";
+  if (value === "movement_live") return "Bevegelse";
   if (value === "movement" || value === "bevegelse") return "Bevegelse";
   if (value === "month" || value.includes("måned")) return "Måned";
-  if (value === "captain" || value === "kaptein") return "Kaptein";
+  if (value === "captain" || value === "kaptein" || value === "chip") return "Kaptein";
+  if (value === "differential") return "Differensial";
+  if (value === "autosub") return "Autosub";
+  if (value === "ownership") return "Eierskap";
   return category;
 }

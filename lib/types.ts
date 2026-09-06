@@ -89,6 +89,8 @@ export type SquadPlayer = {
   fixture_status_label: string;
   image_url: string;
   minutes: number;
+  autosub_in?: boolean;
+  replaced_player?: string;
 };
 
 export type Squad = {
@@ -114,6 +116,7 @@ export type Story = {
   manager_entry: number;
   player_element: number;
   image_url?: string;
+  source_event?: number;
 };
 
 export type LiveEvent = {
@@ -363,7 +366,7 @@ export const nav = [
   { href: "/", label: "Forside" },
   { href: "/liga", label: "Liga" },
   { href: "/hall-of-fame", label: "Hall of Fame" },
-  { href: "/analyse", label: "Analyse" },
+  { href: "/analyse", label: "Analyseverktøy" },
 ];
 
 export const analysisEntries = [

@@ -34,17 +34,16 @@ function LigaInner() {
           <LiveIndicator gw={status.event_id} live />
         ) : (
           <p className="font-condensed text-xs tracking-[0.22em] text-muted uppercase">
-            {status?.event_status_label || "Liga"}
+            {status
+              ? status.provisional
+                ? `Runde ${status.event_id} · poengene er foreløpige`
+                : `Runde ${status.event_id}`
+              : "Liga"}
           </p>
         )}
         <h1 className="mt-3 font-serif text-4xl leading-none text-ink sm:text-5xl">Liga</h1>
         <p className="mt-3 max-w-2xl text-base leading-7 text-muted">
           Samme konkurranse, tre blikk.
-          {status
-            ? status.provisional
-              ? ` Runde ${status.event_id} pågår — plasseringene er foreløpige.`
-              : ` Runde ${status.event_id} er ferdig.`
-            : ""}
         </p>
 
         <QueryTabs
@@ -52,7 +51,7 @@ function LigaInner() {
           fallback="standings"
           tabs={[
             { id: "standings", label: "Sammenlagt" },
-            { id: "live", label: "Live" },
+            { id: "live", label: status ? `Runde ${status.event_id}` : "Runde" },
             { id: "month", label: "Måned" },
           ]}
         />
@@ -64,9 +63,11 @@ function LigaInner() {
             {live.data ? (
               <>
                 <p className="mb-4 text-sm text-muted">
-                  {live.data.status.provisional
+                  {live.data.status.is_live
                     ? "Slik det ligger an akkurat nå. Runden er ikke ferdig."
-                    : "Runden er ferdig."}
+                    : live.data.status.provisional
+                      ? "Kampene er ferdige. Poengene kan fortsatt flytte seg med bonus."
+                      : "Runden er ferdig."}
                 </p>
                 <div className="mb-6">
                   <MatchStrip fixtures={live.data.fixtures} />
@@ -76,6 +77,7 @@ function LigaInner() {
                   status={live.data.status}
                   highlight={entryId}
                   remaining
+                  sortable
                 />
               </>
             ) : null}
@@ -144,7 +146,7 @@ function LigaInner() {
             {league.loading && !league.data ? <LoadingBlock /> : null}
             {league.error && !league.data ? <ApiState message={league.error} /> : null}
             {league.data ? (
-              <LeagueTable rows={league.data.table} status={league.data.status} highlight={entryId} />
+              <LeagueTable rows={league.data.table} status={league.data.status} highlight={entryId} sortable />
             ) : null}
           </div>
         )}

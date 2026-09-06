@@ -6,7 +6,7 @@ export default function AnalyseHubPage() {
     <main className="flex-1 bg-paper">
       <div className="mx-auto max-w-[1100px] px-4 py-16 sm:px-6">
         <p className="font-condensed text-xs tracking-[0.22em] text-muted uppercase">Verktøy</p>
-        <h1 className="mt-3 font-serif text-4xl leading-none sm:text-5xl">Analyse</h1>
+        <h1 className="mt-3 font-serif text-4xl leading-none sm:text-5xl">Analyseverktøy</h1>
         <p className="mt-5 max-w-xl text-lg leading-8 text-muted">
           Ett verktøy om gangen.
         </p>

@@ -26,7 +26,7 @@ export function SiteFooter() {
           </Link>
           {" · "}
           <Link href="/analyse" className="text-paper/90 hover:text-paper">
-            Analyse
+            Analyseverktøy
           </Link>
         </p>
       </div>

@@ -50,7 +50,7 @@ export default function ManagerPage() {
           ← Tilbake til tabellen
         </Link>
         <p className="mt-6 font-condensed text-xs tracking-[0.22em] text-live uppercase">
-          {data.is_live ? "Live" : data.provisional ? "Foreløpig" : "Manager"}
+          {data.is_live ? `Live · runde ${data.event_id}` : data.provisional ? `Runde ${data.event_id} · foreløpig` : "Manager"}
         </p>
         <h1 className="mt-2 font-serif text-4xl leading-none sm:text-5xl">{m.manager}</h1>
         <p className="mt-3 text-lg text-muted">{m.team}</p>
@@ -100,11 +100,14 @@ export default function ManagerPage() {
         ) : null}
 
         <h2 className="mt-12 font-serif text-3xl">
-          Laget · GW{data.event_id}
-          {data.provisional ? " · live" : ""}
+          Laget · Runde {data.event_id}
+          {data.is_live ? " · live" : data.provisional ? " · foreløpig" : ""}
         </h2>
         <p className="mt-2 text-sm text-muted">
           {m.players_remaining} spillere gjenstår · {m.chip || "ingen sjetong"} · {m.hits ? `${m.hits} i trekk` : "ingen trekk"}
+          {data.squad.xi.some((p) => p.autosub_in) || data.squad.bench.some((p) => p.autosub_in)
+            ? " · autosub er beregnet så langt FPL-dataene tillater"
+            : ""}
         </p>
         <div className="mt-6">
           <SquadPitch squad={data.squad} />
@@ -125,25 +128,14 @@ export default function ManagerPage() {
           </Link>
         </div>
 
-        <h2 className="mt-14 font-serif text-3xl">Form</h2>
-        <div className="mt-4 flex flex-wrap gap-3">
-          {data.form.map((row) => (
-            <div key={row.event} className="border border-rule px-3 py-2">
-              <p className="font-condensed text-[10px] tracking-[0.14em] text-muted uppercase">
-                GW{row.event}
-                {row.is_live ? " · live" : ""}
-              </p>
-              <p className="font-condensed text-2xl">{row.points}</p>
-              <p className="text-xs text-muted">{place(row.league_rank)} i Lofthus</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-14 grid gap-10 lg:grid-cols-2">
+        <div className="mt-14 grid gap-10 lg:grid-cols-12">
+          <div className="space-y-12 lg:col-span-5">
           <section>
             <h2 className="font-serif text-3xl">Lofthus-karriere</h2>
             <p className="mt-2 text-sm text-muted">
-              Dokumenterte meritter i Lofthus. FPL-historikk er noe annet.
+              {data.lofthus_membership?.length
+                ? `Første sesong i ligaen: ${[...data.lofthus_membership].map((r) => r.season).filter(Boolean).sort()[0]}`
+                : "Første sesong i ligaen er ikke registrert."}
             </p>
             <dl className="mt-5 grid grid-cols-2 gap-4">
               <div>
@@ -155,6 +147,7 @@ export default function ManagerPage() {
               <div>
                 <dt className="text-xs text-muted">Sammenlagtseier</dt>
                 <dd className="font-condensed text-2xl">{merits.league_gold}</dd>
+                <dd className="text-sm text-muted">{merits.league_seasons?.join(", ") || ""}</dd>
               </div>
               <div>
                 <dt className="text-xs text-muted">Cupgull</dt>
@@ -163,6 +156,12 @@ export default function ManagerPage() {
               <div>
                 <dt className="text-xs text-muted">Månedsseiere</dt>
                 <dd className="font-condensed text-2xl">{merits.monthly_gold}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted">Månedspodier</dt>
+                <dd className="font-condensed text-2xl">
+                  {merits.monthly_gold + merits.monthly_silver + merits.monthly_bronze}
+                </dd>
               </div>
             </dl>
             {data.lofthus_overall.length ? (
@@ -173,11 +172,9 @@ export default function ManagerPage() {
                   </li>
                 ))}
               </ul>
-            ) : (
-              <p className="mt-4 text-sm text-muted">Ingen registrerte sesongplasseringer.</p>
-            )}
+            ) : null}
             {data.lofthus_membership?.length ? (
-              <ul className="mt-4 text-sm">
+              <ul className="mt-4 text-sm text-muted">
                 {data.lofthus_membership.map((row) => (
                   <li key={row.season}>
                     {row.season}
@@ -191,14 +188,13 @@ export default function ManagerPage() {
           <section>
             <h2 className="font-serif text-3xl">FPL-karriere</h2>
             <p className="mt-2 text-sm text-muted">
-              Offisiell Fantasy Premier League-historikk for denne entryen. Antall
-              FPL-sesonger er ikke det samme som Lofthus-sesonger.
+              Offisiell Fantasy Premier League-historikk for denne entryen.
             </p>
             {data.fpl_season?.total_points ? (
               <p className="mt-4 text-sm">
                 Denne FPL-sesongen: {data.fpl_season.total_points} poeng
                 {data.fpl_season.overall_rank
-                  ? ` · OR ${data.fpl_season.overall_rank.toLocaleString("nb-NO")}`
+                  ? ` · overall ${data.fpl_season.overall_rank.toLocaleString("nb-NO")}`
                   : ""}
               </p>
             ) : null}
@@ -206,12 +202,12 @@ export default function ManagerPage() {
               <ul className="mt-4 text-sm">
                 {data.chips.map((c) => (
                   <li key={`${c.chip}-${c.event}`}>
-                    Sjetong {c.chip} · {c.gw}
+                    {c.chip} · {c.gw}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="mt-4 text-sm text-muted">Ingen registrerte FPL-sjetonger ennå.</p>
+              <p className="mt-4 text-sm text-muted">Ingen sjetonger brukt ennå.</p>
             )}
             {data.fpl_career.length ? (
               <table className="mt-4 w-full text-left text-sm">
@@ -219,7 +215,7 @@ export default function ManagerPage() {
                   <tr className="border-b border-ink font-condensed text-[11px] tracking-[0.14em] text-muted uppercase">
                     <th className="py-2">Sesong</th>
                     <th className="py-2 text-right">Poeng</th>
-                    <th className="py-2 text-right">OR</th>
+                    <th className="py-2 text-right">Overall</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -237,6 +233,23 @@ export default function ManagerPage() {
             ) : (
               <p className="mt-4 text-sm text-muted">Ingen FPL-historikk lastet ennå.</p>
             )}
+          </section>
+          </div>
+
+          <section className="lg:col-span-7">
+            <h2 className="font-serif text-3xl">Form</h2>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {data.form.map((row) => (
+                <div key={row.event} className="border border-rule px-3 py-2">
+                  <p className="font-condensed text-[10px] tracking-[0.14em] text-muted uppercase">
+                    GW{row.event}
+                    {row.is_live ? " · live" : ""}
+                  </p>
+                  <p className="font-condensed text-2xl">{row.points}</p>
+                  <p className="text-xs text-muted">{place(row.league_rank)} i Lofthus</p>
+                </div>
+              ))}
+            </div>
           </section>
         </div>
       </div>
