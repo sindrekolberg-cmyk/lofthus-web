@@ -34,8 +34,7 @@ export function MinLofthus({ managers, status, stories = [] }: Props) {
               {me ? me.manager : "Velg deg selv"}
             </h2>
             <p className="mt-2 max-w-xl text-sm leading-6 text-muted">
-              Virker for alle i ligaen, ikke bare topp 5. Søk på manager, lag
-              eller entry.
+              Virker for alle i ligaen. Søk på manager eller lag.
             </p>
           </div>
           <div className="w-full max-w-sm">

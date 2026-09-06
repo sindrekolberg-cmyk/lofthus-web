@@ -26,7 +26,7 @@ function CompareInner() {
   return (
     <AnalysisShell
       kicker="Side om side"
-      title="Compare"
+      title="Sammenlign"
       intro="Bred sammenligning av to managere. Rivalradar er live-duellen."
     >
       <div className="grid gap-4 sm:grid-cols-2">
@@ -64,15 +64,15 @@ function CompareInner() {
         <>
           <dl className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-4">
             <div>
-              <dt className="text-xs text-muted">Total gap</dt>
+              <dt className="text-xs text-muted">Avstand totalt</dt>
               <dd className="font-condensed text-3xl">{signed(data.total_gap)}</dd>
             </div>
             <div>
-              <dt className="text-xs text-muted">GW gap</dt>
+              <dt className="text-xs text-muted">Denne runden</dt>
               <dd className="font-condensed text-3xl">{signed(data.gw_gap)}</dd>
             </div>
             <div>
-              <dt className="text-xs text-muted">Plassgap</dt>
+              <dt className="text-xs text-muted">Plassering</dt>
               <dd className="font-condensed text-3xl">{signed(data.rank_gap)}</dd>
             </div>
             <div>
@@ -82,7 +82,7 @@ function CompareInner() {
               </dd>
             </div>
           </dl>
-          <p className="mt-3 text-sm text-muted">Squad overlap: {data.overlap}</p>
+          <p className="mt-3 text-sm text-muted">Felles spillere: {data.overlap}</p>
           <div className="mt-8 grid gap-8 sm:grid-cols-2">
             {[data.a, data.b].map((m, i) => (
               <section key={m.entry}>

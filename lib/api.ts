@@ -7,6 +7,7 @@ import type {
   LivePayload,
   ManagerOption,
   ManagerProfile,
+  MatchImpact,
   MonthPayload,
   PlayerCard,
   RivalPayload,
@@ -51,7 +52,7 @@ export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
   const base = getApiBase();
   if (!base) {
     throw new ApiError(
-      "NEXT_PUBLIC_API_BASE_URL mangler. Sett backend-URL i Vercel før produksjon.",
+      "Kunne ikke hente live-data akkurat nå. Prøv igjen om litt.",
       0,
     );
   }
@@ -64,7 +65,7 @@ export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
       cache: "no-store",
     });
   } catch {
-    throw new ApiError("Backend er ikke tilgjengelig.", 0);
+    throw new ApiError("Kunne ikke hente live-data akkurat nå.", 0);
   }
   if (!res.ok) {
     let detail = `API-feil (${res.status})`;
@@ -85,6 +86,7 @@ export const api = {
   home: () => apiGet<HomePayload>("/api/home"),
   league: () => apiGet<LeaguePayload>("/api/league"),
   live: () => apiGet<LivePayload>("/api/live"),
+  match: (id: number) => apiGet<MatchImpact>(`/api/live/matches/${id}`),
   month: () => apiGet<MonthPayload>("/api/month"),
   managers: () => apiGet<{ managers: ManagerOption[] }>("/api/managers"),
   manager: (entry: number) => apiGet<ManagerProfile>(`/api/managers/${entry}`),

@@ -12,7 +12,7 @@ export default function OddsPage() {
     <AnalysisShell
       kicker="Marked"
       title="Odds"
-      intro="Før-sesongprior oppdatert med live tabell. Dette er ikke bettingråd."
+      intro="Før-sesongen oppdatert med tabellen. Dette er ikke veddemålstips."
     >
       {loading && !data ? <LoadingBlock /> : null}
       {error && !data ? <ApiState message={error} /> : null}

@@ -19,10 +19,10 @@ export function AnalysisShell({
           href="/analyse"
           className="font-condensed text-[12px] tracking-[0.16em] uppercase text-muted hover:text-ink"
         >
-          ← Analysehub
+          ← Verktøy
         </Link>
         <p className="mt-6 font-condensed text-xs tracking-[0.22em] text-live uppercase">{kicker}</p>
-        <h1 className="mt-2 font-serif text-5xl leading-none sm:text-6xl">{title}</h1>
+        <h1 className="mt-2 font-serif text-4xl leading-none sm:text-5xl">{title}</h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-muted">{intro}</p>
         <div className="mt-10">{children}</div>
       </div>

@@ -13,8 +13,8 @@ export default function ChipsPage() {
   return (
     <AnalysisShell
       kicker="Timing"
-      title="Chips"
-      intro="FPL-chips denne runden. Dette er sesongdata fra FPL, ikke Lofthus-medlemskap."
+      title="Sjetonger"
+      intro="Wildcard, benkboost og de som fortsatt venter."
     >
       {loading && !data ? <LoadingBlock /> : null}
       {error && !data ? <ApiState message={error} /> : null}

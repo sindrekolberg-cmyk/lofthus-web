@@ -9,9 +9,10 @@ type Props = {
   status: Status | null;
   compact?: boolean;
   highlight?: number;
+  remaining?: boolean;
 };
 
-export function LeagueTable({ rows, status, compact, highlight }: Props) {
+export function LeagueTable({ rows, status, compact, highlight, remaining }: Props) {
   const provisional = Boolean(status?.provisional);
 
   return (
@@ -25,6 +26,7 @@ export function LeagueTable({ rows, status, compact, highlight }: Props) {
             {!compact ? <th className="hidden py-3 pr-3 font-medium md:table-cell">Kaptein</th> : null}
             <th className="py-3 pr-3 text-right font-medium">GW</th>
             <th className="py-3 pr-3 text-right font-medium">Total</th>
+            {remaining ? <th className="hidden py-3 pr-3 text-right font-medium sm:table-cell">Igjen</th> : null}
             <th className="py-3 text-right font-medium">+/-</th>
           </tr>
         </thead>
@@ -58,6 +60,11 @@ export function LeagueTable({ rows, status, compact, highlight }: Props) {
               <td className="py-3 pr-3 text-right font-condensed text-lg font-semibold tabular-nums">
                 {row.total}
               </td>
+              {remaining ? (
+                <td className="hidden py-3 pr-3 text-right font-condensed tabular-nums text-muted sm:table-cell">
+                  {row.players_remaining}
+                </td>
+              ) : null}
               <td
                 className={`py-3 text-right font-condensed text-lg tabular-nums ${
                   row.rank_change > 0

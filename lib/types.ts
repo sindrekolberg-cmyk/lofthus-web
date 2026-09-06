@@ -169,6 +169,29 @@ export type LeaguePayload = {
   table: ManagerRow[];
 };
 
+export type MatchImpact = {
+  fixture: LiveEvent;
+  players: (PlayerCard & {
+    owners: {
+      entry: number;
+      manager: string;
+      multiplier: number;
+      is_captain: boolean;
+      is_triple_captain: boolean;
+    }[];
+    differential: boolean;
+  })[];
+  winners: { entry: number; manager: string; swing: number }[];
+  losers: { entry: number; manager: string; swing: number }[];
+  biggest_winner: { entry: number; manager: string; swing: number } | null;
+  biggest_loser: { entry: number; manager: string; swing: number } | null;
+  owners: number;
+  captains: number;
+  provisional: boolean;
+  is_live: boolean;
+  event_id: number;
+};
+
 export type LivePayload = {
   status: Status;
   table: ManagerRow[];
@@ -348,7 +371,7 @@ export const analysisEntries = [
     href: "/analyse/rivalradar",
     kicker: "Hvem jakter deg",
     title: "Rivalradar",
-    line: "Live-gap, kapteiner, heia på og håp på blank.",
+    line: "Live-avstand, kapteiner, heia på og håp på blank.",
   },
   {
     href: "/analyse/kaptein",
@@ -359,14 +382,14 @@ export const analysisEntries = [
   {
     href: "/analyse/ownership",
     kicker: "Feltet",
-    title: "Ownership",
+    title: "Eierskap",
     line: "Hvem alle har, og hvem som splittet ligaen.",
   },
   {
     href: "/analyse/chips",
     kicker: "Timing",
-    title: "Chips",
-    line: "Wildcard, bench boost og de som fortsatt venter.",
+    title: "Sjetonger",
+    line: "Wildcard, benkboost og de som fortsatt venter.",
   },
   {
     href: "/analyse/differensialer",
@@ -377,13 +400,13 @@ export const analysisEntries = [
   {
     href: "/analyse/compare",
     kicker: "Side om side",
-    title: "Compare",
+    title: "Sammenlign",
     line: "To managere. Bred sammenligning, ikke live-duell.",
   },
   {
     href: "/analyse/odds",
     kicker: "Marked",
     title: "Odds",
-    line: "Før-sesongprior oppdatert med live tabell — ikke gamblingtips.",
+    line: "Før-sesongen oppdatert med tabellen — ikke veddemålstips.",
   },
 ];

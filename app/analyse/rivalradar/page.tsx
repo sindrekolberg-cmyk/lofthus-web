@@ -40,7 +40,7 @@ function RivalInner() {
     <AnalysisShell
       kicker="Live-duell"
       title="Rivalradar"
-      intro="Strategisk verktøy mot den du jakter — eller den som jakter deg. Compare er noe annet."
+      intro="Mot den du jakter — eller den som jakter deg. Sammenlign er noe annet."
     >
       <div className="mb-6 max-w-sm">
         <ManagerSearch managers={options} />
@@ -117,15 +117,15 @@ function RivalInner() {
 
           <dl className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-5">
             <div>
-              <dt className="text-xs text-muted">Live gap</dt>
+              <dt className="text-xs text-muted">Live-avstand</dt>
               <dd className="font-condensed text-3xl">{signed(radar.live_gap)}</dd>
             </div>
             <div>
-              <dt className="text-xs text-muted">Total gap</dt>
+              <dt className="text-xs text-muted">Avstand totalt</dt>
               <dd className="font-condensed text-3xl">{signed(radar.total_gap)}</dd>
             </div>
             <div>
-              <dt className="text-xs text-muted">GW gap</dt>
+              <dt className="text-xs text-muted">Denne runden</dt>
               <dd className="font-condensed text-3xl">{signed(radar.gw_gap)}</dd>
             </div>
             <div>
@@ -178,7 +178,7 @@ function RivalInner() {
                     <li key={e.element} className="py-3">
                       <p className="font-serif text-xl">{e.headline}</p>
                       <p className="text-sm text-muted">
-                        {e.status_label} · {e.event_points} p · swing {signed(e.live_swing)}
+                        {e.status_label} · {e.event_points} p · utslag {signed(e.live_swing)}
                       </p>
                     </li>
                   ))
@@ -197,7 +197,7 @@ function RivalInner() {
                     <li key={e.element} className="py-3">
                       <p className="font-serif text-xl">{e.headline}</p>
                       <p className="text-sm text-muted">
-                        {e.status_label} · {e.event_points} p · swing {signed(e.live_swing)}
+                        {e.status_label} · {e.event_points} p · utslag {signed(e.live_swing)}
                       </p>
                     </li>
                   ))
@@ -219,7 +219,7 @@ function RivalInner() {
                       <th className="py-2">Fordel</th>
                       <th className="py-2">Spiller</th>
                       <th className="py-2">Status</th>
-                      <th className="py-2 text-right">Swing</th>
+                      <th className="py-2 text-right">Utslag</th>
                     </tr>
                   </thead>
                   <tbody>

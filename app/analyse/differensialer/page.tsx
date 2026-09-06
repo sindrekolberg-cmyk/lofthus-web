@@ -15,7 +15,7 @@ export default function DifferensialerPage() {
     <AnalysisShell
       kicker="Skjevt"
       title="Differensialer"
-      intro="Lavt eierskap og faktisk avkastning. Spillere som ikke har spilt, telles ikke som blank."
+      intro="Lavt eierskap og faktisk avkastning. Spillere som ikke har spilt, telles ikke med."
     >
       {loading && !data ? <LoadingBlock /> : null}
       {error && !data ? <ApiState message={error} /> : null}

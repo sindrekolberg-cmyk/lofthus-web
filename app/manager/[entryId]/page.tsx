@@ -52,7 +52,7 @@ export default function ManagerPage() {
         <p className="mt-6 font-condensed text-xs tracking-[0.22em] text-live uppercase">
           {data.is_live ? "Live" : data.provisional ? "Foreløpig" : "Manager"}
         </p>
-        <h1 className="mt-2 font-serif text-5xl leading-none sm:text-6xl">{m.manager}</h1>
+        <h1 className="mt-2 font-serif text-4xl leading-none sm:text-5xl">{m.manager}</h1>
         <p className="mt-3 text-lg text-muted">{m.team}</p>
         <button
           type="button"
@@ -104,7 +104,7 @@ export default function ManagerPage() {
           {data.provisional ? " · live" : ""}
         </h2>
         <p className="mt-2 text-sm text-muted">
-          {m.players_remaining} spillere gjenstår · {m.chip || "ingen chip"} · hits {m.hits}
+          {m.players_remaining} spillere gjenstår · {m.chip || "ingen sjetong"} · {m.hits ? `${m.hits} i trekk` : "ingen trekk"}
         </p>
         <div className="mt-6">
           <SquadPitch squad={data.squad} />
@@ -121,7 +121,7 @@ export default function ManagerPage() {
             href={`/analyse/compare?a=${m.entry}`}
             className="font-condensed text-[12px] tracking-[0.16em] uppercase hover:underline"
           >
-            Compare →
+            Sammenlign →
           </Link>
         </div>
 
@@ -143,25 +143,25 @@ export default function ManagerPage() {
           <section>
             <h2 className="font-serif text-3xl">Lofthus-karriere</h2>
             <p className="mt-2 text-sm text-muted">
-              Bare dokumenterte meritter i Lofthus Road Open. FPL-historikk er noe annet.
+              Dokumenterte meritter i Lofthus. FPL-historikk er noe annet.
             </p>
             <dl className="mt-5 grid grid-cols-2 gap-4">
               <div>
                 <dt className="text-xs text-muted">Beste plassering</dt>
                 <dd className="font-condensed text-2xl">
-                  {data.lofthus_best_finish ? place(data.lofthus_best_finish) : "ukjent"}
+                  {data.lofthus_best_finish ? place(data.lofthus_best_finish) : "–"}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-muted">Ligatitler</dt>
+                <dt className="text-xs text-muted">Sammenlagtseier</dt>
                 <dd className="font-condensed text-2xl">{merits.league_gold}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted">Cup</dt>
+                <dt className="text-xs text-muted">Cupgull</dt>
                 <dd className="font-condensed text-2xl">{merits.cup_gold}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted">Månedstitler</dt>
+                <dt className="text-xs text-muted">Månedsseiere</dt>
                 <dd className="font-condensed text-2xl">{merits.monthly_gold}</dd>
               </div>
             </dl>
@@ -180,16 +180,12 @@ export default function ManagerPage() {
               <ul className="mt-4 text-sm">
                 {data.lofthus_membership.map((row) => (
                   <li key={row.season}>
-                    {row.season}: medlem
+                    {row.season}
                     {row.final_rank ? ` · ${row.final_rank}.` : ""}
                   </li>
                 ))}
               </ul>
-            ) : (
-              <p className="mt-4 text-sm text-muted">
-                Lofthus-medlemskap per sesong er ikke arkivert bakover i tid.
-              </p>
-            )}
+            ) : null}
           </section>
 
           <section>
@@ -210,12 +206,12 @@ export default function ManagerPage() {
               <ul className="mt-4 text-sm">
                 {data.chips.map((c) => (
                   <li key={`${c.chip}-${c.event}`}>
-                    Chip {c.chip} · {c.gw}
+                    Sjetong {c.chip} · {c.gw}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="mt-4 text-sm text-muted">Ingen registrerte FPL-chips ennå.</p>
+              <p className="mt-4 text-sm text-muted">Ingen registrerte FPL-sjetonger ennå.</p>
             )}
             {data.fpl_career.length ? (
               <table className="mt-4 w-full text-left text-sm">

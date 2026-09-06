@@ -7,6 +7,8 @@ import { api } from "@/lib/api";
 import { useLofthus } from "@/lib/useLofthus";
 import { ApiState, LoadingBlock } from "@/components/ApiState";
 import { LeagueTable } from "@/components/LeagueTable";
+import { LiveIndicator } from "@/components/LiveIndicator";
+import { MatchStrip } from "@/components/MatchStrip";
 import { QueryTabs } from "@/components/QueryTabs";
 import { useSelectedManager } from "@/lib/selected-manager";
 
@@ -28,14 +30,20 @@ function LigaInner() {
   return (
     <main className="flex-1 bg-paper">
       <div className="mx-auto max-w-[1400px] px-4 py-12 sm:px-6">
-        <p className="font-condensed text-xs tracking-[0.22em] text-live uppercase">
-          {status?.is_live ? "Live" : status?.event_status_label || "Liga"}
-        </p>
-        <h1 className="mt-3 font-serif text-5xl leading-none text-ink sm:text-6xl">Liga</h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-muted">
-          Tre blikk på samme konkurranse: sammenlagt, live og måned.
+        {status?.is_live ? (
+          <LiveIndicator gw={status.event_id} live />
+        ) : (
+          <p className="font-condensed text-xs tracking-[0.22em] text-muted uppercase">
+            {status?.event_status_label || "Liga"}
+          </p>
+        )}
+        <h1 className="mt-3 font-serif text-4xl leading-none text-ink sm:text-5xl">Liga</h1>
+        <p className="mt-3 max-w-2xl text-base leading-7 text-muted">
+          Samme konkurranse, tre blikk.
           {status
-            ? ` GW${status.event_id} er ${status.provisional ? "foreløpig" : "ferdig"}.`
+            ? status.provisional
+              ? ` Runde ${status.event_id} pågår — plasseringene er foreløpige.`
+              : ` Runde ${status.event_id} er ferdig.`
             : ""}
         </p>
 
@@ -45,7 +53,7 @@ function LigaInner() {
           tabs={[
             { id: "standings", label: "Sammenlagt" },
             { id: "live", label: "Live" },
-            { id: "month", label: month.data?.month_name || "Måned" },
+            { id: "month", label: "Måned" },
           ]}
         />
 
@@ -57,26 +65,17 @@ function LigaInner() {
               <>
                 <p className="mb-4 text-sm text-muted">
                   {live.data.status.provisional
-                    ? "Live-tabellen viser hvem som ligger an akkurat nå. Runden er ikke ferdig."
-                    : "Runden er ferdig. Dette er GW-poengene."}
+                    ? "Slik det ligger an akkurat nå. Runden er ikke ferdig."
+                    : "Runden er ferdig."}
                 </p>
-                <div className="mb-6 flex gap-4 overflow-x-auto pb-2">
-                  {live.data.fixtures.map((f) => (
-                    <div key={f.id} className="min-w-[9rem] border border-rule px-3 py-2">
-                      <p className="font-condensed text-sm">
-                        {f.home} {f.home_score ?? "–"}–{f.away_score ?? "–"} {f.away}
-                      </p>
-                      <p className="text-[11px] text-muted">
-                        {f.lofthus_headline || f.status_label}
-                        {f.lofthus_winner ? ` · ${f.lofthus_winner.manager}` : ""}
-                      </p>
-                    </div>
-                  ))}
+                <div className="mb-6">
+                  <MatchStrip fixtures={live.data.fixtures} />
                 </div>
                 <LeagueTable
-                  rows={live.data.gw_ranking.length ? live.data.gw_ranking : live.data.table}
+                  rows={live.data.table}
                   status={live.data.status}
                   highlight={entryId}
+                  remaining
                 />
               </>
             ) : null}
@@ -89,8 +88,7 @@ function LigaInner() {
               <>
                 <h2 className="font-serif text-3xl">{month.data.month_name || "Aktiv måned"}</h2>
                 <p className="mt-2 text-sm text-muted">
-                  Ny måned blir aktiv når første gameweek i den måneden går live — ikke når
-                  kalenderen skifter.
+                  Ny måned starter når første runde i måneden går live.
                 </p>
                 <div className="mt-6 overflow-x-auto">
                   <table className="w-full min-w-[520px] text-left">
@@ -122,7 +120,7 @@ function LigaInner() {
                     </tbody>
                   </table>
                 </div>
-                <h3 className="mt-12 font-serif text-2xl">Tidligere podier</h3>
+                <h3 className="mt-12 font-serif text-2xl">Tidligere månedsvinnere</h3>
                 <ul className="mt-4 divide-y divide-rule border-y border-rule">
                   {month.data.previous.map((row) => (
                     <li
@@ -132,9 +130,9 @@ function LigaInner() {
                       <span className="font-condensed text-sm sm:col-span-3">
                         {row.month} {row.season}
                       </span>
-                      <span className="sm:col-span-3">{row.winner || "ukjent"}</span>
-                      <span className="text-muted sm:col-span-3">{row.runner_up || "ukjent"}</span>
-                      <span className="text-muted sm:col-span-3">{row.third || "ukjent"}</span>
+                      <span className="sm:col-span-3">{row.winner || "ikke registrert"}</span>
+                      <span className="text-muted sm:col-span-3">{row.runner_up || ""}</span>
+                      <span className="text-muted sm:col-span-3">{row.third || ""}</span>
                     </li>
                   ))}
                 </ul>

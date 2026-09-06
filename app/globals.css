@@ -22,6 +22,26 @@ html {
   scroll-behavior: smooth;
 }
 
+.live-dot {
+  animation: live-dot 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot {
+    animation: none;
+  }
+}
+
+@keyframes live-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
 body {
   background: var(--color-paper);
   color: var(--color-ink);

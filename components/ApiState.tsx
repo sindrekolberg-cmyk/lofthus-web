@@ -5,7 +5,7 @@ type Props = {
 
 export function ApiState({
   title = "Lofthus venter på data",
-  message = "Backend er nede eller live-sannheten er ikke klar ennå.",
+  message = "Kunne ikke hente live-data akkurat nå. Prøv igjen om litt.",
 }: Props) {
   return (
     <div className="border border-rule bg-[#e7e1d4] px-5 py-6">
