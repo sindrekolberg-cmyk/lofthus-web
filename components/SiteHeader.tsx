@@ -98,7 +98,7 @@ export function SiteHeader() {
       </div>
 
       <EventBanner />
-      <HeaderPulse />
+      {pathname === "/" ? null : <HeaderPulse />}
     </header>
   );
 }

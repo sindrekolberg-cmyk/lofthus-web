@@ -38,5 +38,10 @@ test("homepage uses Topp 5 sammenlagt and API talkers", () => {
   const home = readFileSync(join(root, "components/HomePage.tsx"), "utf8");
   assert.match(home, /Topp 5 sammenlagt/);
   assert.match(home, /data\.popular/);
+  assert.match(home, /Hele ligaen/);
+  assert.match(home, /Hele måneden/);
+  assert.doesNotMatch(home, /MinLofthus/);
+  assert.doesNotMatch(home, /Velg deg selv/);
   assert.doesNotMatch(home, /isThisRoundPulse/);
+  assert.doesNotMatch(home, /href="\/analyse\/rivalradar"/);
 });

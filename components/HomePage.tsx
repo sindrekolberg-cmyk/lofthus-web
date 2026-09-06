@@ -7,7 +7,7 @@ import { moveLabel, storyHref, storyCategory } from "@/lib/format";
 import { ApiState, LoadingBlock } from "@/components/ApiState";
 import { LeagueTable } from "@/components/LeagueTable";
 import { LiveIndicator } from "@/components/LiveIndicator";
-import { MinLofthus } from "@/components/MinLofthus";
+import { MatchStrip } from "@/components/MatchStrip";
 import { PlayerImage } from "@/components/PlayerImage";
 import { useSelectedManager } from "@/lib/selected-manager";
 
@@ -41,8 +41,10 @@ export function HomePage() {
   const climbers = data.movers?.climbers || [];
   const fallers = data.movers?.fallers || [];
   const talkers = data.popular || [];
+  const monthName = data.month.name || "Måned";
   const pulseLine = pulse?.headline
     || (leader ? `${leader.manager} leder · ${leader.total} p` : "Det skjer i Lofthus");
+  const fixtures = data.events?.length ? data.events : data.pulse?.fixtures || [];
 
   return (
     <main className="flex-1">
@@ -66,16 +68,6 @@ export function HomePage() {
                 {me.players_remaining != null ? ` · ${me.players_remaining} spillere gjenstår` : ""}
               </p>
             ) : null}
-
-            <div className="mt-4 flex items-end justify-between">
-              <h2 className="font-condensed text-[11px] tracking-[0.16em] text-muted uppercase">Topp 5 sammenlagt</h2>
-              <Link href="/liga" className="font-condensed text-[11px] tracking-[0.14em] uppercase text-muted hover:text-ink">
-                Hele ligaen →
-              </Link>
-            </div>
-            <div className="mt-2">
-              <LeagueTable rows={data.top5} status={status} compact highlight={entryId} />
-            </div>
           </div>
 
           <aside className="lg:col-span-4">
@@ -101,14 +93,81 @@ export function HomePage() {
         </div>
       </section>
 
+      {fixtures.length ? (
+        <section className="border-b border-rule bg-white/80">
+          <div className="mx-auto max-w-[1400px] px-4 py-2.5 sm:px-6">
+            <MatchStrip fixtures={fixtures} />
+          </div>
+        </section>
+      ) : null}
+
       {polled.error ? (
         <div className="mx-auto max-w-[1400px] px-4 pt-6 sm:px-6">
           <ApiState title="Viser siste kjente data" message={polled.error} />
         </div>
       ) : null}
 
-      <div className="mx-auto grid max-w-[1400px] gap-8 px-4 py-8 sm:px-6 lg:grid-cols-12">
-        <section className="lg:col-span-12">
+      <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6">
+        <div className="grid gap-8 lg:grid-cols-12">
+          <section className="lg:col-span-6">
+            <div className="flex items-end justify-between">
+              <h2 className="font-condensed text-[11px] tracking-[0.16em] text-muted uppercase">Topp 5 sammenlagt</h2>
+              <Link href="/liga" className="font-condensed text-[11px] tracking-[0.14em] uppercase text-muted hover:text-ink">
+                Hele ligaen →
+              </Link>
+            </div>
+            <div className="mt-2">
+              <LeagueTable rows={data.top5} status={status} compact highlight={entryId} />
+            </div>
+          </section>
+
+          <section className="lg:col-span-6">
+            <div className="flex items-end justify-between">
+              <h2 className="font-condensed text-[11px] tracking-[0.16em] text-muted uppercase">{monthName}</h2>
+              <Link href="/liga?view=month" className="font-condensed text-[11px] tracking-[0.14em] uppercase text-muted hover:text-ink">
+                Hele måneden →
+              </Link>
+            </div>
+            <ol className="mt-2">
+              {data.month.table.map((row) => (
+                <li
+                  key={row.entry}
+                  className={`flex justify-between border-b border-rule py-1.5 text-sm ${row.entry === entryId ? "font-medium" : ""}`}
+                >
+                  <Link href={`/manager/${row.entry}`} className="hover:underline">
+                    {row.month_rank}. {row.manager}
+                  </Link>
+                  <span className="font-condensed tabular-nums">{row.month_points}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        </div>
+
+        <section className="mt-10">
+          <h2 className="font-serif text-3xl">Snakkiser</h2>
+          {snakkiser.length ? (
+            <ul className="mt-4 divide-y divide-rule border-y border-rule">
+              {snakkiser.map((s) => (
+                <li key={s.key}>
+                  <Link href={storyHref(s)} className="flex items-baseline gap-4 py-3 hover:bg-black/[0.02]">
+                    <span className="w-28 shrink-0 font-condensed text-[11px] tracking-[0.16em] text-live uppercase">
+                      {storyCategory(s.category)}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block font-serif text-lg leading-snug sm:text-xl">{s.headline}</span>
+                      {s.meta ? <span className="mt-0.5 block text-sm text-muted">{s.meta}</span> : null}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm text-muted">Ingen sterke historier akkurat nå.</p>
+          )}
+        </section>
+
+        <section className="mt-10">
           <h2 className="font-serif text-2xl">Største utslag</h2>
           <p className="mt-1 text-sm text-muted">
             {status.provisional ? "Foreløpig endring akkurat nå" : "Etter ferdig runde"}
@@ -134,57 +193,7 @@ export function HomePage() {
             </ul>
           </div>
         </section>
-
-        <section className="lg:col-span-7">
-          <h2 className="font-serif text-2xl">Snakkiser</h2>
-          <ul className="mt-3 divide-y divide-rule border-y border-rule">
-            {snakkiser.map((s) => (
-              <li key={s.key}>
-                <Link href={storyHref(s)} className="flex items-baseline gap-3 py-2 hover:bg-black/[0.02]">
-                  <span className="w-28 shrink-0 font-condensed text-[10px] tracking-[0.14em] text-muted uppercase">
-                    {storyCategory(s.category)}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-sm leading-snug">{s.headline}</span>
-                    {s.meta ? <span className="block text-xs text-muted">{s.meta}</span> : null}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="lg:col-span-5">
-          <h2 className="font-serif text-2xl">{data.month.name || "Måned"}</h2>
-          <ol className="mt-3">
-            {data.month.table.map((row) => (
-              <li key={row.entry} className="flex justify-between border-b border-rule py-1.5 text-sm">
-                <Link href={`/manager/${row.entry}`} className="hover:underline">
-                  {row.month_rank}. {row.manager}
-                </Link>
-                <span className="font-condensed tabular-nums">{row.month_points}</span>
-              </li>
-            ))}
-          </ol>
-          <Link href="/liga?view=month" className="mt-3 inline-block font-condensed text-[12px] tracking-[0.14em] uppercase text-muted hover:text-ink">
-            Hele måneden →
-          </Link>
-          <p className="mt-6 font-condensed text-[11px] tracking-[0.16em] text-muted uppercase">Analyse</p>
-          <ul className="mt-2 space-y-1 text-sm">
-            <li>
-              <Link href="/analyse/rivalradar" className="hover:underline">Rivalradar</Link>
-            </li>
-            <li>
-              <Link href="/analyse/differensialer" className="hover:underline">Differensialer</Link>
-            </li>
-            <li>
-              <Link href="/analyse/kaptein" className="hover:underline">Kapteiner</Link>
-            </li>
-          </ul>
-        </section>
       </div>
-
-      <MinLofthus managers={data.managers} status={status} stories={data.news} />
     </main>
   );
 }
