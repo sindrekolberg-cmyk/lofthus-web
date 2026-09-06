@@ -12,6 +12,7 @@ import type {
   PlayerCard,
   RivalPayload,
   Status,
+  TransferStrategyPayload,
 } from "./types";
 
 function configuredBase() {
@@ -118,6 +119,26 @@ export const api = {
     ),
   analysisDifferentials: () =>
     apiGet<{ players: PlayerCard[] }>("/api/analysis/differentials"),
+  analysisTransfers: (params: {
+    entry_id: number;
+    strategy: string;
+    risk: number;
+    horizon: number;
+    target?: string;
+    rival_id?: number;
+    position?: string;
+  }) => {
+    const q = new URLSearchParams({
+      entry_id: String(params.entry_id),
+      strategy: params.strategy,
+      risk: String(params.risk),
+      horizon: String(params.horizon),
+      target: params.target || "",
+      rival_id: String(params.rival_id || 0),
+      position: params.position || "all",
+    });
+    return apiGet<TransferStrategyPayload>(`/api/analysis/transfers?${q}`);
+  },
   odds: () =>
     apiGet<{
       rows: {

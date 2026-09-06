@@ -339,6 +339,74 @@ export type ComparePayload = {
   provisional: boolean;
 };
 
+export type TransferPick = {
+  element: number;
+  player: string;
+  club: string;
+  position: string;
+  price: number;
+  image_url?: string;
+  fixtures: string[];
+  league_ownership_pct: number;
+  league_owners: number;
+  league_size: number;
+  target_cohort_ownership_pct: number;
+  target_cohort_owners: number;
+  target_cohort_size: number;
+  target_cohort_non_owner_count: number;
+  global_ownership_pct?: number;
+  strategy_score: number;
+  projection_index: number;
+  relative_upside: string;
+  nedsiderisiko: string;
+  risk: string;
+  strategic_value: string;
+  datagrunnlag: string;
+  why: string[];
+  news?: string;
+  budget?: { status: string; label: string };
+};
+
+export type TransferStrategyPayload = {
+  ok: boolean;
+  projection_source: string;
+  strategy: { id: string; label: string; blurb: string; risk: number; horizon: number; target: string; position: string };
+  manager: { entry: number; manager: string; team: string; rank: number; total: number; bank: number | null; chip: string };
+  context: {
+    league_rank: number;
+    league_size: number;
+    points_gap: number;
+    gap_to_top10: number;
+    rounds_remaining: number;
+    target_cohort: { label: string; size: number };
+    month_name: string;
+    rival_id: number | null;
+    chasing_rival: boolean;
+    summary: string;
+  };
+  recommendations: TransferPick[];
+  safe: TransferPick[];
+  aggressive: TransferPick[];
+  differentials: TransferPick[];
+  sell_candidates: {
+    element: number;
+    player: string;
+    club: string;
+    position: string;
+    why: string[];
+    sell_score: number;
+  }[];
+  pairs: {
+    out: { element: number; player: string; club: string };
+    inn: { element: number; player: string; club: string };
+    budget: { status: string; label: string };
+    why: string[];
+  }[];
+  why_not: { element: number; player: string; line: string }[];
+  compare_modes: { element: number; player: string; scores: Record<string, number> }[];
+  warnings: string[];
+};
+
 export type HistoryPayload = {
   overall: {
     season: string;
@@ -404,6 +472,12 @@ export const bottomNav = [
 ];
 
 export const analysisEntries = [
+  {
+    href: "/analyse/transferstrategi",
+    kicker: "Bytter",
+    title: "Transferstrategi",
+    line: "Råd ut fra målet ditt — ikke en generell topp-11.",
+  },
   {
     href: "/analyse/rivalradar",
     kicker: "Hvem jakter deg",
