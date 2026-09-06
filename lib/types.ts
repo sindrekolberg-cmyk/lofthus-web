@@ -202,9 +202,11 @@ export type MatchImpact = {
     owners: {
       entry: number;
       manager: string;
+      team?: string;
       multiplier: number;
       is_captain: boolean;
       is_triple_captain: boolean;
+      on_bench?: boolean;
     }[];
     differential: boolean;
   })[];
@@ -214,6 +216,7 @@ export type MatchImpact = {
   biggest_loser: { entry: number; manager: string; swing: number } | null;
   owners: number;
   captains: number;
+  triple_captains?: number;
   provisional: boolean;
   is_live: boolean;
   event_id: number;
