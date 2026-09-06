@@ -38,22 +38,6 @@ export function HomePage() {
 
   const status = data.status;
   const leader = data.top5[0];
-  const liveLead =
-    status.is_live && leader
-      ? leader.rank_change > 0
-        ? `${leader.manager} har tatt over tabelltoppen live`
-        : `${leader.manager} ligger an til tabelltoppen`
-      : status.provisional && leader
-        ? `${leader.manager} leder etter GW${status.event_id}`
-        : data.hero?.story?.headline || "Det skjer i Lofthus";
-  const liveFacts =
-    leader
-      ? `${leader.total} poeng${
-          leader.rank_change
-            ? ` · ${status.provisional ? "foreløpig" : ""} ${leader.rank_change > 0 ? "opp" : "ned"} ${Math.abs(leader.rank_change)} plasser`.replace("  ", " ")
-            : ""
-        }`
-      : `${status.league_size} managere`;
   const thisRound = data.news.filter(
     (s) => !s.source_event || s.source_event === status.event_id,
   );
@@ -80,18 +64,31 @@ export function HomePage() {
                 : `Runde ${status.event_id} · ${status.event_status_label}`}
             </p>
           )}
-          <h1 className="mt-2 max-w-3xl font-serif text-[1.65rem] leading-[1.12] text-ink sm:text-[2.1rem]">
-            {liveLead}
-          </h1>
-          <p className="mt-2 text-sm text-muted">{liveFacts}</p>
-          <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 font-condensed text-sm">
+          <h1 className="sr-only">Lofthus Road Open</h1>
+          <dl className="mt-3 flex flex-wrap gap-x-8 gap-y-2 font-condensed text-sm">
+            <div>
+              <dt className="text-[10px] tracking-[0.16em] text-muted uppercase">Leder</dt>
+              <dd className="text-base">
+                {leader ? (
+                  <Link href={`/manager/${leader.entry}`} className="hover:underline">
+                    {leader.manager}
+                  </Link>
+                ) : (
+                  "–"
+                )}
+                {leader ? (
+                  <span className="ml-2 tabular-nums text-muted">
+                    {leader.total} p
+                    {leader.rank_change
+                      ? ` · ${moveLabel(leader.rank_change, status.provisional)}`
+                      : ""}
+                  </span>
+                ) : null}
+              </dd>
+            </div>
             <div>
               <dt className="text-[10px] tracking-[0.16em] text-muted uppercase">Kamper i spill</dt>
               <dd className="text-lg tabular-nums">{liveMatches}</dd>
-            </div>
-            <div>
-              <dt className="text-[10px] tracking-[0.16em] text-muted uppercase">Ledelse</dt>
-              <dd className="text-lg tabular-nums">{leader ? `${leader.total} p` : "–"}</dd>
             </div>
             <div>
               <dt className="text-[10px] tracking-[0.16em] text-muted uppercase">Størst løft</dt>
