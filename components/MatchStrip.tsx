@@ -2,34 +2,23 @@
 
 import { useCallback, useState } from "react";
 import { api } from "@/lib/api";
+import { useLofthus } from "@/lib/useLofthus";
 import { signed, ownersLabel } from "@/lib/format";
-import type { LiveEvent, MatchImpact } from "@/lib/types";
+import type { LiveEvent } from "@/lib/types";
 import { MatchDetail } from "@/components/MatchDetail";
 
 export function MatchStrip({ fixtures }: { fixtures: LiveEvent[] }) {
   const [openId, setOpenId] = useState<number | null>(null);
-  const [detail, setDetail] = useState<MatchImpact | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const match = useLofthus(openId != null ? ["match", openId] : null, () => api.match(openId as number), {
+    live: true,
+  });
 
-  const open = useCallback(async (fixture: LiveEvent) => {
+  const open = useCallback((fixture: LiveEvent) => {
     setOpenId(fixture.id);
-    setLoading(true);
-    setError(null);
-    try {
-      setDetail(await api.match(fixture.id));
-    } catch (err) {
-      setDetail(null);
-      setError(err instanceof Error ? err.message : "Kunne ikke hente kampen akkurat nå.");
-    } finally {
-      setLoading(false);
-    }
   }, []);
 
   const close = useCallback(() => {
     setOpenId(null);
-    setDetail(null);
-    setError(null);
   }, []);
 
   if (!fixtures.length) return null;
@@ -60,7 +49,7 @@ export function MatchStrip({ fixtures }: { fixtures: LiveEvent[] }) {
         ))}
       </div>
       {openId != null ? (
-        <MatchDetail data={detail} loading={loading} error={error} onClose={close} />
+        <MatchDetail data={match.data} loading={match.loading} error={match.error} onClose={close} />
       ) : null}
     </>
   );

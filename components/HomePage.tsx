@@ -6,17 +6,13 @@ import { useLofthus } from "@/lib/useLofthus";
 import { moveLabel, storyHref, storyCategory } from "@/lib/format";
 import { ApiState, LoadingBlock } from "@/components/ApiState";
 import { LeagueTable } from "@/components/LeagueTable";
-import { LiveIndicator } from "@/components/LiveIndicator";
-import { MatchStrip } from "@/components/MatchStrip";
 import { MinLofthus } from "@/components/MinLofthus";
 import { PlayerImage } from "@/components/PlayerImage";
 import { useSelectedManager } from "@/lib/selected-manager";
 
 export function HomePage() {
   const { entryId } = useSelectedManager();
-  const polled = useLofthus("home", () => api.home(), {
-    refreshInterval: (latest) => (latest?.status.is_live ? 20_000 : 180_000),
-  });
+  const polled = useLofthus("home", () => api.home());
   const data = polled.data;
 
   if (!data) {
@@ -41,7 +37,8 @@ export function HomePage() {
   const thisRound = data.news.filter(
     (s) => !s.source_event || s.source_event === status.event_id,
   );
-  const snakkiser = (thisRound.length ? thisRound : data.news).slice(0, 6);
+  const snakkiser = (thisRound.length ? thisRound : data.news).slice(0, 5);
+  const me = data.managers.find((m) => m.entry === entryId);
   const climbers = data.movers?.climbers || [];
   const fallers = data.movers?.fallers || [];
   const talkers = [...data.popular]
@@ -54,18 +51,15 @@ export function HomePage() {
   return (
     <main className="flex-1">
       <section className="border-b border-ink/10 bg-[#f6e4d8]">
-        <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6 sm:py-6">
-          {status.is_live ? (
-            <LiveIndicator gw={status.event_id} live />
-          ) : (
-            <p className="font-condensed text-[12px] tracking-[0.18em] text-live uppercase">
-              {status.provisional
-                ? `Runde ${status.event_id} · poengene er foreløpige`
-                : `Runde ${status.event_id} · ${status.event_status_label}`}
-            </p>
-          )}
+        <div className="mx-auto max-w-[1400px] px-4 py-4 sm:px-6">
           <h1 className="sr-only">Lofthus Road Open</h1>
-          <dl className="mt-3 flex flex-wrap gap-x-8 gap-y-2 font-condensed text-sm">
+          {me ? (
+            <p className="mb-3 font-condensed text-[12px] tracking-[0.14em] text-ink uppercase">
+              Du er nr. {me.rank} {moveLabel(me.rank_change || 0, status.provisional)}
+              {me.players_remaining != null ? ` · ${me.players_remaining} spillere gjenstår` : ""}
+            </p>
+          ) : null}
+          <dl className="flex flex-wrap gap-x-8 gap-y-2 font-condensed text-sm">
             <div>
               <dt className="text-[10px] tracking-[0.16em] text-muted uppercase">Leder</dt>
               <dd className="text-base">
@@ -104,12 +98,6 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="border-b border-rule bg-white/70">
-        <div className="mx-auto max-w-[1400px] px-4 py-3 sm:px-6">
-          <MatchStrip fixtures={data.pulse.fixtures} />
-        </div>
-      </section>
-
       {polled.error ? (
         <div className="mx-auto max-w-[1400px] px-4 pt-6 sm:px-6">
           <ApiState title="Viser siste kjente data" message={polled.error} />
@@ -130,7 +118,7 @@ export function HomePage() {
         </section>
 
         <section className="lg:col-span-4">
-          <h2 className="font-serif text-2xl sm:text-3xl">Alle snakker om</h2>
+          <h2 className="font-serif text-2xl sm:text-3xl">Spillerne alle snakker om</h2>
           <ul className="mt-3 divide-y divide-rule border-y border-rule">
             {talkers.length ? talkers.map((p) => (
               <li key={p.element} className="flex items-center gap-3 py-2">

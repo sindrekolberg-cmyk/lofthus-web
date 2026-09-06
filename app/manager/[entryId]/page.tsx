@@ -73,7 +73,7 @@ export default function ManagerPage() {
           </div>
           <div>
             <dt className="font-condensed text-[10px] tracking-[0.16em] text-muted uppercase">
-              {data.provisional ? "GW live" : "GW"}
+              {data.provisional ? "Runde" : "GW"}
             </dt>
             <dd className="font-condensed text-3xl font-semibold">{m.gw}</dd>
           </div>

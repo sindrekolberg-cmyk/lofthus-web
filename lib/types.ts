@@ -18,8 +18,12 @@ export type Status = {
   errors: string[];
   snapshot_id?: string;
   generated_at?: string;
+  source_updated_at?: string | null;
   gw?: number;
   phase?: string;
+  seq?: number;
+  stale?: boolean;
+  round_kicker?: string;
 };
 
 export type ManagerRow = {

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { nav } from "@/lib/types";
+import { HeaderPulse } from "@/components/HeaderPulse";
+import { EventBanner } from "@/components/EventBanner";
 import { ManagerSearch } from "@/components/ManagerSearch";
 
 export function SiteHeader() {
@@ -13,24 +15,12 @@ export function SiteHeader() {
 
   return (
     <header>
-      <div className="relative h-[148px] overflow-hidden bg-[#2c4aa0] sm:h-[200px] lg:h-[248px]">
-        <Image
-          src="/header-premier-league.jpg"
-          alt="Premier League"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[center_18%]"
-        />
-      </div>
-
       <div className="sticky top-0 z-50 border-b border-ink/10 bg-paper/95 text-ink backdrop-blur">
         <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between gap-4 px-4 sm:px-6">
-          <Link
-            href="/"
-            className="shrink-0 font-condensed text-[15px] font-semibold tracking-[0.18em]"
-          >
-            LOFTHUS ROAD OPEN
+          <Link href="/" className="shrink-0" aria-label="Lofthus Road Open">
+            <span className="inline-flex h-9 items-center bg-live px-2.5 font-condensed text-[15px] font-semibold tracking-[0.18em] text-paper">
+              LOFTHUS
+            </span>
           </Link>
 
           <nav className="hidden items-center gap-7 md:flex" aria-label="Hovedmeny">
@@ -95,6 +85,20 @@ export function SiteHeader() {
           </div>
         ) : null}
       </div>
+
+      <div className="relative h-[148px] overflow-hidden bg-[#2c4aa0] sm:h-[200px] lg:h-[248px]">
+        <Image
+          src="/header-premier-league.jpg"
+          alt="Premier League"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[center_18%]"
+        />
+      </div>
+
+      <EventBanner />
+      <HeaderPulse />
     </header>
   );
 }

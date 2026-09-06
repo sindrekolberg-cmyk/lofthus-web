@@ -31,7 +31,8 @@ function Slot({ player, onPitch }: { player: SquadPlayer; onPitch?: boolean }) {
       </p>
       {player.autosub_status === "confirmed" ? (
         <p className="mt-0.5 text-center font-condensed text-[9px] tracking-wide text-live uppercase">
-          Inn{player.replaced_player ? ` for ${player.replaced_player}` : ""}
+          Auto in{player.replaced_player ? ` · ${player.player} inn for ${player.replaced_player}` : ""}
+          {player.gw_contribution ? ` · +${player.gw_contribution} p` : ""}
         </p>
       ) : null}
       {player.autosub_status === "pending" ? (

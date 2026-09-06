@@ -42,10 +42,29 @@ html {
   }
 }
 
-body {
-  background: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+@keyframes row-up {
+  0% { background-color: rgba(47, 106, 50, 0.16); }
+  100% { background-color: transparent; }
+}
+
+@keyframes row-down {
+  0% { background-color: rgba(197, 31, 36, 0.12); }
+  100% { background-color: transparent; }
+}
+
+.row-up {
+  animation: row-up 1.2s ease;
+}
+
+.row-down {
+  animation: row-down 1.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row-up,
+  .row-down {
+    animation: none;
+  }
 }
 
 ::selection {

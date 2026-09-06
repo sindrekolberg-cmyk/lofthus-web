@@ -15,15 +15,9 @@ import { useSelectedManager } from "@/lib/selected-manager";
 function LigaInner() {
   const params = useSearchParams();
   const view = params.get("view") || "standings";
-  const league = useLofthus("league", () => api.league(), {
-    refreshInterval: (d) => (d?.status.is_live ? 20_000 : 180_000),
-  });
-  const live = useLofthus("live", () => api.live(), {
-    refreshInterval: (d) => (d?.status.is_live ? 20_000 : 180_000),
-  });
-  const month = useLofthus("month", () => api.month(), {
-    refreshInterval: (d) => (d?.status.is_live ? 20_000 : 180_000),
-  });
+  const league = useLofthus("league", () => api.league());
+  const live = useLofthus("live", () => api.live());
+  const month = useLofthus("month", () => api.month());
   const { entryId } = useSelectedManager();
   const status = league.data?.status || live.data?.status || month.data?.status || null;
 
@@ -34,11 +28,7 @@ function LigaInner() {
           <LiveIndicator gw={status.event_id} live />
         ) : (
           <p className="font-condensed text-xs tracking-[0.22em] text-muted uppercase">
-            {status
-              ? status.provisional
-                ? `Runde ${status.event_id} · poengene er foreløpige`
-                : `Runde ${status.event_id}`
-              : "Liga"}
+            {status?.round_kicker || (status ? `Runde ${status.event_id}` : "Liga")}
           </p>
         )}
         <h1 className="mt-3 font-serif text-4xl leading-none text-ink sm:text-5xl">Liga</h1>

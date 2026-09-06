@@ -50,7 +50,7 @@ export function MinLofthus({ managers, status, stories = [] }: Props) {
             </div>
             <div>
               <dt className="text-xs text-muted">
-                {status?.provisional ? "Live GW" : "GW"}
+                {status?.provisional ? "Runde" : "GW"}
               </dt>
               <dd className="font-condensed text-3xl">{me.gw ?? "–"}</dd>
             </div>

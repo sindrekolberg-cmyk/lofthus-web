@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { ManagerRow, Status } from "@/lib/types";
 import { moveLabel } from "@/lib/format";
@@ -19,15 +19,17 @@ type Props = {
 const SORTS: { id: SortKey; label: string }[] = [
   { id: "rank", label: "Plass" },
   { id: "total", label: "Totalpoeng" },
-  { id: "gw", label: "GW-poeng" },
+  { id: "gw", label: "Rundepoeng" },
   { id: "month", label: "Måned" },
-  { id: "up", label: "Størst økning" },
-  { id: "down", label: "Størst fall" },
+  { id: "up", label: "Største klatrere" },
+  { id: "down", label: "Største fall" },
 ];
 
 export function LeagueTable({ rows, status, compact, highlight, remaining, sortable }: Props) {
   const provisional = Boolean(status?.provisional);
   const [sort, setSort] = useState<SortKey>("rank");
+  const prevTops = useRef(new Map<number, number>());
+  const prevRanks = useRef(new Map<number, number>());
 
   const sorted = useMemo(() => {
     const copy = [...rows];
@@ -41,6 +43,36 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
     });
     return copy;
   }, [rows, sort]);
+
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const nextTops = new Map<number, number>();
+    sorted.forEach((row) => {
+      const el = document.querySelector<HTMLElement>(`tr[data-entry="${row.entry}"]`);
+      if (!el) return;
+      const top = el.getBoundingClientRect().top;
+      const prev = prevTops.current.get(row.entry);
+      const prevRank = prevRanks.current.get(row.entry);
+      nextTops.set(row.entry, top);
+      if (prev != null && Math.abs(prev - top) > 2) {
+        const dy = prev - top;
+        el.style.transform = `translateY(${dy}px)`;
+        el.style.transition = "none";
+        requestAnimationFrame(() => {
+          el.style.transition = "transform 0.75s ease, background-color 1.2s ease";
+          el.style.transform = "";
+        });
+      }
+      if (prevRank != null && prevRank !== row.rank) {
+        el.classList.remove("row-up", "row-down");
+        el.classList.add(row.rank < prevRank ? "row-up" : "row-down");
+        window.setTimeout(() => el.classList.remove("row-up", "row-down"), 1400);
+      }
+      prevRanks.current.set(row.entry, row.rank);
+    });
+    prevTops.current = nextTops;
+  }, [sorted]);
 
   return (
     <div>
@@ -79,6 +111,7 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
             {sorted.map((row) => (
               <tr
                 key={row.entry}
+                data-entry={row.entry}
                 className={`border-b border-rule transition-colors hover:bg-black/[0.03] ${
                   highlight === row.entry ? "bg-[#fff6d8]" : ""
                 }`}
