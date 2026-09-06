@@ -28,5 +28,6 @@ test("match card click opens portal detail for the fixture id", () => {
   assert.match(detail, /Lofthus-puls/);
   assert.match(detail, /owner\.is_captain/);
   assert.match(detail, /is_triple_captain/);
-  assert.doesNotMatch(detail, /Live · /);
+  assert.match(detail, /Taper mest på kampen/);
+  assert.match(detail, /data\?\.losers/);
 });

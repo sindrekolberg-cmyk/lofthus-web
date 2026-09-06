@@ -196,7 +196,7 @@ function HallInner() {
                     </div>
                   </dl>
                   <p className="mt-4 text-sm">
-                    Historiske poeng{" "}
+                    Totalt antall poeng{" "}
                     <span className="font-condensed text-xl">{historicalPoints(row)}</span>
                   </p>
                 </li>

@@ -19,8 +19,9 @@ test("form distinguishes overall league place from round rank", () => {
   assert.match(page, /sammenlagt/);
   assert.match(page, /best i runden/);
   assert.doesNotMatch(page, /i Lofthus/);
-  assert.match(page, /row\.round_rank/);
-  assert.match(page, /row\.league_rank/);
+  assert.match(page, /transferLine/);
+  assert.match(page, /−\$\{cost\} p for bytter/);
+  assert.doesNotMatch(page, /i trekk/);
 });
 
 test("league table keeps Plass column but not Plass sort", () => {

@@ -13,6 +13,8 @@ export default function OwnershipPage() {
     { live: true },
   );
   const size = data?.league_size || data?.players?.[0]?.league_size || 0;
+  const loaded = data?.loaded_managers;
+  const complete = data?.complete !== false;
 
   return (
     <AnalysisShell
@@ -22,7 +24,16 @@ export default function OwnershipPage() {
     >
       {loading && !data ? <LoadingBlock /> : null}
       {error && !data ? <ApiState message={error} /> : null}
-      {data ? <OwnershipTable players={data.players || []} leagueSize={size} /> : null}
+      {data ? (
+        <>
+          {!complete && loaded != null && size ? (
+            <p className="mb-4 text-sm text-muted">
+              Datagrunnlaget er ikke komplett · {loaded} av {size} lastet
+            </p>
+          ) : null}
+          <OwnershipTable players={data.players || []} leagueSize={size} loadedManagers={loaded} complete={complete} />
+        </>
+      ) : null}
     </AnalysisShell>
   );
 }

@@ -112,7 +112,7 @@ export const api = {
   popular: () => apiGet<{ players: PlayerCard[] }>("/api/players/popular"),
   analysisCaptain: () => apiGet<{ players: PlayerCard[] }>("/api/analysis/captain"),
   analysisOwnership: () =>
-    apiGet<{ players: PlayerCard[]; league_size?: number }>("/api/analysis/ownership"),
+    apiGet<{ players: PlayerCard[]; league_size?: number; loaded_managers?: number; complete?: boolean }>("/api/analysis/ownership"),
   analysisChips: () =>
     apiGet<{ chips: { entry: number; manager: string; chip: string; gw: number }[] }>(
       "/api/analysis/chips",

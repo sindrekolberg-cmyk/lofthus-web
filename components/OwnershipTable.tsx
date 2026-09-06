@@ -40,9 +40,13 @@ function OwnerNames({ owners }: { owners: PlayerOwner[] }) {
 export function OwnershipTable({
   players,
   leagueSize,
+  loadedManagers,
+  complete = true,
 }: {
   players: PlayerCard[];
   leagueSize: number;
+  loadedManagers?: number;
+  complete?: boolean;
 }) {
   const [sort, setSort] = useState<SortKey>("ownership");
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -131,7 +135,7 @@ export function OwnershipTable({
                   </td>
                   <td className="hidden py-2 pr-3 text-sm text-muted md:table-cell">{p.club}</td>
                   <td className="py-2 pr-3 font-condensed text-sm tabular-nums">
-                    {leagueOwnership(p.ownership_pct, p.ownership_count, size)}
+                    {leagueOwnership(p.ownership_pct, p.ownership_count, size, complete ? size : loadedManagers)}
                   </td>
                   <td className="hidden py-2 pr-3 text-sm lg:table-cell">
                     <button type="button" className="min-h-11 text-left" onClick={() => setOpen(p)}>
@@ -196,7 +200,12 @@ export function OwnershipTable({
               Eiere av {open.player}
             </h3>
             <p className="mt-1 text-sm text-muted">
-              {leagueOwnership(open.ownership_pct, open.ownership_count, open.league_size || leagueSize)}
+              {leagueOwnership(
+                open.ownership_pct,
+                open.ownership_count,
+                open.league_size || leagueSize,
+                complete ? open.league_size || leagueSize : loadedManagers,
+              )}
               {open.triple_captain_count ? ` · ${open.triple_captain_count} TC` : ""}
             </p>
             <ul className="mt-3 divide-y divide-rule border-y border-rule">

@@ -117,16 +117,16 @@ function RivalInner() {
 
           <dl className="mt-6 grid grid-cols-2 gap-4 sm:mt-8 sm:grid-cols-5 sm:gap-6">
             <div>
-              <dt className="text-xs text-muted">Live-avstand</dt>
-              <dd className="font-condensed text-2xl sm:text-3xl">{signed(radar.live_gap)}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-muted">Avstand totalt</dt>
-              <dd className="font-condensed text-2xl sm:text-3xl">{signed(radar.total_gap)}</dd>
+              <dt className="text-xs text-muted">Før runden</dt>
+              <dd className="font-condensed text-2xl sm:text-3xl">{signed(radar.pre_gw_gap)}</dd>
             </div>
             <div>
               <dt className="text-xs text-muted">Denne runden</dt>
               <dd className="font-condensed text-2xl sm:text-3xl">{signed(radar.gw_gap)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">Live-avstand</dt>
+              <dd className="font-condensed text-2xl sm:text-3xl">{signed(radar.live_gap)}</dd>
             </div>
             <div>
               <dt className="text-xs text-muted">Felles</dt>

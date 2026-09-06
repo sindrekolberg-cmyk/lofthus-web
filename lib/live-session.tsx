@@ -68,8 +68,19 @@ export function LiveSessionProvider({ children }: { children: ReactNode }) {
       mutate("home");
       mutate("league");
       mutate("month");
+      mutate("status");
+      mutate("ownership");
+      mutate("captain");
+      mutate("diffs");
+      mutate("chips");
+      mutate("managers");
       mutate(
-        (key) => Array.isArray(key) && (key[0] === "rival" || key[0] === "match" || key[0] === "compare"),
+        (key) =>
+          Array.isArray(key) &&
+          (key[0] === "rival" ||
+            key[0] === "match" ||
+            key[0] === "compare" ||
+            key[0] === "manager"),
         undefined,
         { revalidate: true },
       );

@@ -25,7 +25,10 @@ export function storyHref(story: { manager_entry?: number; category?: string }) 
   return "/liga";
 }
 
-export function leagueOwnership(pct: number, count: number, size: number) {
+export function leagueOwnership(pct: number, count: number, size: number, loaded?: number) {
+  if (loaded != null && size > 0 && loaded < size) {
+    return `${count} av ${loaded} lastet`;
+  }
   const share = Number(pct || 0).toLocaleString("nb-NO", {
     maximumFractionDigits: 1,
     minimumFractionDigits: 0,

@@ -175,6 +175,24 @@ export function MatchDetail({
                 <li className="text-sm text-muted">Ingen tydelig gevinst ennå.</li>
               )}
             </ul>
+
+            {(data?.losers || []).length ? (
+              <>
+                <h3 className="mt-8 font-condensed text-[12px] tracking-[0.16em] text-live uppercase">
+                  Taper mest på kampen
+                </h3>
+                <ul className="mt-3 space-y-2">
+                  {(data?.losers || []).map((row) => (
+                    <li key={row.entry} className="flex justify-between gap-3">
+                      <Link href={`/manager/${row.entry}`} className="hover:underline">
+                        {row.manager}
+                      </Link>
+                      <span className="font-condensed text-live">{signed(row.swing)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
           </>
         ) : null}
       </div>

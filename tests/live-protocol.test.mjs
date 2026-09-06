@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
 function isNewerSnapshot(incomingSeq, currentSeq) {
@@ -44,4 +47,11 @@ test("duplicate events are ignored", () => {
   const seen = new Set();
   assert.equal(duplicateEvent(seen, "a"), false);
   assert.equal(duplicateEvent(seen, "a"), true);
+});
+
+test("sse snapshot refreshes live-dependent screens", () => {
+  const session = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "lib/live-session.tsx"), "utf8");
+  for (const key of ["home", "league", "month", "status", "ownership", "captain", "diffs", "chips", "managers", "manager"]) {
+    assert.match(session, new RegExp(key));
+  }
 });

@@ -41,6 +41,13 @@ export type ManagerRow = {
   gw: number;
   gw_gross: number;
   hits: number;
+  transfer_cost: number;
+  transfer_count: number;
+  original_captain?: string;
+  original_captain_element?: number;
+  effective_captain?: string;
+  effective_captain_element?: number;
+  captain_fallback?: boolean;
   total: number;
   official_total: number;
   official_gw: number;
@@ -256,6 +263,7 @@ export type ManagerProfile = {
     round_rank: number;
     league_rank: number;
     is_live?: boolean;
+    rank_complete?: boolean;
   }[];
   chips: { chip: string; event: number; gw: string }[];
   fpl_career: { season: string; points: number; overall_rank: number | null }[];
@@ -309,6 +317,7 @@ export type RivalPayload = {
   me: ManagerRow;
   rival: ManagerRow;
   live_gap: number;
+  pre_gw_gap: number;
   total_gap: number;
   gw_gap: number;
   common_players: number;
@@ -474,16 +483,16 @@ export const bottomNav = [
 
 export const analysisEntries = [
   {
-    href: "/analyse/transferstrategi",
-    kicker: "Bytter",
-    title: "Transferstrategi",
-    line: "Råd ut fra målet ditt — ikke en generell topp-11.",
-  },
-  {
     href: "/analyse/rivalradar",
     kicker: "Hvem jakter deg",
     title: "Rivalradar",
     line: "Live-avstand, kapteiner, heia på og håp på blank.",
+  },
+  {
+    href: "/analyse/transferstrategi",
+    kicker: "Neste trekk",
+    title: "Transferstrategi",
+    line: "Tilpassede kjøpsråd etter målet ditt, risikoen du tåler og hvem du prøver å slå.",
   },
   {
     href: "/analyse/kaptein",

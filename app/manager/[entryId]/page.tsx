@@ -8,6 +8,17 @@ import { moveLabel, place } from "@/lib/format";
 import { ApiState, LoadingBlock } from "@/components/ApiState";
 import { SquadPitch } from "@/components/SquadPitch";
 import { useSelectedManager } from "@/lib/selected-manager";
+import type { ManagerRow } from "@/lib/types";
+
+function transferLine(m: ManagerRow) {
+  const cost = m.transfer_cost ?? m.hits ?? 0;
+  const count = m.transfer_count;
+  if (!cost && !count) return "ingen trekk";
+  const costBit = cost ? `−${cost} p for bytter` : "";
+  if (count && costBit) return `${count} bytter · ${costBit}`;
+  if (count) return `${count} bytter`;
+  return costBit;
+}
 
 export default function ManagerPage() {
   const params = useParams<{ entryId: string }>();
@@ -104,7 +115,7 @@ export default function ManagerPage() {
           {data.is_live ? " · live" : data.provisional ? " · foreløpig" : ""}
         </h2>
         <p className="mt-2 text-sm text-muted">
-          {m.players_remaining} spillere gjenstår · {m.chip || "ingen sjetong"} · {m.hits ? `${m.hits} i trekk` : "ingen trekk"}
+          {m.players_remaining} spillere gjenstår · {m.chip || "ingen sjetong"} · {transferLine(m)}
           {data.squad.xi.some((p) => p.autosub_status === "confirmed")
             ? " · autosub er med i laget"
             : data.squad.bench.some((p) => p.autosub_status === "pending")
@@ -249,7 +260,7 @@ export default function ManagerPage() {
                   </p>
                   <p className="font-condensed text-2xl">{row.points}</p>
                   <p className="text-xs text-muted">{place(row.league_rank)} sammenlagt</p>
-                  {row.round_rank ? (
+                  {row.round_rank && (row.rank_complete !== false || row.is_live) ? (
                     <p className="text-xs text-muted">{place(row.round_rank)} best i runden</p>
                   ) : null}
                 </div>

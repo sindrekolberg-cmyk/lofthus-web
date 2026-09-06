@@ -32,6 +32,9 @@ test("live GW labels are not used for fixture status", () => {
 test("ownership percentage uses current league membership", () => {
   assert.equal(leagueOwnership(1.6, 1, 63), "1,6 % (1 av 63)");
   assert.equal(leagueOwnership(87, 55, 63), "87 % (55 av 63)");
+  assert.equal(leagueOwnership(12, 5, 63, 12), "5 av 12 lastet");
+  const ownPage = readFileSync(join(root, "app/analyse/ownership/page.tsx"), "utf8");
+  assert.match(ownPage, /Datagrunnlaget er ikke komplett/);
 });
 
 test("GW points and status stay separate columns", () => {

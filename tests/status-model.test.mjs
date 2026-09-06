@@ -62,3 +62,29 @@ test("homepage uses Topp 5 sammenlagt and API talkers", () => {
   assert.doesNotMatch(home, /isThisRoundPulse/);
   assert.doesNotMatch(home, /href="\/analyse\/rivalradar"/);
 });
+
+test("header does not duplicate liga match strip and LIVE is football-only", () => {
+  const header = readFileSync(join(root, "components/SiteHeader.tsx"), "utf8");
+  const banner = readFileSync(join(root, "components/EventBanner.tsx"), "utf8");
+  const liga = readFileSync(join(root, "app/liga/page.tsx"), "utf8");
+  assert.match(header, /pathname.startsWith\("\/liga"\)/);
+  assert.match(liga, /<MatchStrip/);
+  assert.match(banner, /footballLive/);
+  assert.doesNotMatch(banner, /sseOpen/);
+  assert.doesNotMatch(banner, /useLofthus/);
+});
+
+test("hall of fame uses totalt antall poeng", () => {
+  const hof = readFileSync(join(root, "app/hall-of-fame/page.tsx"), "utf8");
+  assert.match(hof, /Totalt antall poeng/);
+  assert.doesNotMatch(hof, /Historiske poeng/);
+});
+
+test("rivalradar shows three distinct gaps", () => {
+  const page = readFileSync(join(root, "app/analyse/rivalradar/page.tsx"), "utf8");
+  assert.match(page, /Før runden/);
+  assert.match(page, /Denne runden/);
+  assert.match(page, /Live-avstand/);
+  assert.match(page, /pre_gw_gap/);
+  assert.doesNotMatch(page, /Avstand totalt/);
+});

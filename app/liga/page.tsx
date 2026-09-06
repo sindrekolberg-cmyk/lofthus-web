@@ -55,9 +55,13 @@ function LigaInner() {
                 <p className="mb-4 text-sm text-muted">
                   {live.data.status.is_live
                     ? "Slik det ligger an akkurat nå. Runden er ikke ferdig."
-                    : live.data.status.provisional
-                      ? "Kampene er ferdige. Poengene kan fortsatt flytte seg med bonus."
-                      : "Runden er ferdig."}
+                    : live.data.status.is_finished
+                      ? "Runden er ferdig."
+                      : live.data.fixtures.some((f) => f.status === "not_started")
+                        ? "Ingen kamp pågår. Runden er ikke ferdig."
+                        : live.data.status.provisional
+                          ? "Kampene er ferdige. Poengene kan fortsatt flytte seg med bonus."
+                          : "Runden er ferdig."}
                 </p>
                 <div className="mb-6">
                   <MatchStrip fixtures={live.data.fixtures} />
