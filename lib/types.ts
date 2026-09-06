@@ -90,7 +90,9 @@ export type SquadPlayer = {
   image_url: string;
   minutes: number;
   autosub_in?: boolean;
+  autosub_status?: "confirmed" | "pending" | "";
   replaced_player?: string;
+  captain_fallback?: boolean;
 };
 
 export type Squad = {
@@ -147,6 +149,7 @@ export type ManagerOption = {
   gw?: number;
   total?: number;
   rank_change?: number;
+  players_remaining?: number;
 };
 
 export type HomePayload = {

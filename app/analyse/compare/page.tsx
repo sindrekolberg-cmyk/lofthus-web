@@ -96,6 +96,7 @@ function CompareInner() {
                   <li>Plass {m.rank}</li>
                   <li>Total {m.total}</li>
                   <li>GW {m.gw}</li>
+                  <li>{m.players_remaining} spillere gjenstår</li>
                   <li>Kaptein {i === 0 ? data.captains.a : data.captains.b}</li>
                   <li>Chip {(i === 0 ? data.chips.a : data.chips.b) || "ingen"}</li>
                 </ul>

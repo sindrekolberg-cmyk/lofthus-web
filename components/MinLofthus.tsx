@@ -43,7 +43,7 @@ export function MinLofthus({ managers, status, stories = [] }: Props) {
         </div>
 
         {me ? (
-          <dl className="mt-8 grid grid-cols-2 gap-5 border-t border-ink pt-6 sm:grid-cols-4">
+          <dl className="mt-8 grid grid-cols-2 gap-5 border-t border-ink pt-6 sm:grid-cols-5">
             <div>
               <dt className="text-xs text-muted">Plass</dt>
               <dd className="font-condensed text-3xl">{place(me.rank)}</dd>
@@ -59,6 +59,10 @@ export function MinLofthus({ managers, status, stories = [] }: Props) {
               <dd className="font-condensed text-3xl">
                 {moveLabel(me.rank_change || 0, Boolean(status?.provisional))}
               </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">Igjen</dt>
+              <dd className="font-condensed text-3xl">{me.players_remaining ?? "–"}</dd>
             </div>
             <div>
               <dt className="text-xs text-muted">Nærmeste</dt>

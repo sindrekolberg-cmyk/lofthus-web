@@ -105,9 +105,11 @@ export default function ManagerPage() {
         </h2>
         <p className="mt-2 text-sm text-muted">
           {m.players_remaining} spillere gjenstår · {m.chip || "ingen sjetong"} · {m.hits ? `${m.hits} i trekk` : "ingen trekk"}
-          {data.squad.xi.some((p) => p.autosub_in) || data.squad.bench.some((p) => p.autosub_in)
-            ? " · autosub er beregnet så langt FPL-dataene tillater"
-            : ""}
+          {data.squad.xi.some((p) => p.autosub_status === "confirmed")
+            ? " · autosub er med i laget"
+            : data.squad.bench.some((p) => p.autosub_status === "pending")
+              ? " · mulig autosub er ikke avgjort ennå"
+              : ""}
         </p>
         <div className="mt-6">
           <SquadPitch squad={data.squad} />
