@@ -16,8 +16,8 @@ function Slot({ player, onPitch }: { player: SquadPlayer; onPitch?: boolean }) {
   const nameColor = onPitch ? "text-paper" : "text-ink";
   const metaColor = onPitch ? "text-paper/70" : "text-muted";
   return (
-    <div className="flex w-[4.6rem] flex-col items-center sm:w-20">
-      <div className={`relative h-14 w-14 overflow-hidden rounded-full sm:h-16 sm:w-16 ${onPitch ? "bg-[#1a1a1a]" : "bg-[#d8d1c4]"}`}>
+    <div className="flex w-[4.35rem] flex-col items-center sm:w-20">
+      <div className={`relative h-11 w-11 overflow-hidden rounded-full sm:h-16 sm:w-16 ${onPitch ? "bg-[#1a1a1a]" : "bg-[#d8d1c4]"}`}>
         <PlayerImage src={player.image_url} alt={player.player} variant="squad" objectPosition="center 10%" />
       </div>
       <p className={`mt-1 max-w-full truncate text-center text-[11px] leading-tight ${nameColor}`}>
@@ -31,8 +31,9 @@ function Slot({ player, onPitch }: { player: SquadPlayer; onPitch?: boolean }) {
         <Badge player={player} onPitch={onPitch} /> {player.club} · {player.fixture_status_label}
       </p>
       {player.autosub_status === "confirmed" ? (
-        <p className="mt-0.5 text-center font-condensed text-[9px] tracking-wide text-live uppercase">
-          Auto in{player.replaced_player ? ` · ${player.player} inn for ${player.replaced_player}` : ""}
+        <p className="mt-0.5 text-center font-condensed text-[9px] leading-tight tracking-wide text-live uppercase">
+          AUTO IN
+          {player.replaced_player ? ` · ${player.player} inn for ${player.replaced_player}` : ""}
           {player.gw_contribution ? ` · +${player.gw_contribution} p` : ""}
         </p>
       ) : null}
@@ -59,10 +60,10 @@ function Line({ players, onPitch }: { players: SquadPlayer[]; onPitch?: boolean 
 export function SquadPitch({ squad }: { squad: Squad }) {
   return (
     <div>
-      <div className="relative overflow-hidden bg-[#17331d] px-3 py-8 sm:px-6">
+      <div className="relative overflow-hidden bg-[#17331d] px-2 py-5 sm:px-6 sm:py-8">
         <div className="pointer-events-none absolute inset-y-8 left-1/2 w-px bg-white/15" />
         <div className="pointer-events-none absolute left-4 right-4 top-1/2 h-px bg-white/15" />
-        <div className="relative flex flex-col gap-6">
+        <div className="relative flex flex-col gap-4 sm:gap-6">
           <Line players={squad.lines.fwd} onPitch />
           <Line players={squad.lines.mid} onPitch />
           <Line players={squad.lines.def} onPitch />

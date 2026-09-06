@@ -53,12 +53,17 @@ export function MatchDetail({
         role="dialog"
         aria-modal="true"
         aria-labelledby="match-detail-title"
-        className="relative z-[81] max-h-[92vh] w-full overflow-y-auto border border-ink bg-paper p-5 shadow-xl sm:max-w-2xl sm:p-8"
+        className="relative z-[81] max-h-[92dvh] w-full overflow-y-auto rounded-t-2xl border border-ink bg-paper p-5 shadow-xl sm:max-h-[88vh] sm:max-w-2xl sm:rounded-none sm:p-8"
+        style={{
+          paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))",
+          paddingLeft: "max(1.25rem, env(safe-area-inset-left))",
+          paddingRight: "max(1.25rem, env(safe-area-inset-right))",
+        }}
       >
         <button
           ref={closeRef}
           type="button"
-          className="absolute right-4 top-4 min-h-11 font-condensed text-[12px] tracking-[0.16em] uppercase text-muted hover:text-ink"
+          className="absolute right-3 top-3 min-h-11 min-w-11 font-condensed text-[12px] tracking-[0.16em] uppercase text-muted hover:text-ink"
           onClick={onClose}
         >
           Lukk
@@ -73,7 +78,7 @@ export function MatchDetail({
               {fixture.status_label}
               {fixture.minutes ? ` · ${fixture.minutes}'` : ""}
             </p>
-            <h2 id="match-detail-title" className="mt-2 font-serif text-3xl sm:text-4xl">
+            <h2 id="match-detail-title" className="mt-2 pr-16 font-serif text-2xl leading-tight sm:text-4xl">
               {score}
             </h2>
             <p className="mt-1 text-sm text-muted">
@@ -127,7 +132,7 @@ export function MatchDetail({
                 const lead = player.owners[0];
                 return (
                   <li key={player.element} className="py-3">
-                    <p className="font-serif text-xl">{player.player}</p>
+                    <p className="font-serif text-lg sm:text-xl">{player.player}</p>
                     <p className="text-sm text-muted">
                       {isPlayerUpcoming(player.fixture_status)
                         ? "ikke spilt"

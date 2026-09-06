@@ -16,9 +16,9 @@ function HallInner() {
 
   return (
     <main className="flex-1 bg-paper">
-      <div className="mx-auto max-w-[1400px] px-4 py-12 sm:px-6">
+      <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 md:py-12">
         <p className="font-condensed text-xs tracking-[0.22em] text-live uppercase">Historie</p>
-        <h1 className="mt-3 font-serif text-4xl leading-none sm:text-5xl">Hall of Fame</h1>
+        <h1 className="mt-3 font-serif text-3xl leading-none sm:text-5xl">Hall of Fame</h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-muted">
           Hele Lofthus-historien: sammenlagt, cup, måneder og meritter.
         </p>

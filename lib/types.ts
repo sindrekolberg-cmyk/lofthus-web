@@ -382,6 +382,13 @@ export const nav = [
   { href: "/analyse", label: "Analyseverktøy" },
 ];
 
+export const bottomNav = [
+  { href: "/", label: "Forside" },
+  { href: "/liga", label: "Liga" },
+  { href: "/analyse", label: "Analyse" },
+  { href: "/hall-of-fame", label: "Hall of Fame" },
+];
+
 export const analysisEntries = [
   {
     href: "/analyse/rivalradar",

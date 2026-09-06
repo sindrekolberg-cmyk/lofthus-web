@@ -42,17 +42,17 @@ export default function ManagerPage() {
 
   return (
     <main className="flex-1 bg-paper">
-      <div className="mx-auto max-w-[1400px] px-4 py-12 sm:px-6">
+      <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 md:py-12">
         <Link
           href="/liga"
-          className="font-condensed text-[12px] tracking-[0.16em] uppercase text-muted hover:text-ink"
+          className="inline-flex min-h-11 items-center font-condensed text-[12px] tracking-[0.16em] uppercase text-muted hover:text-ink"
         >
           ← Tilbake til tabellen
         </Link>
         <p className="mt-6 font-condensed text-xs tracking-[0.22em] text-live uppercase">
           {data.is_live ? `Live · runde ${data.event_id}` : data.provisional ? `Runde ${data.event_id} · foreløpig` : "Manager"}
         </p>
-        <h1 className="mt-2 font-serif text-4xl leading-none sm:text-5xl">{m.manager}</h1>
+        <h1 className="mt-2 font-serif text-3xl leading-none sm:text-5xl">{m.manager}</h1>
         <p className="mt-3 text-lg text-muted">{m.team}</p>
         <button
           type="button"
@@ -62,20 +62,20 @@ export default function ManagerPage() {
           Dette er meg
         </button>
 
-        <dl className="mt-8 grid grid-cols-2 gap-6 border-t border-ink pt-6 sm:grid-cols-5">
+        <dl className="mt-6 grid grid-cols-3 gap-3 border-t border-ink pt-5 sm:mt-8 sm:grid-cols-5 sm:gap-6 sm:pt-6">
           <div>
             <dt className="font-condensed text-[10px] tracking-[0.16em] text-muted uppercase">Plass</dt>
-            <dd className="font-condensed text-3xl font-semibold">{place(m.rank)}</dd>
+            <dd className="font-condensed text-2xl font-semibold sm:text-3xl">{place(m.rank)}</dd>
           </div>
           <div>
             <dt className="font-condensed text-[10px] tracking-[0.16em] text-muted uppercase">Total</dt>
-            <dd className="font-condensed text-3xl font-semibold">{m.total}</dd>
+            <dd className="font-condensed text-2xl font-semibold sm:text-3xl">{m.total}</dd>
           </div>
           <div>
             <dt className="font-condensed text-[10px] tracking-[0.16em] text-muted uppercase">
               {data.provisional ? "Runde" : "GW"}
             </dt>
-            <dd className="font-condensed text-3xl font-semibold">{m.gw}</dd>
+            <dd className="font-condensed text-2xl font-semibold sm:text-3xl">{m.gw}</dd>
           </div>
           <div>
             <dt className="font-condensed text-[10px] tracking-[0.16em] text-muted uppercase">
@@ -96,10 +96,10 @@ export default function ManagerPage() {
         </dl>
 
         {data.story ? (
-          <p className="mt-8 max-w-2xl font-serif text-2xl leading-snug">{data.story}</p>
+          <p className="mt-8 max-w-2xl font-serif text-xl leading-snug sm:text-2xl">{data.story}</p>
         ) : null}
 
-        <h2 className="mt-12 font-serif text-3xl">
+        <h2 className="mt-8 font-serif text-2xl sm:mt-12 sm:text-3xl">
           Laget · Runde {data.event_id}
           {data.is_live ? " · live" : data.provisional ? " · foreløpig" : ""}
         </h2>
@@ -133,7 +133,7 @@ export default function ManagerPage() {
         <div className="mt-14 grid gap-10 lg:grid-cols-12">
           <div className="space-y-12 lg:col-span-5">
           <section>
-            <h2 className="font-serif text-3xl">Lofthus-karriere</h2>
+          <h2 className="font-serif text-2xl sm:text-3xl">Lofthus-karriere</h2>
             <p className="mt-2 text-sm text-muted">
               {data.lofthus_membership?.length
                 ? `Første sesong i ligaen: ${[...data.lofthus_membership].map((r) => r.season).filter(Boolean).sort()[0]}`
@@ -188,7 +188,7 @@ export default function ManagerPage() {
           </section>
 
           <section>
-            <h2 className="font-serif text-3xl">FPL-karriere</h2>
+            <h2 className="font-serif text-2xl sm:text-3xl">FPL-karriere</h2>
             <p className="mt-2 text-sm text-muted">
               Offisiell Fantasy Premier League-historikk for denne entryen.
             </p>
@@ -239,7 +239,7 @@ export default function ManagerPage() {
           </div>
 
           <section className="lg:col-span-7">
-            <h2 className="font-serif text-3xl">Form</h2>
+            <h2 className="font-serif text-2xl sm:text-3xl">Form</h2>
             <div className="mt-4 flex flex-wrap gap-3">
               {data.form.map((row) => (
                 <div key={row.event} className="border border-rule px-3 py-2">

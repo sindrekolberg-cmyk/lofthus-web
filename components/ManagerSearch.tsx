@@ -62,7 +62,7 @@ export function ManagerSearch({ managers, compact, onPick }: Props) {
         }}
         placeholder="Finn meg…"
         className={`w-full border border-rule bg-white/70 px-3 text-sm outline-none placeholder:text-muted focus:border-ink ${
-          compact ? "h-9" : "h-11"
+          compact ? "h-11 md:h-9" : "h-11"
         }`}
       />
       {open && hits.length ? (
@@ -71,7 +71,7 @@ export function ManagerSearch({ managers, compact, onPick }: Props) {
             <li key={m.entry}>
               <button
                 type="button"
-                className="flex w-full items-baseline justify-between gap-3 px-3 py-2 text-left hover:bg-black/[0.04]"
+                className="flex min-h-11 w-full items-baseline justify-between gap-3 px-3 py-2.5 text-left hover:bg-black/[0.04]"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => choose(m)}
               >

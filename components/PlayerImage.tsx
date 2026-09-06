@@ -19,8 +19,8 @@ type PlayerImageProps = {
 const VARIANT_SIZES: Record<PlayerImageVariant, string> = {
   hero: "(min-width: 1024px) 28vw, 40vw",
   card: "(min-width: 768px) 20vw, 40vw",
-  squad: "72px",
-  avatar: "48px",
+  squad: "(max-width: 640px) 48px, 72px",
+  avatar: "(max-width: 640px) 32px, 48px",
 };
 
 const ALLOWED = [

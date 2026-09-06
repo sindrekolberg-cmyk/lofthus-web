@@ -134,7 +134,7 @@ export function HomePage() {
                   key={row.entry}
                   className={`flex justify-between border-b border-rule py-1.5 text-sm ${row.entry === entryId ? "font-medium" : ""}`}
                 >
-                  <Link href={`/manager/${row.entry}`} className="hover:underline">
+                  <Link href={`/manager/${row.entry}`} className="inline-flex min-h-11 items-center hover:underline">
                     {row.month_rank}. {row.manager}
                   </Link>
                   <span className="font-condensed tabular-nums">{row.month_points}</span>
@@ -145,13 +145,13 @@ export function HomePage() {
         </div>
 
         <section className="mt-10">
-          <h2 className="font-serif text-3xl">Snakkiser</h2>
+          <h2 className="font-serif text-2xl sm:text-3xl">Snakkiser</h2>
           {snakkiser.length ? (
             <ul className="mt-4 divide-y divide-rule border-y border-rule">
               {snakkiser.map((s) => (
                 <li key={s.key}>
-                  <Link href={storyHref(s)} className="flex items-baseline gap-4 py-3 hover:bg-black/[0.02]">
-                    <span className="w-28 shrink-0 font-condensed text-[11px] tracking-[0.16em] text-live uppercase">
+                  <Link href={storyHref(s)} className="flex min-h-11 items-baseline gap-3 py-3 hover:bg-black/[0.02] sm:gap-4">
+                    <span className="w-20 shrink-0 font-condensed text-[11px] tracking-[0.16em] text-live uppercase sm:w-28">
                       {storyCategory(s.category)}
                     </span>
                     <span className="min-w-0">

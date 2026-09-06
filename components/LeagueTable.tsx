@@ -93,11 +93,11 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
         </div>
       ) : null}
       <div className="overflow-x-auto">
-        <table className={`w-full border-collapse text-left ${compact ? "" : "min-w-[640px]"}`}>
+        <table className="w-full border-collapse text-left">
           <thead>
             <tr className="border-b border-ink font-condensed text-[11px] tracking-[0.16em] text-muted uppercase">
-              <th className="py-3 pr-3 font-medium">Plass</th>
-              <th className="py-3 pr-3 font-medium">Manager</th>
+              <th className="py-2 pr-2 font-medium sm:py-3 sm:pr-3">Plass</th>
+              <th className="py-2 pr-2 font-medium sm:py-3 sm:pr-3">Manager</th>
               {!compact ? <th className="hidden py-3 pr-3 font-medium sm:table-cell">Lag</th> : null}
               {!compact ? <th className="hidden py-3 pr-3 font-medium md:table-cell">Kaptein</th> : null}
               <th className="py-3 pr-3 text-right font-medium">GW</th>
@@ -116,9 +116,9 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
                   highlight === row.entry ? "bg-[#fff6d8]" : ""
                 }`}
               >
-                <td className="py-3 pr-3 font-condensed text-lg tabular-nums">{row.rank}</td>
-                <td className="py-3 pr-3">
-                  <Link href={`/manager/${row.entry}`} className="text-[0.95rem] leading-tight hover:underline">
+                <td className="py-2.5 pr-2 font-condensed text-base tabular-nums sm:py-3 sm:pr-3 sm:text-lg">{row.rank}</td>
+                <td className="py-2.5 pr-2 sm:py-3 sm:pr-3">
+                  <Link href={`/manager/${row.entry}`} className="inline-flex min-h-11 items-center text-[0.95rem] leading-tight hover:underline">
                     {row.manager}
                   </Link>
                   {row.chip ? (
@@ -134,8 +134,8 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
                 {!compact ? (
                   <td className="hidden py-3 pr-3 text-sm md:table-cell">{row.captain || "–"}</td>
                 ) : null}
-                <td className="py-3 pr-3 text-right font-condensed text-lg tabular-nums">{row.gw}</td>
-                <td className="py-3 pr-3 text-right font-condensed text-lg font-semibold tabular-nums">
+                <td className="py-2.5 pr-2 text-right font-condensed text-base tabular-nums sm:py-3 sm:pr-3 sm:text-lg">{row.gw}</td>
+                <td className="py-2.5 pr-2 text-right font-condensed text-base font-semibold tabular-nums sm:py-3 sm:pr-3 sm:text-lg">
                   {row.total}
                 </td>
                 {sortable && !compact ? (
@@ -149,7 +149,7 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
                   </td>
                 ) : null}
                 <td
-                  className={`py-3 text-right font-condensed text-lg tabular-nums ${
+                  className={`py-2.5 text-right font-condensed text-base tabular-nums sm:py-3 sm:text-lg ${
                     row.rank_change > 0
                       ? "text-[#2f6a32]"
                       : row.rank_change < 0

@@ -51,7 +51,7 @@ function RivalInner() {
             Deg
           </span>
           <select
-            className="mt-1 w-full border border-rule bg-paper px-3 py-2"
+            className="mt-1 min-h-11 w-full border border-rule bg-paper px-3 py-2"
             value={a || ""}
             onChange={(e) => {
               const next = Number(e.target.value);
@@ -71,7 +71,7 @@ function RivalInner() {
             Rival
           </span>
           <select
-            className="mt-1 w-full border border-rule bg-paper px-3 py-2"
+            className="mt-1 min-h-11 w-full border border-rule bg-paper px-3 py-2"
             value={b || ""}
             onChange={(e) => {
               const next = Number(e.target.value);
@@ -97,7 +97,7 @@ function RivalInner() {
           <div className="mt-10 grid gap-6 border-t border-ink pt-8 sm:grid-cols-2">
             <div>
               <p className="font-condensed text-[11px] text-muted uppercase">Deg</p>
-              <h2 className="font-serif text-3xl">
+              <h2 className="font-serif text-2xl sm:text-3xl">
                 <Link href={`/manager/${radar.me.entry}`} className="hover:underline">
                   {radar.me.manager}
                 </Link>
@@ -106,7 +106,7 @@ function RivalInner() {
             </div>
             <div className="sm:text-right">
               <p className="font-condensed text-[11px] text-muted uppercase">Rival</p>
-              <h2 className="font-serif text-3xl">
+              <h2 className="font-serif text-2xl sm:text-3xl">
                 <Link href={`/manager/${radar.rival.entry}`} className="hover:underline">
                   {radar.rival.manager}
                 </Link>
@@ -115,26 +115,26 @@ function RivalInner() {
             </div>
           </div>
 
-          <dl className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-5">
+          <dl className="mt-6 grid grid-cols-2 gap-4 sm:mt-8 sm:grid-cols-5 sm:gap-6">
             <div>
               <dt className="text-xs text-muted">Live-avstand</dt>
-              <dd className="font-condensed text-3xl">{signed(radar.live_gap)}</dd>
+              <dd className="font-condensed text-2xl sm:text-3xl">{signed(radar.live_gap)}</dd>
             </div>
             <div>
               <dt className="text-xs text-muted">Avstand totalt</dt>
-              <dd className="font-condensed text-3xl">{signed(radar.total_gap)}</dd>
+              <dd className="font-condensed text-2xl sm:text-3xl">{signed(radar.total_gap)}</dd>
             </div>
             <div>
               <dt className="text-xs text-muted">Denne runden</dt>
-              <dd className="font-condensed text-3xl">{signed(radar.gw_gap)}</dd>
+              <dd className="font-condensed text-2xl sm:text-3xl">{signed(radar.gw_gap)}</dd>
             </div>
             <div>
               <dt className="text-xs text-muted">Felles</dt>
-              <dd className="font-condensed text-3xl">{radar.common_players}</dd>
+              <dd className="font-condensed text-2xl sm:text-3xl">{radar.common_players}</dd>
             </div>
             <div>
               <dt className="text-xs text-muted">Igjen</dt>
-              <dd className="font-condensed text-3xl">
+              <dd className="font-condensed text-2xl sm:text-3xl">
                 {radar.players_remaining.me} / {radar.players_remaining.rival}
               </dd>
             </div>
@@ -176,7 +176,7 @@ function RivalInner() {
                 {radar.cheer_for.length ? (
                   radar.cheer_for.map((e) => (
                     <li key={e.element} className="py-3">
-                      <p className="font-serif text-xl">{e.headline}</p>
+                      <p className="font-serif text-lg sm:text-xl">{e.headline}</p>
                       <p className="text-sm text-muted">
                         {e.status_label} · {e.event_points} p · utslag {signed(e.live_swing)}
                       </p>
@@ -195,7 +195,7 @@ function RivalInner() {
                 {radar.hope_blank.length ? (
                   radar.hope_blank.map((e) => (
                     <li key={e.element} className="py-3">
-                      <p className="font-serif text-xl">{e.headline}</p>
+                      <p className="font-serif text-lg sm:text-xl">{e.headline}</p>
                       <p className="text-sm text-muted">
                         {e.status_label} · {e.event_points} p · utslag {signed(e.live_swing)}
                       </p>
@@ -211,9 +211,22 @@ function RivalInner() {
 
           {section === "unike" ? (
             <>
-              <h3 className="mt-8 font-serif text-2xl">Unike spillere</h3>
-              <div className="mt-4 overflow-x-auto">
-                <table className="w-full min-w-[640px] text-left text-sm">
+              <h3 className="mt-8 font-serif text-xl sm:text-2xl">Unike spillere</h3>
+              <ul className="mt-4 divide-y divide-rule border-y border-rule md:hidden">
+                {[...radar.my_unique, ...radar.rival_unique].map((e) => (
+                  <li key={`${e.element}-${e.multiplier_edge}`} className="py-3">
+                    <p className="text-xs text-muted">
+                      {e.multiplier_edge > 0 ? radar.me.manager : radar.rival.manager}
+                    </p>
+                    <p className="font-serif text-lg">{e.player}</p>
+                    <p className="text-sm text-muted">
+                      {e.status_label} · {signed(e.live_swing)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-4 hidden overflow-x-auto md:block">
+                <table className="w-full text-left text-sm">
                   <thead>
                     <tr className="border-b border-ink font-condensed text-[11px] tracking-[0.14em] text-muted uppercase">
                       <th className="py-2">Fordel</th>

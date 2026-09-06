@@ -23,7 +23,7 @@ function LigaInner() {
 
   return (
     <main className="flex-1 bg-paper">
-      <div className="mx-auto max-w-[1400px] px-4 py-12 sm:px-6">
+      <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 md:py-12">
           {status?.is_live ? (
           <LiveIndicator gw={status.event_id} live label={status.round_kicker} />
         ) : (
@@ -31,7 +31,7 @@ function LigaInner() {
             {status?.round_kicker || (status ? `Runde ${status.event_id}` : "Liga")}
           </p>
         )}
-        <h1 className="mt-3 font-serif text-4xl leading-none text-ink sm:text-5xl">Liga</h1>
+        <h1 className="mt-3 font-serif text-3xl leading-none text-ink sm:text-5xl">Liga</h1>
         <p className="mt-3 max-w-2xl text-base leading-7 text-muted">
           Samme konkurranse, tre blikk.
         </p>

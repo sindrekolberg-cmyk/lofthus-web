@@ -27,7 +27,7 @@ export function EventBanner() {
             <span className="text-ink"> {banner.label}</span>
           </p>
         ) : (
-          <p className="min-w-0 truncate text-[12px] text-muted">Venter på neste utslag</p>
+          <p className="hidden min-w-0 truncate text-[12px] text-muted md:block">Venter på neste utslag</p>
         )}
       </div>
     </div>
