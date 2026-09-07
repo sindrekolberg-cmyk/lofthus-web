@@ -107,13 +107,13 @@ export function SiteHeader() {
         />
       </div>
 
-      <div className={pathname === "/" ? "hidden md:block" : undefined}>
+      {pathname === "/" ? null : (
         <EventBanner
           gw={status.data?.event_id}
           footballLive={live}
           finished={Boolean(status.data?.is_finished)}
         />
-      </div>
+      )}
       {pathname === "/" || pathname.startsWith("/liga") ? null : <HeaderPulse />}
     </header>
   );
