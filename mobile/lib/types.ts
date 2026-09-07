@@ -46,6 +46,7 @@ export type PopularPlayer = {
   player: string;
   ownership_pct: number;
   event_points: number;
+  image_url?: string;
 };
 
 export type HomePayload = {
