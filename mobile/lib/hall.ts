@@ -1,4 +1,4 @@
-import { monthPodiums } from "./hof-points";
+import { historicalPoints, monthPodiums } from "./hof-points";
 import { nameMatches, newestSeasonFirst } from "./format";
 import type { HallCup, HallMonthly, HallOverall, HallPayload, HallRandom, HallRow } from "./types";
 
@@ -12,12 +12,6 @@ export const HALL_TABS: { id: HallTab; label: string }[] = [
   { id: "random", label: "Random plassering" },
   { id: "managers", label: "Detaljert manageroversikt" },
 ];
-
-export type MeritRecord = {
-  label: string;
-  value: number;
-  managers: string[];
-};
 
 export function emptyHonours(): HallRow {
   return {
@@ -36,18 +30,26 @@ export function emptyHonours(): HallRow {
   };
 }
 
-export function deriveRecords(rows: HallRow[]): MeritRecord[] {
-  const specs: { label: string; value: (row: HallRow) => number }[] = [
-    { label: "Flest sammenlagtseiere", value: (row) => row.league_gold },
-    { label: "Flest cupgull", value: (row) => row.cup_gold },
-    { label: "Flest månedsseiere", value: (row) => row.monthly_gold },
-    { label: "Flest månedspodier", value: (row) => monthPodiums(row) },
-  ];
-  return specs.map((spec) => {
-    const best = Math.max(0, ...rows.map(spec.value));
-    const managers = best > 0 ? rows.filter((row) => spec.value(row) === best).map((row) => row.manager) : [];
-    return { label: spec.label, value: best, managers };
-  });
+/** Hall of Fame ranking. Same merit point model as the manager profile. */
+export function legendRanking(rows: HallRow[], limit = 5) {
+  return (rows || [])
+    .map((row) => ({ row, points: historicalPoints(row) }))
+    .filter((item) => item.points > 0)
+    .sort((a, b) => b.points - a.points || a.row.manager.localeCompare(b.row.manager, "nb"))
+    .slice(0, limit);
+}
+
+function count(value: number, singular: string, plural: string) {
+  return `${value} ${value === 1 ? singular : plural}`;
+}
+
+export function meritSummary(row: HallRow) {
+  return [
+    count(row.league_gold, "sammenlagtseier", "sammenlagtseiere"),
+    count(row.cup_gold, "cupgull", "cupgull"),
+    count(row.monthly_gold, "månedsseier", "månedsseiere"),
+    count(monthPodiums(row), "månedspodium", "månedspodier"),
+  ].join(" · ");
 }
 
 export function overallPlace(row: HallOverall, manager: string) {

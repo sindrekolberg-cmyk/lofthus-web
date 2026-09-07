@@ -51,7 +51,7 @@ export default function HallScreen() {
 
   return (
     <Screen kicker="Historie" title="Hall of Fame" compactHeader refreshing={remote.refreshing} onRefresh={remote.refresh}>
-      <Text style={hallStyles.lead}>Hele Lofthus-historien. Finn en manager, eller bla i merittene.</Text>
+      <Text style={hallStyles.lead}>Hele Lofthus-historien. Søk opp en manager, eller les listen over ligaens største.</Text>
       {remote.loading && !data ? <Loading /> : null}
       {remote.error && !data ? <ErrorState message={remote.error} /> : null}
       {data ? (
@@ -71,7 +71,9 @@ export default function HallScreen() {
           <View style={styles.tabs}>
             <HallTabs value={tab} onChange={setTab} />
           </View>
-          {tab === "overview" ? <HallOverview data={data} onOpen={setTab} /> : null}
+          {tab === "overview" ? (
+            <HallOverview data={data} onOpen={setTab} onSelectManager={chooseManager} />
+          ) : null}
           {tab === "seasons" ? <HallSeasonHistory data={data} /> : null}
           {tab === "month" ? <HallMonthlyHistory data={data} /> : null}
           {tab === "cup" ? <HallCupHistory data={data} /> : null}
