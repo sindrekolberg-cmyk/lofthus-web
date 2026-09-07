@@ -34,8 +34,8 @@ export function Screen({
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.paper },
-  content: { paddingHorizontal: 18, paddingTop: 8, paddingBottom: 38 },
-  contentFlush: { paddingHorizontal: 0, paddingTop: 0 },
+  content: { paddingHorizontal: 18, paddingTop: 8, paddingBottom: 112 },
+  contentFlush: { paddingHorizontal: 0, paddingTop: 0, paddingBottom: 112 },
   kicker: { color: colors.live, fontSize: 10, fontWeight: "900", letterSpacing: 1.5, textTransform: "uppercase", marginTop: 4 },
   title: { color: colors.ink, fontFamily: "Georgia", fontSize: 36, lineHeight: 40, fontWeight: "700", letterSpacing: -0.9, marginTop: 5, marginBottom: 18 },
   flushText: { marginHorizontal: 18 },
