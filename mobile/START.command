@@ -20,11 +20,11 @@ if [ "$NODE_MAJOR" -lt 22 ] || { [ "$NODE_MAJOR" -eq 22 ] && [ "$NODE_MINOR" -lt
 fi
 
 echo "Synkroniserer app-avhengigheter ..."
-if ! npm install --no-audit --no-fund; then
+if ! npm install --legacy-peer-deps --no-audit --no-fund; then
   echo ""
-  echo "Første installasjon ble hengende igjen. Rydder den lokale mobilinstallasjonen og prøver én gang til ..."
+  echo "Første installasjon feilet. Rydder den lokale mobilinstallasjonen og prøver én gang til ..."
   rm -rf node_modules package-lock.json
-  npm install --no-audit --no-fund
+  npm install --legacy-peer-deps --no-audit --no-fund
 fi
 
 echo ""
