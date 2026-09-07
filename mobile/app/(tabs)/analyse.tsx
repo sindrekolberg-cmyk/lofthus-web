@@ -13,13 +13,19 @@ const tools = [
 
 export default function AnalyseScreen() {
   return (
-    <Screen kicker="Verktøy" title="Analyse">
-      <Text style={styles.lead}>Mobilhuben er koblet på samme analysegrunnlag som web. Neste steg er å gjøre verktøyene fullt native, ett for ett.</Text>
+    <Screen kicker="Verktøy" title="Analyseverktøy">
+      <Text style={styles.lead}>Velg verktøy. Samme Lofthus-data som på web, pakket for mobilen.</Text>
       <View style={styles.list}>
         {tools.map(([title, copy], index) => (
-          <View key={title} style={[styles.card, index === 0 && styles.cardPrimary]}>
-            <Text style={[styles.title, index === 0 && styles.titlePrimary]}>{title}</Text>
-            <Text style={[styles.copy, index === 0 && styles.copyPrimary]}>{copy}</Text>
+          <View key={title} style={[styles.row, index === 0 && styles.rowPrimary]}>
+            <View style={styles.numberWrap}>
+              <Text style={[styles.number, index === 0 && styles.numberPrimary]}>{String(index + 1).padStart(2, "0")}</Text>
+            </View>
+            <View style={styles.body}>
+              <Text style={[styles.title, index === 0 && styles.titlePrimary]}>{title}</Text>
+              <Text style={[styles.copy, index === 0 && styles.copyPrimary]}>{copy}</Text>
+            </View>
+            <Text style={[styles.arrow, index === 0 && styles.arrowPrimary]}>→</Text>
           </View>
         ))}
       </View>
@@ -28,12 +34,18 @@ export default function AnalyseScreen() {
 }
 
 const styles = StyleSheet.create({
-  lead: { color: colors.muted, fontSize: 16, lineHeight: 23, marginBottom: 18 },
-  list: { gap: 10 },
-  card: { backgroundColor: colors.panel, borderWidth: 1, borderColor: colors.line, borderRadius: 18, padding: 18 },
-  cardPrimary: { backgroundColor: colors.dark, borderColor: colors.dark },
-  title: { color: colors.ink, fontSize: 21, fontWeight: "800" },
+  lead: { color: colors.muted, fontSize: 14, lineHeight: 21, marginTop: -5, marginBottom: 18 },
+  list: { borderTopWidth: 1, borderTopColor: colors.ink },
+  row: { minHeight: 96, flexDirection: "row", alignItems: "center", gap: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line, paddingVertical: 14 },
+  rowPrimary: { backgroundColor: colors.ink, marginHorizontal: -18, paddingHorizontal: 18, borderBottomColor: colors.ink },
+  numberWrap: { width: 28 },
+  number: { color: colors.live, fontSize: 10, fontWeight: "900", letterSpacing: 1 },
+  numberPrimary: { color: "#E79B87" },
+  body: { flex: 1 },
+  title: { color: colors.ink, fontFamily: "Georgia", fontSize: 21, lineHeight: 25, fontWeight: "700" },
   titlePrimary: { color: colors.white },
-  copy: { color: colors.muted, fontSize: 14, lineHeight: 20, marginTop: 5 },
-  copyPrimary: { color: "#C9C3B9" },
+  copy: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: 4 },
+  copyPrimary: { color: "#CFC9C0" },
+  arrow: { color: colors.muted, fontSize: 20 },
+  arrowPrimary: { color: colors.white },
 });
