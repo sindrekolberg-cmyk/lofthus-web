@@ -47,6 +47,7 @@ const HALL_HIERARCHY = [
 function sortName(name: string) {
   return name
     .normalize("NFKD")
+    .replace(/\p{M}+/gu, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
