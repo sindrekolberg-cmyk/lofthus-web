@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import type { Story } from "@/lib/types";
 import { colors } from "@/lib/theme";
@@ -14,28 +14,20 @@ const ICONS: Record<string, string> = {
   unique: "◆",
   live: "●",
   ownership: "●",
+  leader: "●",
+  month: "●",
 };
 
 export function Snakkiser({ stories }: { stories: Story[] }) {
-  const { width } = useWindowDimensions();
-  const sideQuote = width >= 370;
-  const rows = stories.slice(0, 4);
+  const rows = stories.slice(0, 5);
 
   return (
     <View style={styles.section}>
       <Text style={styles.title}>Snakkiser</Text>
-      <View style={[styles.grid, !sideQuote && styles.gridStack]}>
-        <View style={styles.list}>
-          {rows.length ? rows.map((story) => (
-            <StoryRow key={story.key} story={story} />
-          )) : <Text style={styles.empty}>Ingen sterke historier akkurat nå.</Text>}
-        </View>
-        <View style={[styles.quote, sideQuote ? styles.quoteSide : styles.quoteBelow]}>
-          <Text style={styles.quoteText}>“Samme galskap hver runde. Det er derfor vi elsker dette.”</Text>
-          <View style={styles.quoteRule} />
-          <Text style={styles.brand}>LOFTHUS</Text>
-          <Text style={styles.brandSub}>ROAD OPEN</Text>
-        </View>
+      <View style={styles.list}>
+        {rows.length ? rows.map((story) => (
+          <StoryRow key={story.key} story={story} />
+        )) : <Text style={styles.empty}>Ingen sterke historier akkurat nå.</Text>}
       </View>
     </View>
   );
@@ -62,23 +54,58 @@ function StoryRow({ story }: { story: Story }) {
 }
 
 const styles = StyleSheet.create({
-  section: { backgroundColor: colors.panel, paddingTop: 8, paddingBottom: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
-  title: { paddingHorizontal: 16, color: colors.ink, fontFamily: "Georgia", fontSize: 22, lineHeight: 26, fontWeight: "700" },
-  grid: { flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingTop: 6 },
-  gridStack: { flexDirection: "column" },
-  list: { flex: 1.55, minWidth: 0, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line },
-  row: { minHeight: 42, flexDirection: "row", alignItems: "flex-start", gap: 6, paddingVertical: 7, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
-  icon: { width: 16, color: colors.live, fontSize: 13, fontWeight: "900", textAlign: "center", marginTop: 1 },
+  section: {
+    backgroundColor: colors.panel,
+    paddingTop: 8,
+    paddingBottom: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.line,
+  },
+  title: {
+    paddingHorizontal: 16,
+    color: colors.ink,
+    fontFamily: "Georgia",
+    fontSize: 22,
+    lineHeight: 26,
+    fontWeight: "700",
+  },
+  list: {
+    marginHorizontal: 16,
+    marginTop: 6,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.line,
+  },
+  row: {
+    minHeight: 50,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.line,
+  },
+  icon: {
+    width: 18,
+    color: colors.live,
+    fontSize: 14,
+    fontWeight: "900",
+    textAlign: "center",
+    marginTop: 1,
+  },
   copy: { flex: 1, minWidth: 0 },
-  headline: { color: colors.ink, fontFamily: "Georgia", fontSize: 13, lineHeight: 16, fontWeight: "700" },
-  meta: { color: colors.muted, fontSize: 10, lineHeight: 13, marginTop: 2 },
-  quote: { backgroundColor: colors.peach, paddingHorizontal: 10, paddingVertical: 10, justifyContent: "center" },
-  quoteSide: { flex: 0.72, minWidth: 108 },
-  quoteBelow: { minHeight: 72 },
-  quoteText: { color: colors.ink, fontFamily: "Georgia", fontStyle: "italic", fontSize: 12, lineHeight: 16 },
-  quoteRule: { width: 28, height: 2, backgroundColor: colors.live, marginTop: 10, marginBottom: 6 },
-  brand: { color: colors.ink, fontSize: 8, fontWeight: "900", letterSpacing: 2 },
-  brandSub: { color: colors.muted, fontSize: 6, fontWeight: "700", letterSpacing: 1.4, marginTop: 1 },
+  headline: {
+    color: colors.ink,
+    fontFamily: "Georgia",
+    fontSize: 14,
+    lineHeight: 17,
+    fontWeight: "700",
+  },
+  meta: {
+    color: colors.muted,
+    fontSize: 10.5,
+    lineHeight: 14,
+    marginTop: 2,
+  },
   empty: { color: colors.muted, fontSize: 12, paddingVertical: 10 },
   pressed: { opacity: 0.58 },
 });
