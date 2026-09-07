@@ -18,10 +18,7 @@ type Props = {
 
 const SORTS: { id: SortKey; label: string }[] = [
   { id: "total", label: "Totalpoeng" },
-  { id: "gw", label: "Rundepoeng" },
   { id: "month", label: "Måned" },
-  { id: "up", label: "Største klatrere" },
-  { id: "down", label: "Største fall" },
 ];
 
 export function LeagueTable({ rows, status, compact, highlight, remaining, sortable }: Props) {
@@ -73,6 +70,27 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
     prevTops.current = nextTops;
   }, [sorted]);
 
+  const sortableHeader = (label: string, key: SortKey, alignRight = true) => {
+    if (!sortable) return label;
+    const active = sort === key || (key === "up" && sort === "down");
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          if (key === "up") setSort((current) => (current === "up" ? "down" : "up"));
+          else setSort(key);
+        }}
+        className={`inline-flex w-full items-center gap-1 hover:text-ink ${alignRight ? "justify-end" : "justify-start"} ${
+          active ? "text-ink" : "text-muted"
+        }`}
+        aria-label={key === "up" ? "Sorter på største klatrere eller største fall" : `Sorter på ${label.toLowerCase()}`}
+      >
+        {label}
+        {active ? <span aria-hidden="true">{sort === "down" ? "↓" : "↑"}</span> : null}
+      </button>
+    );
+  };
+
   return (
     <div>
       {sortable ? (
@@ -91,6 +109,7 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
           ))}
         </div>
       ) : null}
+
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left">
           <thead>
@@ -99,11 +118,13 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
               <th className="py-2 pr-2 font-medium sm:py-3 sm:pr-3">Manager</th>
               {!compact ? <th className="hidden py-3 pr-3 font-medium sm:table-cell">Lag</th> : null}
               {!compact ? <th className="hidden py-3 pr-3 font-medium md:table-cell">Kaptein</th> : null}
-              <th className="py-3 pr-3 text-right font-medium">GW</th>
-              <th className="py-3 pr-3 text-right font-medium">Total</th>
-              {sortable && !compact ? <th className="hidden py-3 pr-3 text-right font-medium lg:table-cell">Måned</th> : null}
+              <th className="py-3 pr-3 text-right font-medium">{sortableHeader("GW", "gw")}</th>
+              <th className="py-3 pr-3 text-right font-medium">{sortableHeader("Total", "total")}</th>
+              {sortable && !compact ? (
+                <th className="hidden py-3 pr-3 text-right font-medium lg:table-cell">{sortableHeader("Måned", "month")}</th>
+              ) : null}
               {remaining ? <th className="hidden py-3 pr-3 text-right font-medium sm:table-cell">Igjen</th> : null}
-              <th className="py-3 text-right font-medium">+/-</th>
+              <th className="py-3 text-right font-medium">{sortableHeader("+/-", "up")}</th>
             </tr>
           </thead>
           <tbody>
@@ -127,33 +148,19 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
                   ) : null}
                   <span className="mt-0.5 block text-xs text-muted sm:hidden">{row.team}</span>
                 </td>
-                {!compact ? (
-                  <td className="hidden py-3 pr-3 text-sm text-muted sm:table-cell">{row.team}</td>
-                ) : null}
-                {!compact ? (
-                  <td className="hidden py-3 pr-3 text-sm md:table-cell">{row.captain || "–"}</td>
-                ) : null}
+                {!compact ? <td className="hidden py-3 pr-3 text-sm text-muted sm:table-cell">{row.team}</td> : null}
+                {!compact ? <td className="hidden py-3 pr-3 text-sm md:table-cell">{row.captain || "–"}</td> : null}
                 <td className="py-2.5 pr-2 text-right font-condensed text-base tabular-nums sm:py-3 sm:pr-3 sm:text-lg">{row.gw}</td>
-                <td className="py-2.5 pr-2 text-right font-condensed text-base font-semibold tabular-nums sm:py-3 sm:pr-3 sm:text-lg">
-                  {row.total}
-                </td>
+                <td className="py-2.5 pr-2 text-right font-condensed text-base font-semibold tabular-nums sm:py-3 sm:pr-3 sm:text-lg">{row.total}</td>
                 {sortable && !compact ? (
-                  <td className="hidden py-3 pr-3 text-right font-condensed tabular-nums lg:table-cell">
-                    {row.month_points}
-                  </td>
+                  <td className="hidden py-3 pr-3 text-right font-condensed tabular-nums lg:table-cell">{row.month_points}</td>
                 ) : null}
                 {remaining ? (
-                  <td className="hidden py-3 pr-3 text-right font-condensed tabular-nums text-muted sm:table-cell">
-                    {row.players_remaining}
-                  </td>
+                  <td className="hidden py-3 pr-3 text-right font-condensed tabular-nums text-muted sm:table-cell">{row.players_remaining}</td>
                 ) : null}
                 <td
                   className={`py-2.5 text-right font-condensed text-base tabular-nums sm:py-3 sm:text-lg ${
-                    row.rank_change > 0
-                      ? "text-[#2f6a32]"
-                      : row.rank_change < 0
-                        ? "text-live"
-                        : "text-muted"
+                    row.rank_change > 0 ? "text-[#2f6a32]" : row.rank_change < 0 ? "text-live" : "text-muted"
                   }`}
                 >
                   {moveLabel(row.rank_change, provisional)}
