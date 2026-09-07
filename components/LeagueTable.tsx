@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { ManagerRow, Status } from "@/lib/types";
 import { moveLabel } from "@/lib/format";
 
-type SortKey = "total" | "gw" | "month" | "move";
+type SortKey = "rank" | "captain" | "total" | "gw" | "month" | "move";
 type SortDirection = "asc" | "desc";
 
 type Props = {
@@ -22,6 +22,10 @@ const SORTS: { id: SortKey; label: string }[] = [
   { id: "month", label: "Måned" },
 ];
 
+function defaultDirection(key: SortKey): SortDirection {
+  return key === "rank" || key === "captain" ? "asc" : "desc";
+}
+
 export function LeagueTable({ rows, status, compact, highlight, remaining, sortable }: Props) {
   const provisional = Boolean(status?.provisional);
   const [sort, setSort] = useState<SortKey>("total");
@@ -35,7 +39,7 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
       return;
     }
     setSort(key);
-    setDirection("desc");
+    setDirection(defaultDirection(key));
   };
 
   const sorted = useMemo(() => {
@@ -43,13 +47,25 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
     const factor = direction === "desc" ? -1 : 1;
 
     copy.sort((a, b) => {
-      let diff = 0;
-      if (sort === "total") diff = a.total - b.total;
-      else if (sort === "gw") diff = a.gw - b.gw;
-      else if (sort === "month") diff = a.month_points - b.month_points;
-      else if (sort === "move") diff = a.rank_change - b.rank_change;
+      if (sort === "captain") {
+        const captainA = (a.captain || "").replace(/\s*\([^)]*\)\s*$/, "").trim();
+        const captainB = (b.captain || "").replace(/\s*\([^)]*\)\s*$/, "").trim();
+        const emptyA = captainA ? 0 : 1;
+        const emptyB = captainB ? 0 : 1;
+        if (emptyA !== emptyB) return emptyA - emptyB;
+        const captainDiff = captainA.localeCompare(captainB, "nb", { sensitivity: "base" });
+        if (captainDiff !== 0) return captainDiff * factor;
+      } else {
+        let diff = 0;
+        if (sort === "rank") diff = a.rank - b.rank;
+        else if (sort === "total") diff = a.total - b.total;
+        else if (sort === "gw") diff = a.gw - b.gw;
+        else if (sort === "month") diff = a.month_points - b.month_points;
+        else if (sort === "move") diff = a.rank_change - b.rank_change;
 
-      if (diff !== 0) return diff * factor;
+        if (diff !== 0) return diff * factor;
+      }
+
       return a.rank - b.rank || a.manager.localeCompare(b.manager, "nb");
     });
 
@@ -88,6 +104,16 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
 
   const arrow = direction === "desc" ? "↓" : "↑";
 
+  const nextSortLabel = (label: string, key: SortKey, active: boolean) => {
+    if (key === "captain") {
+      return `Sorter kaptein ${active && direction === "asc" ? "Å til A" : "A til Å"}`;
+    }
+    if (key === "rank") {
+      return `Sorter plass ${active && direction === "asc" ? "sisteplass først" : "førsteplass først"}`;
+    }
+    return `Sorter ${label.toLowerCase()} ${active && direction === "desc" ? "lavest først" : "høyest først"}`;
+  };
+
   const sortableHeader = (label: string, key: SortKey, alignRight = true) => {
     if (!sortable) return label;
     const active = sort === key;
@@ -98,7 +124,7 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
         className={`inline-flex w-full items-center gap-1 hover:text-ink ${alignRight ? "justify-end" : "justify-start"} ${
           active ? "text-ink" : "text-muted"
         }`}
-        aria-label={`Sorter ${label.toLowerCase()} ${active && direction === "desc" ? "lavest først" : "høyest først"}`}
+        aria-label={nextSortLabel(label, key, active)}
       >
         {label}
         {active ? <span aria-hidden="true">{arrow}</span> : null}
@@ -120,7 +146,7 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
                 className={`min-h-11 shrink-0 border px-3 font-condensed text-[11px] tracking-[0.14em] uppercase ${
                   active ? "border-ink bg-ink text-paper" : "border-rule text-muted hover:border-ink hover:text-ink"
                 }`}
-                aria-label={`Sorter ${item.label.toLowerCase()} ${active && direction === "desc" ? "lavest først" : "høyest først"}`}
+                aria-label={nextSortLabel(item.label, item.id, active)}
               >
                 {item.label}{active ? ` ${arrow}` : ""}
               </button>
@@ -133,10 +159,12 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="border-b border-ink font-condensed text-[11px] tracking-[0.16em] text-muted uppercase">
-              <th className="py-2 pr-2 font-medium sm:py-3 sm:pr-3">Plass</th>
+              <th className="py-2 pr-2 font-medium sm:py-3 sm:pr-3">{sortableHeader("Plass", "rank", false)}</th>
               <th className="py-2 pr-2 font-medium sm:py-3 sm:pr-3">Manager</th>
               {!compact ? <th className="hidden py-3 pr-3 font-medium sm:table-cell">Lag</th> : null}
-              {!compact ? <th className="hidden py-3 pr-3 font-medium md:table-cell">Kaptein</th> : null}
+              {!compact ? (
+                <th className="hidden py-3 pr-3 font-medium md:table-cell">{sortableHeader("Kaptein", "captain", false)}</th>
+              ) : null}
               <th className="py-3 pr-3 text-right font-medium">{sortableHeader("GW", "gw")}</th>
               <th className="py-3 pr-3 text-right font-medium">{sortableHeader("Total", "total")}</th>
               {sortable && !compact ? (
