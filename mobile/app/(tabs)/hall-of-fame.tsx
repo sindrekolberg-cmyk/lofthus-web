@@ -5,7 +5,6 @@ import { colors } from "@/lib/theme";
 import { useRemote } from "@/lib/useRemote";
 import { Screen } from "@/components/Screen";
 import { ErrorState, Loading } from "@/components/State";
-import { Section } from "@/components/Section";
 
 export default function HallScreen() {
   const loader = useCallback(() => api.hallOfFame(), []);
@@ -14,7 +13,7 @@ export default function HallScreen() {
   const matches = useMemo(() => {
     const q = query.trim().toLocaleLowerCase("nb");
     if (!q || !remote.data) return [];
-    return remote.data.rows.filter((row) => row.manager.toLocaleLowerCase("nb").includes(q)).slice(0, 6);
+    return remote.data.rows.filter((row) => row.manager.toLocaleLowerCase("nb").includes(q)).slice(0, 5);
   }, [query, remote.data]);
 
   return (
@@ -23,6 +22,8 @@ export default function HallScreen() {
       {remote.error && !remote.data ? <ErrorState message={remote.error} /> : null}
       {remote.data ? (
         <>
+          <Text style={styles.lead}>Hele Lofthus-historien. Finn en manager, eller bla i sammenlagtvinnerne.</Text>
+          <Text style={styles.label}>DETALJERT MANAGEROVERSIKT</Text>
           <TextInput
             value={query}
             onChangeText={setQuery}
@@ -37,7 +38,7 @@ export default function HallScreen() {
                 <View key={row.manager} style={styles.profile}>
                   <Text style={styles.name}>{row.manager}</Text>
                   <View style={styles.stats}>
-                    <Stat label="Sammenlagt" value={row.league_gold} />
+                    <Stat label="Sammenlagtseier" value={row.league_gold} />
                     <Stat label="Cupgull" value={row.cup_gold} />
                     <Stat label="Månedsseiere" value={row.monthly_gold} />
                     <Stat label="Månedspodier" value={row.monthly_gold + row.monthly_silver + row.monthly_bronze} />
@@ -47,14 +48,15 @@ export default function HallScreen() {
             </View>
           ) : query.trim() ? <Text style={styles.empty}>Ingen manager funnet.</Text> : null}
 
-          <Section title="Sammenlagtvinnere">
+          <Text style={styles.sectionTitle}>Sammenlagtvinnere</Text>
+          <View style={styles.winners}>
             {(remote.data.overall || []).slice().reverse().map((row) => (
               <View key={row.season} style={styles.winnerRow}>
                 <Text style={styles.season}>{row.season}</Text>
                 <Text style={styles.winner}>{row.winner || "Ikke registrert"}</Text>
               </View>
             ))}
-          </Section>
+          </View>
         </>
       ) : null}
     </Screen>
@@ -62,20 +64,29 @@ export default function HallScreen() {
 }
 
 function Stat({ label, value }: { label: string; value: number }) {
-  return <View style={styles.stat}><Text style={styles.statValue}>{value}</Text><Text style={styles.statLabel}>{label}</Text></View>;
+  return (
+    <View style={styles.stat}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-  search: { height: 50, borderWidth: 1, borderColor: colors.line, borderRadius: 14, backgroundColor: colors.panel, color: colors.ink, paddingHorizontal: 15, fontSize: 16 },
+  lead: { color: colors.muted, fontSize: 14, lineHeight: 21, marginTop: -5, marginBottom: 24 },
+  label: { color: colors.muted, fontSize: 9, fontWeight: "900", letterSpacing: 1.3, marginBottom: 7 },
+  search: { height: 48, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.panel, color: colors.ink, paddingHorizontal: 14, fontSize: 15 },
   matches: { marginTop: 12, gap: 10 },
-  profile: { backgroundColor: colors.dark, borderRadius: 18, padding: 17 },
-  name: { color: colors.white, fontSize: 23, fontWeight: "800" },
-  stats: { flexDirection: "row", flexWrap: "wrap", marginTop: 16, gap: 8 },
-  stat: { width: "47%", borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "#4A4741", paddingTop: 10 },
-  statValue: { color: colors.white, fontSize: 24, fontWeight: "900" },
-  statLabel: { color: "#C9C3B9", fontSize: 11, marginTop: 2 },
-  winnerRow: { flexDirection: "row", minHeight: 46, alignItems: "center", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
-  season: { color: colors.muted, width: 78, fontSize: 13, fontWeight: "700" },
-  winner: { color: colors.ink, fontSize: 15, fontWeight: "700" },
-  empty: { color: colors.muted, marginTop: 12 },
+  profile: { backgroundColor: colors.peach, borderTopWidth: 1, borderBottomWidth: 1, borderColor: "rgba(23,23,21,0.14)", paddingVertical: 16, paddingHorizontal: 14 },
+  name: { color: colors.ink, fontFamily: "Georgia", fontSize: 23, lineHeight: 28, fontWeight: "700" },
+  stats: { flexDirection: "row", flexWrap: "wrap", marginTop: 15, gap: 10 },
+  stat: { width: "47%", borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: "rgba(23,23,21,0.18)", paddingTop: 8 },
+  statValue: { color: colors.ink, fontSize: 23, fontWeight: "900", fontVariant: ["tabular-nums"] },
+  statLabel: { color: colors.muted, fontSize: 10, lineHeight: 14, marginTop: 1 },
+  sectionTitle: { color: colors.ink, fontFamily: "Georgia", fontSize: 27, fontWeight: "700", marginTop: 30, marginBottom: 9 },
+  winners: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line },
+  winnerRow: { flexDirection: "row", minHeight: 48, alignItems: "center", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
+  season: { color: colors.muted, width: 80, fontSize: 12, fontWeight: "800" },
+  winner: { color: colors.ink, fontSize: 14, fontWeight: "700" },
+  empty: { color: colors.muted, marginTop: 10, fontSize: 13 },
 });
