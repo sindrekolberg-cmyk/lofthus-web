@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { PopularPlayer } from "@/lib/types";
-import { playerThumb } from "@/lib/clubCrests";
+import { playerImageCandidates } from "@/lib/clubCrests";
 import { colors, radius } from "@/lib/theme";
 
 export function TalkersRail({ players }: { players: PopularPlayer[] }) {
@@ -11,28 +12,48 @@ export function TalkersRail({ players }: { players: PopularPlayer[] }) {
     <View style={styles.section}>
       <View style={styles.header}>
         <Text style={styles.fire}>🔥</Text>
-        <Text style={styles.title}>Spillerne alle snakker om</Text>
+        <Text style={styles.title}>Spillerne folk snakker om</Text>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.rail}>
-        {shown.map((player) => {
-          const uri = playerThumb(player.image_url);
-          return (
-            <View key={player.element} style={styles.card}>
-              {uri ? (
-                <Image source={{ uri }} style={styles.image} resizeMode="cover" />
-              ) : (
-                <View style={styles.fallback}><Text style={styles.initial}>{player.player.slice(0, 1)}</Text></View>
-              )}
-              <View style={styles.copy}>
-                <Text style={styles.name} numberOfLines={2}>{player.player}</Text>
-                <Text style={styles.own}>{Math.round(player.ownership_pct)}% eierandel</Text>
-                <Text style={[styles.pts, player.event_points < 0 && styles.down]}>{player.event_points > 0 ? "+" : ""}{player.event_points}</Text>
-                <Text style={styles.round}>siste runde</Text>
-              </View>
-            </View>
-          );
-        })}
+        {shown.map((player) => (
+          <TalkerCard key={player.element} player={player} />
+        ))}
       </ScrollView>
+    </View>
+  );
+}
+
+function TalkerCard({ player }: { player: PopularPlayer }) {
+  const candidates = playerImageCandidates(player.image_url);
+  const [index, setIndex] = useState(0);
+  const [failed, setFailed] = useState(false);
+  const uri = !failed ? candidates[index] || "" : "";
+
+  return (
+    <View style={styles.card}>
+      {uri ? (
+        <View style={styles.face}>
+          <Image
+            source={{ uri }}
+            style={styles.image}
+            resizeMode="cover"
+            onError={() => {
+              if (index < candidates.length - 1) setIndex(index + 1);
+              else setFailed(true);
+            }}
+          />
+        </View>
+      ) : (
+        <View style={styles.fallback}><Text style={styles.initial}>{player.player.slice(0, 1)}</Text></View>
+      )}
+      <View style={styles.copy}>
+        <Text style={styles.name} numberOfLines={2}>{player.player}</Text>
+        <Text style={styles.own}>{Math.round(player.ownership_pct)}% i Lofthus</Text>
+        <Text style={[styles.pts, player.event_points < 0 && styles.down]}>
+          {player.event_points > 0 ? "+" : ""}{player.event_points}
+        </Text>
+        <Text style={styles.round}>GW-poeng</Text>
+      </View>
     </View>
   );
 }
@@ -43,9 +64,10 @@ const styles = StyleSheet.create({
   fire: { fontSize: 14 },
   title: { color: colors.ink, fontFamily: "Georgia", fontSize: 20, lineHeight: 24, fontWeight: "700" },
   rail: { paddingHorizontal: 16, paddingTop: 7, gap: 6 },
-  card: { width: 132, minHeight: 86, backgroundColor: colors.white, borderRadius: radius.sm, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, overflow: "hidden", flexDirection: "row" },
-  image: { width: 48, alignSelf: "stretch", backgroundColor: colors.player },
-  fallback: { width: 48, alignSelf: "stretch", backgroundColor: colors.player, alignItems: "center", justifyContent: "center" },
+  card: { width: 148, height: 88, backgroundColor: colors.white, borderRadius: radius.sm, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, overflow: "hidden", flexDirection: "row" },
+  face: { width: 76, overflow: "hidden", backgroundColor: colors.player },
+  image: { width: 76, height: 108, marginTop: -6 },
+  fallback: { width: 76, alignSelf: "stretch", backgroundColor: colors.player, alignItems: "center", justifyContent: "center" },
   initial: { color: colors.ink, fontFamily: "Georgia", fontSize: 22, fontWeight: "700" },
   copy: { flex: 1, paddingHorizontal: 7, paddingVertical: 6 },
   name: { color: colors.ink, fontSize: 12, lineHeight: 14, fontWeight: "800" },

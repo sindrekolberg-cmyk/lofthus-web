@@ -10,7 +10,7 @@ export function Movers({ climbers, fallers }: { climbers: ManagerRow[]; fallers:
       <Text style={styles.title}>Største utslag</Text>
       <View style={styles.grid}>
         <View style={[styles.panel, styles.upPanel]}>
-          <Text style={[styles.label, styles.up]}>↗ STØRSTE KLATRERE</Text>
+          <Text style={[styles.label, styles.up]}>↗ STØRST OPP</Text>
           {(climbers || []).slice(0, 3).map((row, index) => (
             <Pressable key={row.entry} onPress={() => router.push(`/manager/${row.entry}`)} style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
               <Text style={styles.rank}>{index + 1}</Text>
@@ -20,7 +20,7 @@ export function Movers({ climbers, fallers }: { climbers: ManagerRow[]; fallers:
           ))}
         </View>
         <View style={[styles.panel, styles.downPanel]}>
-          <Text style={[styles.label, styles.down]}>↓ STØRSTE FALL</Text>
+          <Text style={[styles.label, styles.down]}>↓ STØRST FALL</Text>
           {(fallers || []).slice(0, 3).map((row, index) => (
             <Pressable key={row.entry} onPress={() => router.push(`/manager/${row.entry}`)} style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
               <Text style={styles.rank}>{index + 1}</Text>

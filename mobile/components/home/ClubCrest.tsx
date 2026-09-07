@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { clubBadge } from "@/lib/format";
-import { crestUri } from "@/lib/clubCrests";
+import { crestUri, plBadgeUrl } from "@/lib/clubCrests";
 import { colors } from "@/lib/theme";
 
 export function ClubCrest({
@@ -17,15 +17,18 @@ export function ClubCrest({
   name?: string;
   size?: number;
 }) {
-  const uri = crestUri({ badge, code, short });
-  const [failed, setFailed] = useState(false);
-  if (uri && !failed) {
+  const candidates = [badge, crestUri({ code, short }), code ? plBadgeUrl(code) : ""].filter(
+    (uri, index, all): uri is string => Boolean(uri) && all.indexOf(uri) === index,
+  );
+  const [index, setIndex] = useState(0);
+  const uri = candidates[index];
+  if (uri) {
     return (
       <Image
         source={{ uri }}
         style={{ width: size, height: size }}
         resizeMode="contain"
-        onError={() => setFailed(true)}
+        onError={() => setIndex((current) => current + 1)}
       />
     );
   }
