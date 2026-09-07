@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Lofthus Road Open",
+    "slug": "lofthus-road-open",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "lofthus",
+    "userInterfaceStyle": "light",
+    "plugins": ["expo-router"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "no.lofthus.roadopen"
+    },
+    "extra": {
+      "apiBaseUrl": "https://lofthus-road-open-api.onrender.com"
+    }
+  }
+}
