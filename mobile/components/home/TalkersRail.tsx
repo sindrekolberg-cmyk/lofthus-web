@@ -47,7 +47,14 @@ function TalkerCard({ player }: { player: PopularPlayer }) {
         <View style={styles.fallback}><Text style={styles.initial}>{player.player.slice(0, 1)}</Text></View>
       )}
       <View style={styles.copy}>
-        <Text style={styles.name} numberOfLines={2}>{player.player}</Text>
+        <Text
+          style={styles.name}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.85}
+        >
+          {player.player}
+        </Text>
         <Text style={styles.own}>{Math.round(player.ownership_pct)}% i Lofthus</Text>
         <Text style={[styles.pts, player.event_points < 0 && styles.down]}>
           {player.event_points > 0 ? "+" : ""}{player.event_points}
@@ -64,7 +71,7 @@ const styles = StyleSheet.create({
   fire: { fontSize: 14 },
   title: { color: colors.ink, fontFamily: "Georgia", fontSize: 20, lineHeight: 24, fontWeight: "700" },
   rail: { paddingHorizontal: 16, paddingTop: 7, gap: 6 },
-  card: { width: 148, height: 88, backgroundColor: colors.white, borderRadius: radius.sm, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, overflow: "hidden", flexDirection: "row" },
+  card: { width: 164, height: 88, backgroundColor: colors.white, borderRadius: radius.sm, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, overflow: "hidden", flexDirection: "row" },
   face: { width: 76, overflow: "hidden", backgroundColor: colors.player },
   image: { width: 76, height: 108, marginTop: -6 },
   fallback: { width: 76, alignSelf: "stretch", backgroundColor: colors.player, alignItems: "center", justifyContent: "center" },
