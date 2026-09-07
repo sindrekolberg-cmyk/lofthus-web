@@ -1,16 +1,13 @@
-import { historicalPoints, monthPodiums } from "./hof-points";
 import { nameMatches, newestSeasonFirst } from "./format";
-import type { HallCup, HallMonthly, HallOverall, HallPayload, HallRandom, HallRow } from "./types";
+import type { HallCup, HallMonthly, HallOverall, HallPayload, HallRow } from "./types";
 
-export type HallTab = "overview" | "seasons" | "month" | "cup" | "random" | "managers";
+export type HallTab = "overview" | "seasons" | "month" | "cup";
 
 export const HALL_TABS: { id: HallTab; label: string }[] = [
   { id: "overview", label: "Oversikt" },
   { id: "seasons", label: "Sesong for sesong" },
   { id: "month", label: "Månedsvinnere" },
   { id: "cup", label: "Cupvinnere" },
-  { id: "random", label: "Random plassering" },
-  { id: "managers", label: "Detaljert manageroversikt" },
 ];
 
 export function emptyHonours(): HallRow {
@@ -30,26 +27,61 @@ export function emptyHonours(): HallRow {
   };
 }
 
-/** Hall of Fame ranking. Same merit point model as the manager profile. */
+export function monthPodiums(row: Pick<HallRow, "monthly_gold" | "monthly_silver" | "monthly_bronze">) {
+  return row.monthly_gold + row.monthly_silver + row.monthly_bronze;
+}
+
+/** Mirrors `HALL_OF_FAME_HIERARCHY` in the backend's `lro_history.py`. */
+const HALL_HIERARCHY = [
+  "league_gold",
+  "cup_gold",
+  "league_silver",
+  "league_bronze",
+  "monthly_gold",
+  "cup_silver",
+  "monthly_silver",
+  "monthly_bronze",
+] as const;
+
+/** Mirrors `normalize_text` in the backend, so both sides break ties identically. */
+function sortName(name: string) {
+  return name
+    .normalize("NFKD")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+export function compareLegends(a: HallRow, b: HallRow) {
+  for (const key of HALL_HIERARCHY) {
+    const diff = (b[key] || 0) - (a[key] || 0);
+    if (diff) return diff;
+  }
+  const left = sortName(a.manager);
+  const right = sortName(b.manager);
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
 export function legendRanking(rows: HallRow[], limit = 5) {
   return (rows || [])
-    .map((row) => ({ row, points: historicalPoints(row) }))
-    .filter((item) => item.points > 0)
-    .sort((a, b) => b.points - a.points || a.row.manager.localeCompare(b.row.manager, "nb"))
+    .filter((row) => HALL_HIERARCHY.some((key) => (row[key] || 0) > 0))
+    .sort(compareLegends)
     .slice(0, limit);
 }
 
-function count(value: number, singular: string, plural: string) {
-  return `${value} ${value === 1 ? singular : plural}`;
+export type LegendMerit = { key: string; value: number; label: string };
+
+function merit(key: string, value: number, singular: string, plural: string): LegendMerit {
+  return { key, value, label: value === 1 ? singular : plural };
 }
 
-export function meritSummary(row: HallRow) {
+export function legendMerits(row: HallRow): LegendMerit[] {
   return [
-    count(row.league_gold, "sammenlagtseier", "sammenlagtseiere"),
-    count(row.cup_gold, "cupgull", "cupgull"),
-    count(row.monthly_gold, "månedsseier", "månedsseiere"),
-    count(monthPodiums(row), "månedspodium", "månedspodier"),
-  ].join(" · ");
+    merit("league", row.league_gold, "ligatittel", "ligatitler"),
+    merit("cup", row.cup_gold, "cupgull", "cupgull"),
+    merit("month", row.monthly_gold, "månedsseier", "månedsseiere"),
+    merit("podium", monthPodiums(row), "månedspodium", "månedspodier"),
+  ].filter((item) => item.value > 0);
 }
 
 export function overallPlace(row: HallOverall, manager: string) {
@@ -113,10 +145,6 @@ export function firstSeasonLine(data: HallPayload, manager: string, row: HallRow
   if (!seasons.length) return "Første sesong i ligaen er ikke registrert";
   const first = [...seasons].sort((a, b) => a.localeCompare(b, "nb"))[0];
   return `Første sesong: ${first}`;
-}
-
-export function documentedPlacements(random: HallRandom[] | undefined) {
-  return (random || []).filter((row) => row.winner && row.placement);
 }
 
 export function groupBySeason<T extends { season: string }>(rows: T[]) {

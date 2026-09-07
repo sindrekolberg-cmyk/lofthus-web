@@ -1,8 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { HallPayload, HallRow } from "@/lib/types";
-import { firstSeasonLine, managerCups, managerMonths, managerSeasons } from "@/lib/hall";
-import { historicalPoints, monthPodiums } from "@/lib/hof-points";
+import { firstSeasonLine, legendMerits, managerCups, managerMonths, managerSeasons, monthPodiums } from "@/lib/hall";
 import { formatPlace } from "@/lib/format";
 import { colors, radius } from "@/lib/theme";
 import { hallStyles } from "./hallStyles";
@@ -12,11 +11,7 @@ export function HallManagerProfile({ data, row }: { data: HallPayload; row: Hall
   const months = managerMonths(data, row.manager);
   const cups = managerCups(data, row.manager);
   const podiums = monthPodiums(row);
-  const summary = [
-    row.league_gold ? `${row.league_gold} sammenlagtseier${row.league_gold === 1 ? "" : "e"}` : null,
-    row.monthly_gold ? `${row.monthly_gold} månedsseier${row.monthly_gold === 1 ? "" : "e"}` : null,
-    podiums ? `${podiums} månedspodier` : null,
-  ].filter(Boolean).join(" · ");
+  const summary = legendMerits(row).map((item) => `${item.value} ${item.label}`).join(" · ");
 
   return (
     <View style={styles.profile}>
@@ -29,10 +24,6 @@ export function HallManagerProfile({ data, row }: { data: HallPayload; row: Hall
         <Stat icon="trophy-outline" label="Cupgull" value={row.cup_gold} />
         <Stat icon="star" label="Månedsseiere" value={row.monthly_gold} />
         <Stat icon="stats-chart-outline" label="Månedspodier" value={podiums} />
-      </View>
-      <View style={styles.points}>
-        <Text style={hallStyles.label}>Totalt antall poeng</Text>
-        <Text style={styles.pointsValue}>{historicalPoints(row)}</Text>
       </View>
 
       <Text style={hallStyles.sectionTitle}>Sesong for sesong</Text>
@@ -79,8 +70,6 @@ const styles = StyleSheet.create({
   stats: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 16 },
   stat: { width: "48%", flexGrow: 1, backgroundColor: colors.panel, borderRadius: radius.sm, padding: 10, minHeight: 84 },
   statValue: { color: colors.ink, fontSize: 24, fontWeight: "900", marginTop: 6, fontVariant: ["tabular-nums"] },
-  points: { marginTop: 10, backgroundColor: colors.panel, borderRadius: radius.sm, padding: 12 },
-  pointsValue: { color: colors.ink, fontSize: 28, fontWeight: "900", marginTop: 4, fontVariant: ["tabular-nums"] },
   season: { color: colors.muted, width: 80, fontSize: 13, fontWeight: "800" },
   month: { flex: 1, color: colors.muted, fontSize: 13, fontWeight: "700" },
 });

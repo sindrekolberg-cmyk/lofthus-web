@@ -1,5 +1,6 @@
 export type Status = {
   event_id: number;
+  season?: string;
   is_live: boolean;
   is_finished: boolean;
   provisional: boolean;

@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import type { HallRow } from "@/lib/types";
-import { legendRanking, meritSummary } from "@/lib/hall";
+import { legendMerits, legendRanking } from "@/lib/hall";
 import { colors, radius } from "@/lib/theme";
 import { hallStyles } from "./hallStyles";
 
@@ -16,24 +17,29 @@ export function HallLegends({
   return (
     <View>
       <Text style={styles.title}>Topp 5 Lofthus-legender gjennom tidene</Text>
-      <Text style={hallStyles.muted}>Rangert etter samlet meritt-poengsum i Hall of Fame.</Text>
+      <Text style={hallStyles.muted}>Rangert etter ligatitler, deretter cupgull og resten av medaljehyllen.</Text>
       {legends.length ? (
         <View style={styles.list}>
-          {legends.map((legend, index) => (
+          {legends.map((row, index) => (
             <Pressable
-              key={legend.row.manager}
+              key={row.manager}
               disabled={!onSelect}
-              onPress={() => onSelect?.(legend.row)}
+              onPress={() => onSelect?.(row)}
               style={({ pressed }) => [styles.card, index === 0 && styles.first, pressed && hallStyles.pressed]}
             >
               <Text style={[styles.place, index === 0 && styles.placeFirst]}>{index + 1}</Text>
               <View style={styles.copy}>
-                <Text style={styles.name} numberOfLines={2}>{legend.row.manager}</Text>
-                <Text style={styles.merits}>{meritSummary(legend.row)}</Text>
-              </View>
-              <View style={styles.pointsWrap}>
-                <Text style={styles.points}>{legend.points}</Text>
-                <Text style={hallStyles.label}>poeng</Text>
+                <Text style={styles.name} numberOfLines={2}>{row.manager}</Text>
+                <View style={styles.merits}>
+                  {legendMerits(row).map((item) => (
+                    <View key={item.key} style={[styles.merit, item.key === "cup" && styles.cupMerit]}>
+                      {item.key === "cup" ? <Ionicons name="trophy" size={11} color={colors.bronze} /> : null}
+                      <Text style={[styles.meritText, item.key === "cup" && styles.cupMeritText]}>
+                        {item.value} {item.label}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
               </View>
             </Pressable>
           ))}
@@ -65,7 +71,9 @@ const styles = StyleSheet.create({
   placeFirst: { color: colors.ink },
   copy: { flex: 1, minWidth: 0 },
   name: { color: colors.ink, fontSize: 16, lineHeight: 20, fontWeight: "800" },
-  merits: { color: colors.muted, fontSize: 11, lineHeight: 16, marginTop: 3 },
-  pointsWrap: { alignItems: "flex-end" },
-  points: { color: colors.ink, fontSize: 22, fontWeight: "900", fontVariant: ["tabular-nums"] },
+  merits: { flexDirection: "row", flexWrap: "wrap", gap: 5, marginTop: 6 },
+  merit: { flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 6, paddingVertical: 3, borderRadius: 4, backgroundColor: colors.silverSoft },
+  meritText: { color: colors.muted, fontSize: 10, fontWeight: "800", letterSpacing: 0.3 },
+  cupMerit: { backgroundColor: colors.bronzeSoft, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.bronze },
+  cupMeritText: { color: colors.ink },
 });

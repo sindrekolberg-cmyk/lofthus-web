@@ -13,7 +13,6 @@ import { HallManagerProfile } from "@/components/hall/HallManagerProfile";
 import { HallSeasonHistory } from "@/components/hall/HallSeasonHistory";
 import { HallMonthlyHistory } from "@/components/hall/HallMonthlyHistory";
 import { HallCupHistory } from "@/components/hall/HallCupHistory";
-import { HallRandomPlacement } from "@/components/hall/HallRandomPlacement";
 import { hallStyles } from "@/components/hall/hallStyles";
 
 export default function HallScreen() {
@@ -35,7 +34,6 @@ export default function HallScreen() {
   function chooseManager(row: HallRow) {
     setSelectedName(row.manager);
     setQuery(row.manager);
-    setTab("managers");
   }
 
   function clearManager() {
@@ -68,23 +66,19 @@ export default function HallScreen() {
             onClear={clearManager}
             onRandom={randomManager}
           />
-          <View style={styles.tabs}>
-            <HallTabs value={tab} onChange={setTab} />
-          </View>
-          {tab === "overview" ? (
-            <HallOverview data={data} onOpen={setTab} onSelectManager={chooseManager} />
-          ) : null}
-          {tab === "seasons" ? <HallSeasonHistory data={data} /> : null}
-          {tab === "month" ? <HallMonthlyHistory data={data} /> : null}
-          {tab === "cup" ? <HallCupHistory data={data} /> : null}
-          {tab === "random" ? <HallRandomPlacement random={data.random} /> : null}
-          {tab === "managers" ? (
-            selected ? (
-              <HallManagerProfile data={data} row={withHonours(selected)} />
-            ) : (
-              <Text style={hallStyles.empty}>Søk etter en manager for å åpne profilen.</Text>
-            )
-          ) : null}
+          {selected ? (
+            <HallManagerProfile data={data} row={withHonours(selected)} />
+          ) : (
+            <>
+              <View style={styles.tabs}>
+                <HallTabs value={tab} onChange={setTab} />
+              </View>
+              {tab === "overview" ? <HallOverview data={data} onSelectManager={chooseManager} /> : null}
+              {tab === "seasons" ? <HallSeasonHistory data={data} /> : null}
+              {tab === "month" ? <HallMonthlyHistory data={data} /> : null}
+              {tab === "cup" ? <HallCupHistory data={data} /> : null}
+            </>
+          )}
         </>
       ) : null}
     </Screen>

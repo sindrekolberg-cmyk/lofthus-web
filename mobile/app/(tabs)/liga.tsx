@@ -1,9 +1,11 @@
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { api } from "@/lib/api";
 import { colors } from "@/lib/theme";
 import { useRemote } from "@/lib/useRemote";
 import type { ManagerRow } from "@/lib/types";
+import { randomPrizeFor } from "@/lib/randomPrize";
 import { Screen } from "@/components/Screen";
 import { ErrorState, Loading } from "@/components/State";
 import { LeagueHeader, type LeagueSortKey } from "@/components/league/LeagueHeader";
@@ -55,6 +57,8 @@ export default function LeagueScreen() {
   }, [remote.data, mode, sortKey, sortDir]);
 
   const kicker = remote.data?.status.round_kicker || (remote.data?.status.event_id ? `Runde ${remote.data.status.event_id}` : "Liga");
+  // Randompremien gjelder sluttplasseringen i totaltabellen, ikke månedstabellen.
+  const prize = mode === "total" ? randomPrizeFor(remote.data?.status.season) : null;
 
   return (
     <Screen kicker={kicker} title="Liga" compactHeader refreshing={remote.refreshing} onRefresh={remote.refresh}>
@@ -68,6 +72,14 @@ export default function LeagueScreen() {
         ))}
       </View>
       {remote.data?.status.provisional ? <Text style={styles.provisional}>FORELØPIG TABELL · RUNDEN PÅGÅR</Text> : null}
+      {prize ? (
+        <View style={styles.prizeNote}>
+          <Ionicons name="dice-outline" size={12} color={colors.bronze} />
+          <Text style={styles.prizeNoteText}>
+            Årets randompremie: {prize.rank}. plass gir {prize.amount} kr
+          </Text>
+        </View>
+      ) : null}
 
       <LeagueHeader
         totalLabel={mode === "total" ? "Total" : "Måned"}
@@ -86,6 +98,7 @@ export default function LeagueScreen() {
               row={row}
               displayRank={mode === "month" ? row.month_rank || row.rank : row.rank}
               score={mode === "month" ? row.month_points : row.total}
+              prize={prize && row.rank === prize.rank ? prize : null}
             />
           ))}
         </View>
@@ -102,4 +115,6 @@ const styles = StyleSheet.create({
   buttonTextActive: { color: colors.white },
   pressed: { opacity: 0.58 },
   provisional: { color: colors.live, fontSize: 10, fontWeight: "800", letterSpacing: 0.8, marginBottom: 10 },
+  prizeNote: { flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 10 },
+  prizeNoteText: { color: colors.muted, fontSize: 11, fontWeight: "700" },
 });
