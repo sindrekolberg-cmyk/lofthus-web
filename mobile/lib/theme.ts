@@ -8,10 +8,12 @@ export const colors = {
   green: "#2F6A32",
   dark: "#1D1C19",
   white: "#FFFFFF",
+  peach: "#F6E4D8",
+  player: "#D8D1C4",
 };
 
 export const radius = {
-  sm: 10,
-  md: 16,
-  lg: 24,
+  sm: 8,
+  md: 14,
+  lg: 20,
 };
