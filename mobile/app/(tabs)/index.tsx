@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   fixtureMeta: { color: colors.muted, fontSize: 12, marginTop: 3 },
   simpleList: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line },
   simpleRow: { minHeight: 48, flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
-  simpleName: { color: colors.ink, fontSize: 15, fontWeight: "650" },
+  simpleName: { color: colors.ink, fontSize: 15, fontWeight: "600" },
   simpleValue: { color: colors.ink, fontSize: 17, fontWeight: "800", fontVariant: ["tabular-nums"] },
   stories: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line },
   story: { paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
