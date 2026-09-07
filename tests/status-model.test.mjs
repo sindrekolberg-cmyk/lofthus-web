@@ -74,10 +74,24 @@ test("header does not duplicate liga match strip and LIVE is football-only", () 
   assert.doesNotMatch(banner, /useLofthus/);
 });
 
-test("hall of fame uses totalt antall poeng", () => {
+test("hall of fame shows merits instead of an invented points score", () => {
   const hof = readFileSync(join(root, "app/hall-of-fame/page.tsx"), "utf8");
-  assert.match(hof, /Totalt antall poeng/);
-  assert.doesNotMatch(hof, /Historiske poeng/);
+  assert.match(hof, /Ligatitler/);
+  assert.match(hof, /Cupgull/);
+  assert.match(hof, /Månedspodier/);
+  assert.doesNotMatch(hof, /Totalt antall poeng/);
+  assert.doesNotMatch(hof, /poengsystem/);
+  assert.doesNotMatch(hof, /historicalPoints/);
+});
+
+test("hall of fame keeps four tabs and no random placement", () => {
+  const hof = readFileSync(join(root, "app/hall-of-fame/page.tsx"), "utf8");
+  assert.match(hof, /id: "overview"/);
+  assert.match(hof, /id: "seasons"/);
+  assert.match(hof, /id: "month"/);
+  assert.match(hof, /id: "cup"/);
+  assert.doesNotMatch(hof, /id: "random"/);
+  assert.doesNotMatch(hof, /id: "managers"/);
 });
 
 test("rivalradar shows three distinct gaps", () => {

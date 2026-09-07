@@ -45,6 +45,10 @@ export function captainsLabel(n: number) {
   return n === 1 ? "1 kaptein" : `${n} kapteiner`;
 }
 
+export function monthPodiums(row: { monthly_gold: number; monthly_silver: number; monthly_bronze: number }) {
+  return row.monthly_gold + row.monthly_silver + row.monthly_bronze;
+}
+
 export function storyCategory(category: string) {
   const value = (category || "").toLowerCase();
   if (value === "live") return "Live";

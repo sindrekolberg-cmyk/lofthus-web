@@ -4,6 +4,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { ManagerRow, Status } from "@/lib/types";
 import { moveLabel } from "@/lib/format";
+import { randomPrizeLabel, type RandomPrize } from "@/lib/randomPrize";
 
 type SortKey = "rank" | "captain" | "total" | "gw" | "month" | "move";
 type SortDirection = "asc" | "desc";
@@ -15,6 +16,7 @@ type Props = {
   highlight?: number;
   remaining?: boolean;
   sortable?: boolean;
+  prize?: RandomPrize | null;
 };
 
 const SORTS: { id: SortKey; label: string }[] = [
@@ -26,7 +28,7 @@ function defaultDirection(key: SortKey): SortDirection {
   return key === "rank" || key === "captain" ? "asc" : "desc";
 }
 
-export function LeagueTable({ rows, status, compact, highlight, remaining, sortable }: Props) {
+export function LeagueTable({ rows, status, compact, highlight, remaining, sortable, prize }: Props) {
   const provisional = Boolean(status?.provisional);
   const [sort, setSort] = useState<SortKey>("total");
   const [direction, setDirection] = useState<SortDirection>("desc");
@@ -180,7 +182,7 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
                 key={row.entry}
                 data-entry={row.entry}
                 className={`border-b border-rule transition-colors hover:bg-black/[0.03] ${
-                  highlight === row.entry ? "bg-[#fff6d8]" : ""
+                  highlight === row.entry ? "bg-[#fff6d8]" : prize && row.rank === prize.rank ? "bg-gold/10" : ""
                 }`}
               >
                 <td className="py-2.5 pr-2 font-condensed text-base tabular-nums sm:py-3 sm:pr-3 sm:text-lg">{row.rank}</td>
@@ -188,6 +190,11 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
                   <Link href={`/manager/${row.entry}`} className="inline-flex min-h-11 items-center text-[0.95rem] leading-tight hover:underline">
                     {row.manager}
                   </Link>
+                  {prize && row.rank === prize.rank ? (
+                    <span className="mt-0.5 block font-condensed text-[10px] tracking-[0.12em] text-bronze uppercase">
+                      🎲 {randomPrizeLabel(prize)}
+                    </span>
+                  ) : null}
                   {row.chip ? (
                     <span className="mt-0.5 block font-condensed text-[10px] tracking-[0.12em] text-live uppercase">
                       {row.chip}
