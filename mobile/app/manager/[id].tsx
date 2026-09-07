@@ -6,13 +6,19 @@ import { colors } from "@/lib/theme";
 import { useRemote } from "@/lib/useRemote";
 import { Screen } from "@/components/Screen";
 import { ErrorState, Loading } from "@/components/State";
+import { HallManagerProfile } from "@/components/hall/HallManagerProfile";
 
 export default function ManagerScreen() {
   const params = useLocalSearchParams<{ id: string }>();
   const id = Number(params.id || 0);
   const loader = useCallback(() => api.manager(id), [id]);
+  const hallLoader = useCallback(() => api.hallOfFame(), []);
   const remote = useRemote(loader);
+  const hallRemote = useRemote(hallLoader);
   const manager = remote.data?.manager;
+  const hallRow = manager
+    ? hallRemote.data?.rows.find((row) => sameManagerName(row.manager, manager.manager)) || null
+    : null;
 
   return (
     <Screen
@@ -35,6 +41,13 @@ export default function ManagerScreen() {
             <Text style={styles.team}>{manager.team}</Text>
             <Text style={styles.captain}>Kaptein · {manager.captain || "–"}</Text>
           </View>
+
+          {hallRow && hallRemote.data ? (
+            <>
+              <Text style={styles.sectionTitle}>Lofthus-meritter</Text>
+              <HallManagerProfile data={hallRemote.data} row={hallRow} showIdentity={false} />
+            </>
+          ) : null}
 
           {remote.data?.form?.length ? (
             <>
@@ -63,6 +76,19 @@ export default function ManagerScreen() {
       ) : null}
     </Screen>
   );
+}
+
+function sameManagerName(a: string, b: string) {
+  return normalizeManagerName(a) === normalizeManagerName(b);
+}
+
+function normalizeManagerName(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("nb")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 function Metric({ label, value }: { label: string; value: number }) {
