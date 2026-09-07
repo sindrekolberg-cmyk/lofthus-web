@@ -170,7 +170,10 @@ function SectionHeader({ title, action, icon, compact = false }: { title: string
 }
 
 function TeamBadge({ name }: { name: string }) {
-  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word.slice(0, 1).toUpperCase()).join("");
+  const cleaned = name.trim().toUpperCase();
+  const initials = cleaned.length <= 3
+    ? cleaned
+    : cleaned.split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word.slice(0, 1)).join("");
   return <View style={styles.teamBadge}><Text style={styles.teamBadgeText}>{initials || "?"}</Text></View>;
 }
 
@@ -178,8 +181,10 @@ function StoryRow({ story, icon }: { story: Story; icon: string }) {
   return (
     <View style={styles.storyRow}>
       <Text style={styles.storyIcon}>{icon}</Text>
-      <Text style={styles.storyHeadline} numberOfLines={2}>{story.headline}</Text>
-      {story.meta ? <Text style={styles.storyMeta} numberOfLines={1}>{story.meta}</Text> : null}
+      <View style={styles.storyCopy}>
+        <Text style={styles.storyHeadline} numberOfLines={2}>{story.headline}</Text>
+        {story.meta ? <Text style={styles.storyMeta} numberOfLines={1}>{story.meta}</Text> : null}
+      </View>
     </View>
   );
 }
@@ -210,9 +215,9 @@ function MiniTableCard({
       <Pressable onPress={onPressHeader} style={({ pressed }) => [styles.tableHeader, pressed && styles.pressed]}>
         <View style={styles.tableTitleWrap}>
           <Text style={styles.tableIcon}>{icon}</Text>
-          <Text style={styles.tableTitle} numberOfLines={1}>{title}</Text>
+          <Text style={styles.tableTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>{title}</Text>
         </View>
-        <Text style={styles.tableAction}>{action}</Text>
+        <Text style={styles.tableAction} numberOfLines={1}>{action}</Text>
       </Pressable>
       <View style={styles.tableColumns}>
         <Text style={styles.tableColRank}>#</Text>
@@ -273,19 +278,20 @@ const styles = StyleSheet.create({
   liveDot: { width: 7, height: 7, borderRadius: 7, backgroundColor: colors.live },
   fixtureWhen: { color: colors.ink, fontSize: 8, fontWeight: "900", letterSpacing: 1.15 },
   fixtureTeamsRow: { marginTop: 11, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
-  teamBadge: { width: 29, height: 29, borderRadius: 15, backgroundColor: colors.player, borderWidth: 1, borderColor: colors.line, alignItems: "center", justifyContent: "center" },
-  teamBadgeText: { color: colors.ink, fontSize: 9, fontWeight: "900" },
+  teamBadge: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.player, borderWidth: 1, borderColor: colors.line, alignItems: "center", justifyContent: "center" },
+  teamBadgeText: { color: colors.ink, fontSize: 7.5, fontWeight: "900", letterSpacing: 0.1 },
   fixtureDash: { color: colors.ink, fontSize: 13, fontWeight: "800" },
   fixtureName: { marginTop: 8, textAlign: "center", color: colors.ink, fontSize: 12, fontWeight: "700" },
 
   newsSection: { backgroundColor: colors.panel, paddingTop: 12, paddingBottom: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
   newsGrid: { flexDirection: "row", gap: 10, paddingHorizontal: 18, paddingTop: 8 },
-  storyList: { flex: 1.55, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line },
-  storyRow: { minHeight: 43, flexDirection: "row", alignItems: "center", gap: 7, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
+  storyList: { flex: 1.68, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line },
+  storyRow: { minHeight: 49, flexDirection: "row", alignItems: "center", gap: 7, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line, paddingVertical: 5 },
   storyIcon: { width: 19, color: colors.live, fontSize: 15, fontWeight: "900", textAlign: "center" },
-  storyHeadline: { flex: 1, color: colors.ink, fontFamily: "Georgia", fontSize: 12.5, lineHeight: 16, fontWeight: "700" },
-  storyMeta: { maxWidth: 44, color: colors.muted, fontSize: 8.5, textAlign: "right" },
-  quoteCard: { flex: 0.72, backgroundColor: colors.peach, paddingHorizontal: 11, paddingVertical: 12, justifyContent: "center" },
+  storyCopy: { flex: 1, minWidth: 0 },
+  storyHeadline: { color: colors.ink, fontFamily: "Georgia", fontSize: 12.5, lineHeight: 16, fontWeight: "700" },
+  storyMeta: { color: colors.muted, fontSize: 8.5, lineHeight: 11, marginTop: 2 },
+  quoteCard: { flex: 0.68, backgroundColor: colors.peach, paddingHorizontal: 11, paddingVertical: 12, justifyContent: "center" },
   quote: { color: colors.ink, fontFamily: "Georgia", fontStyle: "italic", fontSize: 12, lineHeight: 17 },
   quoteRule: { width: 30, height: 2, backgroundColor: colors.live, marginTop: 12, marginBottom: 8 },
   quoteBrand: { color: colors.ink, fontSize: 8, fontWeight: "900", letterSpacing: 2.1 },
@@ -294,11 +300,11 @@ const styles = StyleSheet.create({
   tablesSection: { backgroundColor: colors.peach, paddingHorizontal: 10, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
   tablesGrid: { flexDirection: "row", gap: 7 },
   tableCard: { flex: 1, minWidth: 0, backgroundColor: colors.panel, paddingHorizontal: 8, paddingTop: 9, paddingBottom: 6, borderRadius: 8, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line },
-  tableHeader: { minHeight: 31, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 4 },
-  tableTitleWrap: { minWidth: 0, flexDirection: "row", alignItems: "center", gap: 5, flexShrink: 1 },
-  tableIcon: { color: colors.live, fontSize: 13, fontWeight: "900" },
-  tableTitle: { color: colors.ink, fontFamily: "Georgia", fontSize: 17, lineHeight: 20, fontWeight: "700", flexShrink: 1 },
-  tableAction: { color: colors.live, fontSize: 5.7, fontWeight: "900", letterSpacing: 0.65 },
+  tableHeader: { minHeight: 34, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 4 },
+  tableTitleWrap: { minWidth: 0, flex: 1, flexDirection: "row", alignItems: "center", gap: 5 },
+  tableIcon: { color: colors.live, fontSize: 13, fontWeight: "900", flexShrink: 0 },
+  tableTitle: { minWidth: 0, color: colors.ink, fontFamily: "Georgia", fontSize: 17, lineHeight: 20, fontWeight: "700", flex: 1 },
+  tableAction: { color: colors.live, fontSize: 5.4, fontWeight: "900", letterSpacing: 0.45, flexShrink: 0 },
   tableColumns: { minHeight: 22, flexDirection: "row", alignItems: "center", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
   tableColRank: { width: 14, color: colors.muted, fontSize: 6.5, fontWeight: "900" },
   tableColName: { flex: 1, color: colors.muted, fontSize: 6.5, fontWeight: "900", letterSpacing: 0.7 },
@@ -322,7 +328,7 @@ const styles = StyleSheet.create({
   playerPoints: { color: colors.green, fontSize: 16, lineHeight: 19, fontWeight: "900", marginTop: 6, fontVariant: ["tabular-nums"] },
   playerRound: { color: colors.muted, fontSize: 7.5 },
 
-  movesSection: { backgroundColor: colors.panel, paddingTop: 12, paddingBottom: 24 },
+  movesSection: { backgroundColor: colors.panel, paddingTop: 12, paddingBottom: 36 },
   movesGrid: { flexDirection: "row", gap: 7, paddingHorizontal: 18, paddingTop: 9 },
   movePanel: { flex: 1, minWidth: 0, borderRadius: 8, paddingHorizontal: 9, paddingTop: 9, paddingBottom: 7 },
   movePanelUp: { backgroundColor: "#EAF2E8" },
