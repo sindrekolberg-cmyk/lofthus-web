@@ -9,6 +9,17 @@ import type { LiveEvent } from "@/lib/types";
 import { fixtureStatusLabel, isFixtureFinished, isFixtureLive } from "@/lib/status";
 import { MatchDetail } from "@/components/MatchDetail";
 
+function kickoffLabel(kickoff: string) {
+  if (!kickoff) return "";
+  const date = new Date(kickoff);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("nb-NO", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Oslo",
+  }).format(date);
+}
+
 export function MatchStrip({ fixtures }: { fixtures: LiveEvent[] }) {
   const [openId, setOpenId] = useState<number | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -40,11 +51,12 @@ export function MatchStrip({ fixtures }: { fixtures: LiveEvent[] }) {
           const live = isFixtureLive(fixture.status);
           const finished = isFixtureFinished(fixture.status);
           const status = fixtureStatusLabel(fixture.status, fixture.status_label);
+          const kickoff = kickoffLabel(fixture.kickoff);
           const line = live
             ? fixture.lofthus_headline || status
             : finished
               ? [status, fixture.lofthus_headline].filter(Boolean).join(" · ")
-              : status;
+              : [status, kickoff ? `kl. ${kickoff}` : ""].filter(Boolean).join(" · ");
           return (
             <button
               key={fixture.id}
