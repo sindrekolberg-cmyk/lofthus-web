@@ -17,8 +17,63 @@ const TAGS: Record<string, { label: string; icon: string }> = {
   month: { label: "Måned", icon: "▦" },
 };
 
+function captainOutcome(story: Story) {
+  if ((story.category || "").toLowerCase() !== "captain") return null;
+  const headline = story.headline.toLocaleLowerCase("nb");
+  if (/(flopp|bom|smell)/.test(headline)) return "miss" as const;
+  if (/(traff|leverte|fulltreff)/.test(headline)) return "hit" as const;
+  return null;
+}
+
+function managerFromHeadline(story: Story) {
+  const match = story.headline.match(/\bfor\s+(.+)$/i);
+  return match?.[1]?.trim() || "";
+}
+
+function firstName(name: string) {
+  return name.trim().split(/\s+/)[0] || name;
+}
+
+function playerResult(meta?: string) {
+  const match = (meta || "").match(/^(.+?)\s+endte\s+på\s+(\d+)\s+poeng/i);
+  return match ? { player: match[1].trim(), points: Number(match[2]) } : null;
+}
+
+function mergeCaptainDuel(stories: Story[]) {
+  const hitIndex = stories.findIndex((story) => captainOutcome(story) === "hit");
+  const missIndex = stories.findIndex((story) => captainOutcome(story) === "miss");
+  if (hitIndex < 0 || missIndex < 0) return stories;
+
+  const hit = stories[hitIndex];
+  const miss = stories[missIndex];
+  const hitManager = managerFromHeadline(hit);
+  const missManager = managerFromHeadline(miss);
+  const hitResult = playerResult(hit.meta);
+  const missResult = playerResult(miss.meta);
+
+  const headline = hitManager && missManager
+    ? `${firstName(hitManager)} traff der ${firstName(missManager)} bommet`
+    : "To uvanlige kapteinsvalg – to helt ulike utfall";
+
+  const meta = hitResult && missResult && hitManager && missManager
+    ? `${hitResult.player} ga ${firstName(hitManager)} ${hitResult.points} poeng · ${missResult.player} ga ${firstName(missManager)} ${missResult.points} poeng`
+    : [hit.meta, miss.meta].filter(Boolean).join(" · ");
+
+  const duel: Story = {
+    key: `captain-duel:${hit.key}:${miss.key}`,
+    category: "captain",
+    headline,
+    meta,
+  };
+
+  const insertAt = Math.min(hitIndex, missIndex);
+  const withoutPair = stories.filter((_, index) => index !== hitIndex && index !== missIndex);
+  withoutPair.splice(insertAt, 0, duel);
+  return withoutPair;
+}
+
 export function Snakkiser({ stories }: { stories: Story[] }) {
-  const rows = stories.slice(0, 5);
+  const rows = mergeCaptainDuel(stories).slice(0, 4);
 
   return (
     <View style={styles.section}>
