@@ -10,7 +10,7 @@ export function ErrorState({ message }: { message: string }) {
 }
 
 const styles = StyleSheet.create({
-  row: { paddingVertical: 30, flexDirection: "row", gap: 10, alignItems: "center" },
+  row: { paddingVertical: 30, paddingHorizontal: 16, flexDirection: "row", gap: 10, alignItems: "center" },
   text: { color: colors.muted, fontSize: 14 },
   error: { borderWidth: 1, borderColor: colors.line, backgroundColor: colors.panel, padding: 16, borderRadius: 14, marginVertical: 16 },
   errorTitle: { color: colors.ink, fontSize: 16, fontWeight: "700", marginBottom: 4 },

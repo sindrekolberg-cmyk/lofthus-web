@@ -28,6 +28,10 @@ export type Fixture = {
   away: string;
   home_name?: string;
   away_name?: string;
+  home_code?: number;
+  away_code?: number;
+  home_badge?: string;
+  away_badge?: string;
   home_score?: number | null;
   away_score?: number | null;
   status: string;
@@ -48,6 +52,7 @@ export type Story = {
 export type PopularPlayer = {
   element: number;
   player: string;
+  club?: string;
   ownership_pct: number;
   event_points: number;
   image_url?: string;

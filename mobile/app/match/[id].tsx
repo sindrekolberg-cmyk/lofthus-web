@@ -2,11 +2,12 @@ import { useCallback } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { api } from "@/lib/api";
-import { clubBadge, formatKickoff } from "@/lib/format";
+import { formatKickoff } from "@/lib/format";
 import { colors, radius } from "@/lib/theme";
 import { useRemote } from "@/lib/useRemote";
 import { Screen } from "@/components/Screen";
 import { ErrorState, Loading } from "@/components/State";
+import { ClubCrest } from "@/components/home/ClubCrest";
 
 export default function MatchScreen() {
   const router = useRouter();
@@ -24,12 +25,18 @@ export default function MatchScreen() {
       {fixture ? (
         <>
           <View style={styles.scoreboard}>
-            <Club code={fixture.home} name={fixture.home_name} />
+            <View style={styles.club}>
+              <ClubCrest badge={fixture.home_badge} code={fixture.home_code} short={fixture.home} name={fixture.home_name} size={44} />
+              <Text style={styles.clubName}>{fixture.home_name || fixture.home}</Text>
+            </View>
             <View style={styles.scoreWrap}>
               <Text style={styles.score}>{fixture.home_score ?? "–"} · {fixture.away_score ?? "–"}</Text>
               <Text style={styles.meta}>{live ? (fixture.status_label || "Pågår") : formatKickoff(fixture.kickoff) || fixture.status_label || ""}</Text>
             </View>
-            <Club code={fixture.away} name={fixture.away_name} />
+            <View style={styles.club}>
+              <ClubCrest badge={fixture.away_badge} code={fixture.away_code} short={fixture.away} name={fixture.away_name} size={44} />
+              <Text style={styles.clubName}>{fixture.away_name || fixture.away}</Text>
+            </View>
           </View>
           {fixture.lofthus_headline ? <Text style={styles.headline}>{fixture.lofthus_headline}</Text> : null}
           {remote.data?.biggest_winner ? (
@@ -44,20 +51,9 @@ export default function MatchScreen() {
   );
 }
 
-function Club({ code, name }: { code: string; name?: string }) {
-  return (
-    <View style={styles.club}>
-      <View style={styles.badge}><Text style={styles.badgeText}>{clubBadge(code, name)}</Text></View>
-      <Text style={styles.clubName}>{name || code}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   scoreboard: { flexDirection: "row", alignItems: "center", backgroundColor: colors.peach, borderRadius: radius.sm, padding: 14 },
   club: { flex: 1, alignItems: "center", gap: 8 },
-  badge: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.player, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: colors.line },
-  badgeText: { color: colors.ink, fontSize: 12, fontWeight: "900" },
   clubName: { color: colors.ink, fontSize: 12, fontWeight: "700", textAlign: "center" },
   scoreWrap: { alignItems: "center", minWidth: 90 },
   score: { color: colors.ink, fontSize: 22, fontWeight: "900", fontVariant: ["tabular-nums"] },
