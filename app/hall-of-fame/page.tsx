@@ -13,6 +13,20 @@ function HallInner() {
   const hof = useLofthus("hof", () => api.hallOfFame(), { live: false });
   const data = hof.data;
   const [showPoints, setShowPoints] = useState(false);
+  const [managerQuery, setManagerQuery] = useState("");
+  const [selectedManager, setSelectedManager] = useState("");
+
+  const managerMatches = data
+    ? data.rows
+        .filter((row) => row.manager.toLocaleLowerCase("nb-NO").includes(managerQuery.trim().toLocaleLowerCase("nb-NO")))
+        .slice(0, 8)
+    : [];
+  const selectedRow = data?.rows.find((row) => row.manager === selectedManager) || null;
+
+  function chooseManager(name: string) {
+    setSelectedManager(name);
+    setManagerQuery(name);
+  }
 
   return (
     <main className="flex-1 bg-paper">
@@ -148,60 +162,98 @@ function HallInner() {
         ) : null}
 
         {data && tab === "managers" ? (
-          <div className="mt-8">
-            <button
-              type="button"
-              className="font-condensed text-[12px] tracking-[0.14em] uppercase text-muted hover:text-ink"
-              onClick={() => setShowPoints((v) => !v)}
-              aria-expanded={showPoints}
-            >
-              {showPoints ? "Skjul poengsystem" : "Se poengsystem"}
-            </button>
-            {showPoints ? (
-              <ul className="mt-3 max-w-md text-sm text-muted">
-                {HOF_POINTS_EXPLAIN.map((row) => (
-                  <li key={row.label} className="flex justify-between border-b border-rule py-1">
-                    <span>{row.label}</span>
-                    <span className="font-condensed">{row.value}</span>
-                  </li>
-                ))}
-              </ul>
+          <div className="mt-8 max-w-3xl">
+            <label htmlFor="hof-manager-search" className="font-condensed text-[11px] tracking-[0.16em] text-muted uppercase">
+              Finn manager
+            </label>
+            <input
+              id="hof-manager-search"
+              type="search"
+              value={managerQuery}
+              onChange={(event) => {
+                setManagerQuery(event.target.value);
+                if (selectedManager && event.target.value !== selectedManager) setSelectedManager("");
+              }}
+              placeholder="Søk på navn…"
+              autoComplete="off"
+              className="mt-2 w-full border border-rule bg-white/50 px-4 py-3 text-base outline-none transition focus:border-ink sm:max-w-xl"
+            />
+
+            {managerQuery.trim() && !selectedRow ? (
+              <div className="mt-2 max-w-xl border border-rule bg-paper">
+                {managerMatches.length ? (
+                  managerMatches.map((row) => (
+                    <button
+                      key={row.manager}
+                      type="button"
+                      onClick={() => chooseManager(row.manager)}
+                      className="flex min-h-11 w-full items-center border-b border-rule px-4 text-left text-sm last:border-b-0 hover:bg-black/[0.03]"
+                    >
+                      {row.manager}
+                    </button>
+                  ))
+                ) : (
+                  <p className="px-4 py-3 text-sm text-muted">Ingen manager funnet.</p>
+                )}
+              </div>
             ) : null}
-            <ul className="mt-8 divide-y divide-rule border-y border-rule">
-              {data.rows.map((row) => (
-                <li key={row.manager} className="py-6">
-                  <p className="font-serif text-2xl">{row.manager}</p>
-                  <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <div>
-                      <dt className="text-xs text-muted">Sammenlagtseier</dt>
-                      <dd className="font-condensed text-2xl">{row.league_gold}</dd>
-                      <dd className="text-sm text-muted">
-                        {row.league_seasons?.length ? row.league_seasons.join(", ") : ""}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted">Cupgull</dt>
-                      <dd className="font-condensed text-2xl">{row.cup_gold}</dd>
-                      <dd className="text-sm text-muted">
-                        {row.cup_seasons?.length ? row.cup_seasons.join(", ") : ""}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted">Månedsseiere</dt>
-                      <dd className="font-condensed text-2xl">{row.monthly_gold}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs text-muted">Månedspodier</dt>
-                      <dd className="font-condensed text-2xl">{monthPodiums(row)}</dd>
-                    </div>
-                  </dl>
-                  <p className="mt-4 text-sm">
-                    Totalt antall poeng{" "}
-                    <span className="font-condensed text-xl">{historicalPoints(row)}</span>
-                  </p>
-                </li>
-              ))}
-            </ul>
+
+            {!managerQuery.trim() ? (
+              <p className="mt-4 text-sm text-muted">Søk opp en manager for å se hele Hall of Fame-profilen.</p>
+            ) : null}
+
+            {selectedRow ? (
+              <section className="mt-8 border-y border-rule py-6">
+                <p className="font-serif text-3xl">{selectedRow.manager}</p>
+                <dl className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <dt className="text-xs text-muted">Sammenlagtseier</dt>
+                    <dd className="font-condensed text-2xl">{selectedRow.league_gold}</dd>
+                    <dd className="text-sm text-muted">
+                      {selectedRow.league_seasons?.length ? selectedRow.league_seasons.join(", ") : ""}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted">Cupgull</dt>
+                    <dd className="font-condensed text-2xl">{selectedRow.cup_gold}</dd>
+                    <dd className="text-sm text-muted">
+                      {selectedRow.cup_seasons?.length ? selectedRow.cup_seasons.join(", ") : ""}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted">Månedsseiere</dt>
+                    <dd className="font-condensed text-2xl">{selectedRow.monthly_gold}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted">Månedspodier</dt>
+                    <dd className="font-condensed text-2xl">{monthPodiums(selectedRow)}</dd>
+                  </div>
+                </dl>
+                <p className="mt-5 text-sm">
+                  Totalt antall poeng{" "}
+                  <span className="font-condensed text-xl">{historicalPoints(selectedRow)}</span>
+                </p>
+
+                <button
+                  type="button"
+                  className="mt-5 font-condensed text-[12px] tracking-[0.14em] uppercase text-muted hover:text-ink"
+                  onClick={() => setShowPoints((v) => !v)}
+                  aria-expanded={showPoints}
+                >
+                  {showPoints ? "Skjul poengsystem" : "Se poengsystem"}
+                </button>
+                {showPoints ? (
+                  <ul className="mt-3 max-w-md text-sm text-muted">
+                    {HOF_POINTS_EXPLAIN.map((row) => (
+                      <li key={row.label} className="flex justify-between border-b border-rule py-1">
+                        <span>{row.label}</span>
+                        <span className="font-condensed">{row.value}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </section>
+            ) : null}
           </div>
         ) : null}
       </div>
