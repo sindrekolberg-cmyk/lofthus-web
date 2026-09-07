@@ -6,7 +6,15 @@ import { formatPlace } from "@/lib/format";
 import { colors, radius } from "@/lib/theme";
 import { hallStyles } from "./hallStyles";
 
-export function HallManagerProfile({ data, row }: { data: HallPayload; row: HallRow }) {
+export function HallManagerProfile({
+  data,
+  row,
+  showIdentity = true,
+}: {
+  data: HallPayload;
+  row: HallRow;
+  showIdentity?: boolean;
+}) {
   const seasons = managerSeasons(data, row.manager);
   const months = managerMonths(data, row.manager);
   const cups = managerCups(data, row.manager);
@@ -15,8 +23,14 @@ export function HallManagerProfile({ data, row }: { data: HallPayload; row: Hall
 
   return (
     <View style={styles.profile}>
-      <Text style={styles.name}>{row.manager}</Text>
-      {summary ? <Text style={hallStyles.muted}>{summary}</Text> : null}
+      {showIdentity ? (
+        <>
+          <Text style={styles.name}>{row.manager}</Text>
+          {summary ? <Text style={hallStyles.muted}>{summary}</Text> : null}
+        </>
+      ) : summary ? (
+        <Text style={styles.summary}>{summary}</Text>
+      ) : null}
       <Text style={styles.first}>{firstSeasonLine(data, row.manager, row)}</Text>
 
       <View style={styles.stats}>
@@ -66,6 +80,7 @@ function Stat({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; la
 const styles = StyleSheet.create({
   profile: { marginTop: 16, backgroundColor: colors.peach, borderRadius: radius.sm, padding: 16, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(23,23,21,0.12)" },
   name: { color: colors.ink, fontFamily: "Georgia", fontSize: 28, lineHeight: 32, fontWeight: "700" },
+  summary: { color: colors.ink, fontFamily: "Georgia", fontSize: 18, lineHeight: 24, fontWeight: "700" },
   first: { color: colors.muted, fontSize: 13, marginTop: 8 },
   stats: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 16 },
   stat: { width: "48%", flexGrow: 1, backgroundColor: colors.panel, borderRadius: radius.sm, padding: 10, minHeight: 84 },
