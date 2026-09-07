@@ -5,7 +5,8 @@ import Link from "next/link";
 import type { ManagerRow, Status } from "@/lib/types";
 import { moveLabel } from "@/lib/format";
 
-type SortKey = "total" | "gw" | "month" | "up" | "down";
+type SortKey = "total" | "gw" | "month" | "move";
+type SortDirection = "asc" | "desc";
 
 type Props = {
   rows: ManagerRow[];
@@ -24,21 +25,36 @@ const SORTS: { id: SortKey; label: string }[] = [
 export function LeagueTable({ rows, status, compact, highlight, remaining, sortable }: Props) {
   const provisional = Boolean(status?.provisional);
   const [sort, setSort] = useState<SortKey>("total");
+  const [direction, setDirection] = useState<SortDirection>("desc");
   const prevTops = useRef(new Map<number, number>());
   const prevRanks = useRef(new Map<number, number>());
 
+  const changeSort = (key: SortKey) => {
+    if (sort === key) {
+      setDirection((current) => (current === "desc" ? "asc" : "desc"));
+      return;
+    }
+    setSort(key);
+    setDirection("desc");
+  };
+
   const sorted = useMemo(() => {
     const copy = [...rows];
+    const factor = direction === "desc" ? -1 : 1;
+
     copy.sort((a, b) => {
-      if (sort === "total") return b.total - a.total || a.rank - b.rank;
-      if (sort === "gw") return b.gw - a.gw || a.rank - b.rank;
-      if (sort === "month") return b.month_points - a.month_points || a.rank - b.rank;
-      if (sort === "up") return b.rank_change - a.rank_change || a.rank - b.rank;
-      if (sort === "down") return a.rank_change - b.rank_change || a.rank - b.rank;
-      return b.total - a.total || a.rank - b.rank;
+      let diff = 0;
+      if (sort === "total") diff = a.total - b.total;
+      else if (sort === "gw") diff = a.gw - b.gw;
+      else if (sort === "month") diff = a.month_points - b.month_points;
+      else if (sort === "move") diff = a.rank_change - b.rank_change;
+
+      if (diff !== 0) return diff * factor;
+      return a.rank - b.rank || a.manager.localeCompare(b.manager, "nb");
     });
+
     return copy;
-  }, [rows, sort]);
+  }, [rows, sort, direction]);
 
   useLayoutEffect(() => {
     if (typeof window === "undefined") return;
@@ -70,23 +86,22 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
     prevTops.current = nextTops;
   }, [sorted]);
 
+  const arrow = direction === "desc" ? "↓" : "↑";
+
   const sortableHeader = (label: string, key: SortKey, alignRight = true) => {
     if (!sortable) return label;
-    const active = sort === key || (key === "up" && sort === "down");
+    const active = sort === key;
     return (
       <button
         type="button"
-        onClick={() => {
-          if (key === "up") setSort((current) => (current === "up" ? "down" : "up"));
-          else setSort(key);
-        }}
+        onClick={() => changeSort(key)}
         className={`inline-flex w-full items-center gap-1 hover:text-ink ${alignRight ? "justify-end" : "justify-start"} ${
           active ? "text-ink" : "text-muted"
         }`}
-        aria-label={key === "up" ? "Sorter på største klatrere eller største fall" : `Sorter på ${label.toLowerCase()}`}
+        aria-label={`Sorter ${label.toLowerCase()} ${active && direction === "desc" ? "lavest først" : "høyest først"}`}
       >
         {label}
-        {active ? <span aria-hidden="true">{sort === "down" ? "↓" : "↑"}</span> : null}
+        {active ? <span aria-hidden="true">{arrow}</span> : null}
       </button>
     );
   };
@@ -95,18 +110,22 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
     <div>
       {sortable ? (
         <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
-          {SORTS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setSort(item.id)}
-              className={`min-h-11 shrink-0 border px-3 font-condensed text-[11px] tracking-[0.14em] uppercase ${
-                sort === item.id ? "border-ink bg-ink text-paper" : "border-rule text-muted hover:border-ink hover:text-ink"
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+          {SORTS.map((item) => {
+            const active = sort === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => changeSort(item.id)}
+                className={`min-h-11 shrink-0 border px-3 font-condensed text-[11px] tracking-[0.14em] uppercase ${
+                  active ? "border-ink bg-ink text-paper" : "border-rule text-muted hover:border-ink hover:text-ink"
+                }`}
+                aria-label={`Sorter ${item.label.toLowerCase()} ${active && direction === "desc" ? "lavest først" : "høyest først"}`}
+              >
+                {item.label}{active ? ` ${arrow}` : ""}
+              </button>
+            );
+          })}
         </div>
       ) : null}
 
@@ -124,7 +143,7 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
                 <th className="hidden py-3 pr-3 text-right font-medium lg:table-cell">{sortableHeader("Måned", "month")}</th>
               ) : null}
               {remaining ? <th className="hidden py-3 pr-3 text-right font-medium sm:table-cell">Igjen</th> : null}
-              <th className="py-3 text-right font-medium">{sortableHeader("+/-", "up")}</th>
+              <th className="py-3 text-right font-medium">{sortableHeader("+/-", "move")}</th>
             </tr>
           </thead>
           <tbody>
