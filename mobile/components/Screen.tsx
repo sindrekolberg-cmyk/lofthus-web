@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors } from "@/lib/theme";
+import { colors, space } from "@/lib/theme";
 
 export function Screen({
   children,
@@ -10,6 +10,7 @@ export function Screen({
   title,
   kicker,
   flush = false,
+  compactHeader = false,
 }: {
   children: ReactNode;
   refreshing?: boolean;
@@ -17,6 +18,7 @@ export function Screen({
   title?: string;
   kicker?: string;
   flush?: boolean;
+  compactHeader?: boolean;
 }) {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
@@ -25,7 +27,7 @@ export function Screen({
         refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.live} /> : undefined}
       >
         {kicker ? <Text style={[styles.kicker, flush && styles.flushText]}>{kicker}</Text> : null}
-        {title ? <Text style={[styles.title, flush && styles.flushText]}>{title}</Text> : null}
+        {title ? <Text style={[styles.title, compactHeader && styles.titleCompact, flush && styles.flushText]}>{title}</Text> : null}
         {children}
       </ScrollView>
     </SafeAreaView>
@@ -34,9 +36,10 @@ export function Screen({
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.paper },
-  content: { paddingHorizontal: 18, paddingTop: 8, paddingBottom: 112 },
-  contentFlush: { paddingHorizontal: 0, paddingTop: 0, paddingBottom: 112 },
+  content: { paddingHorizontal: space.lg, paddingTop: 8, paddingBottom: space.screenBottom },
+  contentFlush: { paddingHorizontal: 0, paddingTop: 0, paddingBottom: space.screenBottom },
   kicker: { color: colors.live, fontSize: 10, fontWeight: "900", letterSpacing: 1.5, textTransform: "uppercase", marginTop: 4 },
   title: { color: colors.ink, fontFamily: "Georgia", fontSize: 36, lineHeight: 40, fontWeight: "700", letterSpacing: -0.9, marginTop: 5, marginBottom: 18 },
-  flushText: { marginHorizontal: 18 },
+  titleCompact: { marginBottom: 10 },
+  flushText: { marginHorizontal: space.lg },
 });

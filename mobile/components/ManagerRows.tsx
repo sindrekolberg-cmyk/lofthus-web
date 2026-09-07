@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import type { ManagerRow } from "@/lib/types";
+import { formatMovement } from "@/lib/format";
 import { colors } from "@/lib/theme";
 
 export function ManagerRows({ rows, limit, compact = false }: { rows: ManagerRow[]; limit?: number; compact?: boolean }) {
@@ -8,33 +9,32 @@ export function ManagerRows({ rows, limit, compact = false }: { rows: ManagerRow
   const shown = typeof limit === "number" ? rows.slice(0, limit) : rows;
   return (
     <View style={styles.wrap}>
-      {shown.map((row) => (
-        <Pressable
-          key={row.entry}
-          onPress={() => router.push(`/manager/${row.entry}`)}
-          style={({ pressed }) => [styles.row, compact && styles.rowCompact, pressed && styles.pressed]}
-        >
-          <Text style={[styles.rank, compact && styles.rankCompact]}>{row.rank}</Text>
-          <View style={styles.nameWrap}>
-            <Text style={[styles.name, compact && styles.nameCompact]} numberOfLines={1}>{row.manager}</Text>
-            {!compact ? <Text style={styles.team} numberOfLines={1}>{row.team}</Text> : null}
-          </View>
-          {!compact ? (
-            <View style={styles.gwWrap}>
-              <Text style={styles.gw}>{row.gw}</Text>
-              <Text style={styles.gwLabel}>GW</Text>
+      {shown.map((row) => {
+        const move = formatMovement(row.rank_change);
+        return (
+          <Pressable
+            key={row.entry}
+            onPress={() => router.push(`/manager/${row.entry}`)}
+            style={({ pressed }) => [styles.row, compact && styles.rowCompact, pressed && styles.pressed]}
+          >
+            <Text style={[styles.rank, compact && styles.rankCompact]}>{row.rank}</Text>
+            <View style={styles.nameWrap}>
+              <Text style={[styles.name, compact && styles.nameCompact]} numberOfLines={1}>{row.manager}</Text>
+              {!compact ? <Text style={styles.team} numberOfLines={1}>{row.team}</Text> : null}
             </View>
-          ) : null}
-          <View style={styles.scoreWrap}>
-            <Text style={[styles.total, compact && styles.totalCompact]}>{row.total}</Text>
             {!compact ? (
-              <Text style={[styles.move, row.rank_change > 0 ? styles.up : row.rank_change < 0 ? styles.down : null]}>
-                {row.rank_change > 0 ? `+${row.rank_change}` : row.rank_change}
-              </Text>
+              <View style={styles.gwWrap}>
+                <Text style={styles.gw}>{row.gw}</Text>
+                <Text style={styles.gwLabel}>GW</Text>
+              </View>
             ) : null}
-          </View>
-        </Pressable>
-      ))}
+            <View style={styles.scoreWrap}>
+              <Text style={[styles.total, compact && styles.totalCompact]}>{row.total}</Text>
+              {!compact ? <Text style={[styles.move, { color: move.color }]}>{move.text}</Text> : null}
+            </View>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
@@ -56,7 +56,5 @@ const styles = StyleSheet.create({
   scoreWrap: { alignItems: "flex-end", minWidth: 40 },
   total: { color: colors.ink, fontSize: 17, fontWeight: "900", fontVariant: ["tabular-nums"] },
   totalCompact: { fontSize: 15 },
-  move: { color: colors.muted, fontSize: 11, fontWeight: "800", marginTop: 1 },
-  up: { color: colors.green },
-  down: { color: colors.live },
+  move: { fontSize: 11, fontWeight: "800", marginTop: 1 },
 });

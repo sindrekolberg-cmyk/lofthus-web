@@ -1,4 +1,4 @@
-import type { HallPayload, HomePayload, LeaguePayload, ManagerProfilePayload } from "./types";
+import type { HallPayload, HomePayload, LeaguePayload, ManagerProfilePayload, MatchImpactPayload } from "./types";
 
 export const API_BASE = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://lofthus-road-open-api.onrender.com").replace(/\/$/, "");
 
@@ -22,4 +22,5 @@ export const api = {
   league: () => get<LeaguePayload>("/api/league"),
   manager: (entry: number) => get<ManagerProfilePayload>(`/api/managers/${entry}`),
   hallOfFame: () => get<HallPayload>("/api/hall-of-fame"),
+  match: (id: number) => get<MatchImpactPayload>(`/api/live/matches/${id}`),
 };

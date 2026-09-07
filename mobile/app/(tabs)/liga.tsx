@@ -6,61 +6,100 @@ import { useRemote } from "@/lib/useRemote";
 import type { ManagerRow } from "@/lib/types";
 import { Screen } from "@/components/Screen";
 import { ErrorState, Loading } from "@/components/State";
-import { ManagerRows } from "@/components/ManagerRows";
+import { LeagueHeader, type LeagueSortKey } from "@/components/league/LeagueHeader";
+import { LeagueRow } from "@/components/league/LeagueRow";
+
+const defaultDir: Record<LeagueSortKey, "asc" | "desc"> = {
+  rank: "asc",
+  gw: "desc",
+  total: "desc",
+  move: "desc",
+};
 
 export default function LeagueScreen() {
   const loader = useCallback(() => api.league(), []);
   const remote = useRemote(loader);
   const [mode, setMode] = useState<"total" | "month">("total");
+  const [sortKey, setSortKey] = useState<LeagueSortKey>("rank");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  function chooseMode(next: "total" | "month") {
+    setMode(next);
+    setSortKey("rank");
+    setSortDir("asc");
+  }
+
+  function toggleSort(key: LeagueSortKey) {
+    if (key === sortKey) {
+      setSortDir((dir) => (dir === "asc" ? "desc" : "asc"));
+      return;
+    }
+    setSortKey(key);
+    setSortDir(defaultDir[key]);
+  }
+
   const rows = useMemo(() => {
     const all = [...(remote.data?.table || [])];
-    if (mode === "month") {
-      return all
-        .sort((a, b) => b.month_points - a.month_points || a.rank - b.rank)
-        .map((row, index) => ({ ...row, rank: index + 1, total: row.month_points } as ManagerRow));
-    }
-    return all.sort((a, b) => a.rank - b.rank);
-  }, [remote.data, mode]);
+    const dir = sortDir === "asc" ? 1 : -1;
+    const value = (row: ManagerRow) => (mode === "month" ? row.month_points : row.total);
+    const place = (row: ManagerRow) => (mode === "month" ? row.month_rank || row.rank : row.rank);
+    return all.sort((a, b) => {
+      let cmp = 0;
+      if (sortKey === "rank") cmp = place(a) - place(b);
+      if (sortKey === "gw") cmp = a.gw - b.gw;
+      if (sortKey === "total") cmp = value(a) - value(b);
+      if (sortKey === "move") cmp = a.rank_change - b.rank_change;
+      if (cmp === 0) cmp = place(a) - place(b) || a.rank - b.rank;
+      return cmp * dir;
+    });
+  }, [remote.data, mode, sortKey, sortDir]);
+
+  const kicker = remote.data?.status.round_kicker || (remote.data?.status.event_id ? `Runde ${remote.data.status.event_id}` : "Liga");
 
   return (
-    <Screen kicker={remote.data?.status.round_kicker || "Tabell"} title="Liga" refreshing={remote.refreshing} onRefresh={remote.refresh}>
+    <Screen kicker={kicker} title="Liga" compactHeader refreshing={remote.refreshing} onRefresh={remote.refresh}>
       <View style={styles.switcher}>
         {(["total", "month"] as const).map((value) => (
-          <Pressable key={value} onPress={() => setMode(value)} style={[styles.button, mode === value && styles.buttonActive]}>
+          <Pressable key={value} onPress={() => chooseMode(value)} style={({ pressed }) => [styles.button, mode === value && styles.buttonActive, pressed && styles.pressed]}>
             <Text style={[styles.buttonText, mode === value && styles.buttonTextActive]}>
               {value === "total" ? "Totalpoeng" : "Måned"}
             </Text>
           </Pressable>
         ))}
       </View>
+      {remote.data?.status.provisional ? <Text style={styles.provisional}>FORELØPIG TABELL · RUNDEN PÅGÅR</Text> : null}
 
-      <View style={styles.tableHeader}>
-        <Text style={[styles.headerText, styles.headerPlace]}>PLASS</Text>
-        <Text style={[styles.headerText, styles.headerManager]}>MANAGER</Text>
-        <Text style={[styles.headerText, styles.headerRight]}>GW</Text>
-        <Text style={[styles.headerText, styles.headerRight]}>{mode === "total" ? "TOTAL" : "MÅNED"}</Text>
-      </View>
+      <LeagueHeader
+        totalLabel={mode === "total" ? "Total" : "Måned"}
+        sortKey={sortKey}
+        sortDir={sortDir}
+        onSort={toggleSort}
+      />
 
       {remote.loading && !remote.data ? <Loading /> : null}
       {remote.error && !remote.data ? <ErrorState message={remote.error} /> : null}
-      {remote.data ? <ManagerRows rows={rows} /> : null}
-      {remote.data?.status.provisional ? (
-        <Text style={styles.note}>Plasseringene er foreløpige så lenge runden ikke er ferdig.</Text>
+      {remote.data ? (
+        <View>
+          {rows.map((row) => (
+            <LeagueRow
+              key={row.entry}
+              row={row}
+              displayRank={mode === "month" ? row.month_rank || row.rank : row.rank}
+              score={mode === "month" ? row.month_points : row.total}
+            />
+          ))}
+        </View>
       ) : null}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  switcher: { flexDirection: "row", gap: 8, marginBottom: 20 },
-  button: { minHeight: 42, justifyContent: "center", borderWidth: 1, borderColor: colors.line, paddingHorizontal: 15, paddingVertical: 9, backgroundColor: colors.panel },
+  switcher: { flexDirection: "row", gap: 8, marginBottom: 10 },
+  button: { minHeight: 38, justifyContent: "center", borderWidth: 1, borderColor: colors.line, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: colors.panel, borderRadius: 8 },
   buttonActive: { backgroundColor: colors.ink, borderColor: colors.ink },
   buttonText: { color: colors.muted, fontSize: 11, fontWeight: "900", letterSpacing: 1.05, textTransform: "uppercase" },
   buttonTextActive: { color: colors.white },
-  tableHeader: { minHeight: 34, flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderBottomColor: colors.ink },
-  headerText: { color: colors.muted, fontSize: 9, fontWeight: "900", letterSpacing: 1.1 },
-  headerPlace: { width: 38 },
-  headerManager: { flex: 1 },
-  headerRight: { width: 44, textAlign: "right" },
-  note: { color: colors.muted, fontSize: 10, lineHeight: 15, fontWeight: "700", letterSpacing: 0.65, textTransform: "uppercase", marginTop: 12 },
+  pressed: { opacity: 0.58 },
+  provisional: { color: colors.live, fontSize: 10, fontWeight: "800", letterSpacing: 0.8, marginBottom: 10 },
 });

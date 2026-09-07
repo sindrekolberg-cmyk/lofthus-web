@@ -26,11 +26,14 @@ export type Fixture = {
   id: number;
   home: string;
   away: string;
+  home_name?: string;
+  away_name?: string;
   home_score?: number | null;
   away_score?: number | null;
   status: string;
   status_label?: string;
   kickoff?: string;
+  minutes?: number;
   lofthus_headline?: string;
 };
 
@@ -39,6 +42,7 @@ export type Story = {
   category?: string;
   headline: string;
   meta?: string;
+  manager_entry?: number;
 };
 
 export type PopularPlayer = {
@@ -75,15 +79,72 @@ export type HallRow = {
   rank: number;
   manager: string;
   league_gold: number;
+  league_silver: number;
+  league_bronze: number;
   cup_gold: number;
+  cup_silver: number;
   monthly_gold: number;
   monthly_silver: number;
   monthly_bronze: number;
+  gold?: number;
+  silver?: number;
+  bronze?: number;
+  podiums?: number;
+  league_seasons: string[];
+  cup_seasons: string[];
+};
+
+export type HallOverall = {
+  season: string;
+  winner?: string;
+  runner_up?: string;
+  third_place?: string;
+};
+
+export type HallCup = {
+  season: string;
+  winner?: string;
+  runner_up?: string;
+};
+
+export type HallMonthly = {
+  season: string;
+  month: string;
+  winner?: string;
+  runner_up?: string;
+  third?: string;
+};
+
+export type HallRandom = {
+  season: string;
+  winner?: string;
+  placement?: string;
+  note?: string;
+};
+
+export type HallRecord = {
+  manager: string;
+  value: number;
+  label: string;
+  field: string;
 };
 
 export type HallPayload = {
   rows: HallRow[];
-  overall: Array<{ season: string; winner?: string; runner_up?: string; third_place?: string }>;
-  cup: Array<{ season: string; winner?: string; runner_up?: string }>;
-  monthly: Array<{ season: string; month: string; winner?: string; runner_up?: string; third?: string }>;
+  records?: Record<string, HallRecord | null>;
+  overall: HallOverall[];
+  cup: HallCup[];
+  monthly: HallMonthly[];
+  random?: HallRandom[];
+};
+
+export type MatchImpactPayload = {
+  fixture: Fixture;
+  owners?: number;
+  captains?: number;
+  is_live?: boolean;
+  provisional?: boolean;
+  biggest_winner?: { entry: number; manager: string; swing: number } | null;
+  biggest_loser?: { entry: number; manager: string; swing: number } | null;
+  players?: Array<{ player: string; event_points: number; club?: string }>;
 };
