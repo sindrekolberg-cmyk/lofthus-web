@@ -79,7 +79,7 @@ export function HomePage() {
                 </Link>
               </div>
               <div className="mt-2">
-                <LeagueTable rows={data.top5} status={status} compact highlight={entryId} />
+                <LeagueTable rows={data.top5} status={status} compact />
               </div>
             </section>
 
@@ -121,7 +121,7 @@ export function HomePage() {
                     </p>
                   </li>
                 )) : (
-                  <li className="py-2 text-sm text-muted">Ingen har spilt ennå.</li>
+                  <li className="py-2 text-sm text-muted">Ingen spillere skiller seg ut akkurat nå.</li>
                 )}
               </ul>
             </aside>
