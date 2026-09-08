@@ -15,7 +15,7 @@ import type {
 import type { WildcardPayload } from "./wildcardTypes";
 import type { LeagueIntelligencePayload } from "./leagueIntelligenceTypes";
 
-export const API_BASE = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://lofthus-road-open-api.onrender.com").replace(/\/$/, "");
+export const API_BASE = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://lofthus-road-open-platform-api.onrender.com").replace(/\/$/, "");
 export const AUX_BASE = (process.env.EXPO_PUBLIC_PUSH_BASE_URL || "https://lofthus-road-open-push.onrender.com").replace(/\/$/, "");
 export const DEFAULT_LEAGUE_ID = 25220;
 const FPL_BOOTSTRAP = "https://fantasy.premierleague.com/api/bootstrap-static/";
@@ -97,6 +97,10 @@ function tenantGet<T>(defaultPath: string, tenantPath: string, options: GetOptio
   return get<T>(`/api/tenant/${activeLeagueId}${tenantPath}`, options);
 }
 
+function platformTenantGet<T>(tenantPath: string, options: GetOptions = {}) {
+  return get<T>(`/api/tenant/${activeLeagueId}${tenantPath}`, options);
+}
+
 async function enrichOwnership(base: OwnershipPayload): Promise<OwnershipPayload> {
   try {
     const controller = new AbortController();
@@ -157,7 +161,7 @@ export const api = {
     ? get<OddsPayload>("/api/odds", { timeoutMs: 65000, retries: 1 })
     : Promise.resolve({ ready: false, rows: [], note: "Tabelltipset er foreløpig bare tilgjengelig for Lofthus Road Open." }),
   preseasonTip: () => isDefaultLeague()
-    ? get<OddsPayload>("/api/preseason-tip", { timeoutMs: 65000, retries: 1 })
+    ? get<OddsPayload>("/api/odds", { timeoutMs: 65000, retries: 1 })
     : Promise.resolve({ ready: false, rows: [], note: "Tabelltipset er foreløpig bare tilgjengelig for Lofthus Road Open." }),
   managers: () => tenantGet<{ managers: ManagerOption[] }>("/api/managers", "/managers", { timeoutMs: 25000, retries: 1 }),
   manager: (entry: number) => tenantGet<ManagerProfilePayload>(`/api/managers/${entry}`, `/managers/${entry}`, { timeoutMs: 25000, retries: 1 }),
@@ -166,10 +170,7 @@ export const api = {
   rival: (a: number, b: number) => tenantGet<RivalPayload>(`/api/rival?manager_a=${a}&manager_b=${b}`, `/rival?manager_a=${a}&manager_b=${b}`, { timeoutMs: 30000, retries: 1 }),
   leagueIntelligence: (entryId: number, goal = "auto") => {
     const query = new URLSearchParams({ entry_id: String(entryId), goal });
-    const path = isDefaultLeague()
-      ? `/api/league-intelligence?${query.toString()}`
-      : `/api/tenant/${activeLeagueId}/league-intelligence?${query.toString()}`;
-    return get<LeagueIntelligencePayload>(path, { timeoutMs: 65000, retries: 1 });
+    return platformTenantGet<LeagueIntelligencePayload>(`/league-intelligence?${query.toString()}`, { timeoutMs: 65000, retries: 1 });
   },
   analysisCaptain: () => tenantGet<{ players: AnalysisPlayer[] }>("/api/analysis/captain", "/analysis/captain", { timeoutMs: 25000, retries: 1 }),
   analysisOwnership: async () => enrichOwnership(await tenantGet<OwnershipPayload>("/api/analysis/ownership", "/analysis/ownership", { timeoutMs: 30000, retries: 1 })),
@@ -185,10 +186,7 @@ export const api = {
       rival_id: "0",
       position: "all",
     });
-    const path = isDefaultLeague()
-      ? `/api/deep-analysis/transfers?${query.toString()}`
-      : `/api/tenant/${activeLeagueId}/deep-analysis/transfers?${query.toString()}`;
-    return get<TransferStrategyPayload>(path, { timeoutMs: 65000, retries: 1 });
+    return platformTenantGet<TransferStrategyPayload>(`/deep-analysis/transfers?${query.toString()}`, { timeoutMs: 65000, retries: 1 });
   },
   analysisWildcard: (params: { entry_id: number; strategy: string; risk: number; horizon: number }) => {
     const query = new URLSearchParams({
@@ -197,9 +195,6 @@ export const api = {
       risk: String(params.risk),
       horizon: String(Math.max(5, params.horizon)),
     });
-    const path = isDefaultLeague()
-      ? `/api/deep-analysis/wildcard?${query.toString()}`
-      : `/api/tenant/${activeLeagueId}/deep-analysis/wildcard?${query.toString()}`;
-    return get<WildcardPayload>(path, { timeoutMs: 65000, retries: 1 });
+    return platformTenantGet<WildcardPayload>(`/deep-analysis/wildcard?${query.toString()}`, { timeoutMs: 65000, retries: 1 });
   },
 };
