@@ -1,23 +1,31 @@
-import { StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Screen } from "@/components/Screen";
 import { colors } from "@/lib/theme";
 
 const tools = [
-  ["Rivalradar", "Se hvem som faktisk tjener og taper på forskjellene mellom to lag."],
-  ["Transferstrategi", "Kjøpsråd tilpasset hvor aggressivt du vil klatre i Lofthus eller OR."],
-  ["Kaptein", "Se kapteinsvalg, effektivt eierskap og hvor armbåndet kan flytte ligaen."],
-  ["Eierskap", "Finn hvem ligaen eier, benker og satser på."],
-  ["Differensialer", "Spillere få i Lofthus sitter med, men som faktisk kan gjøre en forskjell."],
-  ["Sjetonger", "Følg Wildcard, Free Hit, Bench Boost og Triple Captain."],
-];
+  ["rivalradar", "Rivalradar", "Se hvem som faktisk tjener og taper på forskjellene mellom to lag."],
+  ["transferstrategi", "Transferstrategi", "Kjøpsråd tilpasset hvor aggressivt du vil klatre i Lofthus eller OR."],
+  ["kaptein", "Kaptein", "Se kapteinsvalg, effektivt eierskap og hvor armbåndet kan flytte ligaen."],
+  ["ownership", "Eierskap", "Finn hvem ligaen eier, benker og satser på."],
+  ["differensialer", "Differensialer", "Spillere få i Lofthus sitter med, men som faktisk kan gjøre en forskjell."],
+  ["chips", "Sjetonger", "Følg Wildcard, Free Hit, Bench Boost og Triple Captain."],
+] as const;
 
 export default function AnalyseScreen() {
+  const router = useRouter();
+
   return (
     <Screen kicker="Verktøy" title="Analyseverktøy">
       <Text style={styles.lead}>Velg verktøy. Samme Lofthus-data som på web, pakket for mobilen.</Text>
       <View style={styles.list}>
-        {tools.map(([title, copy], index) => (
-          <View key={title} style={[styles.row, index === 0 && styles.rowPrimary]}>
+        {tools.map(([slug, title, copy], index) => (
+          <Pressable
+            accessibilityRole="button"
+            key={slug}
+            onPress={() => router.push({ pathname: "/analyse/[tool]", params: { tool: slug } })}
+            style={({ pressed }) => [styles.row, index === 0 && styles.rowPrimary, pressed && styles.pressed]}
+          >
             <View style={styles.numberWrap}>
               <Text style={[styles.number, index === 0 && styles.numberPrimary]}>{String(index + 1).padStart(2, "0")}</Text>
             </View>
@@ -26,7 +34,7 @@ export default function AnalyseScreen() {
               <Text style={[styles.copy, index === 0 && styles.copyPrimary]}>{copy}</Text>
             </View>
             <Text style={[styles.arrow, index === 0 && styles.arrowPrimary]}>→</Text>
-          </View>
+          </Pressable>
         ))}
       </View>
     </Screen>
@@ -48,4 +56,5 @@ const styles = StyleSheet.create({
   copyPrimary: { color: "#CFC9C0" },
   arrow: { color: colors.muted, fontSize: 20 },
   arrowPrimary: { color: colors.white },
+  pressed: { opacity: 0.62 },
 });
