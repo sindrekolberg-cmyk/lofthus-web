@@ -70,6 +70,17 @@ export type PopularPlayer = {
   image_url?: string;
 };
 
+export type PlayerOwner = {
+  entry: number;
+  manager: string;
+  team: string;
+  is_captain?: boolean;
+  is_original_captain?: boolean;
+  is_triple_captain?: boolean;
+  captain_fallback?: boolean;
+  on_bench?: boolean;
+};
+
 export type AnalysisPlayer = PopularPlayer & {
   ownership_count: number;
   captain_count: number;
@@ -77,6 +88,24 @@ export type AnalysisPlayer = PopularPlayer & {
   effective_ownership_pct?: number;
   fixture_status?: string;
   fixture_status_label?: string;
+  owners?: PlayerOwner[];
+  global_ownership_pct?: number;
+  ownership_gap_pct?: number;
+  differential_score?: number;
+  form?: number;
+  points_per_game?: number;
+  season_points?: number;
+  season_minutes?: number;
+  xgi_per90?: number;
+  status?: string;
+};
+
+export type OwnershipPayload = {
+  players: AnalysisPlayer[];
+  league_size?: number;
+  loaded_managers?: number;
+  complete?: boolean;
+  sources?: string[];
 };
 
 export type HomePayload = {
@@ -152,10 +181,56 @@ export type TransferPick = {
   position: string;
   price: number;
   strategy_score: number;
+  projection_index?: number;
   league_ownership_pct: number;
   league_owners: number;
   league_size: number;
   why: string[];
+  evidence?: string[];
+  confidence?: string;
+  data_sources?: string[];
+  deep_stats?: {
+    xg_per90?: number;
+    xa_per90?: number;
+    xgi_per90?: number;
+    goal_involvements_per90?: number;
+    form?: number;
+    points_per_game?: number;
+    minutes?: number;
+    starts?: number;
+    threat?: number;
+    creativity?: number;
+    influence?: number;
+    ict?: number;
+    global_ownership_pct?: number;
+    next_fixture_count?: number;
+    weaker_defence_fixtures?: number;
+    attack_matchup?: number;
+    clean_sheet_matchup?: number;
+    penalties_order?: number | null;
+    direct_freekicks_order?: number | null;
+    corners_indirect_freekicks_order?: number | null;
+    recent_5?: {
+      matches?: number;
+      minutes?: number;
+      avg_minutes?: number;
+      xg_per90?: number;
+      xa_per90?: number;
+      xgi_per90?: number;
+      goal_involvements_per90?: number;
+      points_per_match?: number;
+      clean_sheet_rate?: number;
+      saves_per90?: number;
+      expected_goals_conceded_per90?: number;
+      score_10?: number;
+    };
+  };
+  transfer_feasibility?: {
+    legal?: boolean;
+    budget_verified?: boolean;
+    reason?: string;
+    out_candidates?: Array<{ element: number; player: string; selling_price?: number | null }>;
+  };
 };
 
 export type TransferStrategyPayload = {
@@ -167,6 +242,10 @@ export type TransferStrategyPayload = {
   aggressive: TransferPick[];
   differentials: TransferPick[];
   warnings?: string[];
+  projection_source?: string;
+  analysis_horizon?: { matches?: number; first_event_id?: number; starts_after_current_deadline?: boolean };
+  quality_control?: Record<string, unknown>;
+  coverage?: Record<string, unknown>;
 };
 
 export type ChipRow = {
