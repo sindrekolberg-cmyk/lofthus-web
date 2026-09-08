@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/components/Screen";
+import { ErrorState, Loading } from "@/components/State";
+import { api } from "@/lib/api";
 import { colors, radius, space } from "@/lib/theme";
+import { useRemote } from "@/lib/useRemote";
 import {
   registerRemotePush,
   sendLocalTestNotification,
@@ -10,8 +13,10 @@ import {
 } from "@/lib/notifications";
 
 export default function NotificationsScreen() {
+  const managers = useRemote(() => api.managers());
+  const [entryId, setEntryId] = useState(0);
   const [message, setMessage] = useState(
-    "Test først på mobilen. Deretter kan appen registreres for ekte push fra Lofthus-serveren.",
+    "Velg deg selv først. Da vet Lofthus hvem som skal få personlige livevarsler.",
   );
   const [token, setToken] = useState<string | null>(null);
   const [busy, setBusy] = useState<"local" | "register" | "remote" | null>(null);
@@ -27,9 +32,13 @@ export default function NotificationsScreen() {
   }
 
   async function enableRemotePush() {
+    if (!entryId) {
+      setMessage("Velg manageren din før du slår på personlige pushvarsler.");
+      return;
+    }
     setBusy("register");
     try {
-      const result = await registerRemotePush();
+      const result = await registerRemotePush(entryId);
       if (result.token) setToken(result.token);
       setMessage(result.message);
     } finally {
@@ -48,16 +57,47 @@ export default function NotificationsScreen() {
     }
   }
 
+  const selected = managers.data?.managers.find((m) => m.entry === entryId);
+
   return (
     <Screen kicker="Lofthus på mobilen" title="Varsler">
       <View style={styles.card}>
         <Ionicons name="notifications-outline" size={28} color={colors.ink} />
-        <Text style={styles.cardTitle}>Ikke gå glipp av kaoset</Text>
+        <Text style={styles.cardTitle}>Live på laget ditt</Text>
         <Text style={styles.body}>
-          Varsler kan brukes til deadline, tabellendringer og personlige hendelser. Du bestemmer fortsatt om
-          menneskeheten virkelig trenger enda en grunn til å se på telefonen.
+          Lofthus kan varsle når en spiller som faktisk teller på laget ditt scorer, assisterer, bommer på straffe eller får rødt. I tillegg kan vi bruke samme system til deadline og tabellendringer.
         </Text>
       </View>
+
+      <Text style={styles.sectionLabel}>HVEM ER DU?</Text>
+      {managers.loading && !managers.data ? <Loading /> : null}
+      {managers.error && !managers.data ? <ErrorState message={managers.error} /> : null}
+      {managers.data ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.managerRow}>
+          {managers.data.managers.map((manager) => (
+            <Pressable
+              key={manager.entry}
+              onPress={() => {
+                setEntryId(manager.entry);
+                setToken(null);
+                setMessage(`${manager.manager} valgt. Slå på pushvarsler når du er klar.`);
+              }}
+              style={({ pressed }) => [styles.managerChip, entryId === manager.entry && styles.managerChipActive, pressed && styles.pressed]}
+            >
+              <Text style={[styles.managerName, entryId === manager.entry && styles.managerNameActive]}>{manager.manager}</Text>
+              <Text style={[styles.managerRank, entryId === manager.entry && styles.managerRankActive]}>#{manager.rank || "–"}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      ) : null}
+
+      {selected ? (
+        <View style={styles.selectedBox}>
+          <Text style={styles.statusLabel}>VALGT MANAGER</Text>
+          <Text style={styles.selectedName}>{selected.manager}</Text>
+          <Text style={styles.body}>{selected.team}</Text>
+        </View>
+      ) : null}
 
       <Pressable
         accessibilityRole="button"
@@ -71,18 +111,18 @@ export default function NotificationsScreen() {
 
       <Pressable
         accessibilityRole="button"
-        disabled={busy !== null}
+        disabled={busy !== null || !entryId}
         onPress={enableRemotePush}
         style={({ pressed }) => [
           styles.button,
           styles.secondaryButton,
           pressed && styles.pressed,
-          busy !== null && styles.disabled,
+          (busy !== null || !entryId) && styles.disabled,
         ]}
       >
         <Ionicons name="notifications" size={18} color={colors.ink} />
         <Text style={[styles.buttonText, styles.secondaryButtonText]}>
-          {busy === "register" ? "Kobler til ..." : "Slå på pushvarsler"}
+          {busy === "register" ? "Kobler til ..." : "Slå på personlige pushvarsler"}
         </Text>
       </Pressable>
 
@@ -111,8 +151,7 @@ export default function NotificationsScreen() {
       </View>
 
       <Text style={styles.note}>
-        Lokale testvarsler kan fungere i Expo Go. Ekte push fra server krever en development build med
-        push-credentials.
+        Ekte server-push krever en development build med Apple/Expo push-credentials. Lokale testvarsler kan testes tidligere.
       </Text>
     </Screen>
   );
@@ -125,7 +164,7 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     borderRadius: radius.lg,
     padding: space.lg,
-    marginBottom: 16,
+    marginBottom: 18,
   },
   cardTitle: {
     color: colors.ink,
@@ -140,6 +179,35 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  sectionLabel: {
+    color: colors.live,
+    fontSize: 9,
+    fontWeight: "900",
+    letterSpacing: 1.3,
+    marginBottom: 8,
+  },
+  managerRow: { gap: 8, paddingRight: 24, paddingBottom: 14 },
+  managerChip: {
+    minWidth: 130,
+    borderRadius: radius.md,
+    backgroundColor: colors.panel,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.line,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  managerChipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
+  managerName: { color: colors.ink, fontSize: 12, fontWeight: "800" },
+  managerNameActive: { color: colors.white },
+  managerRank: { color: colors.muted, fontSize: 10, marginTop: 3 },
+  managerRankActive: { color: "#CFC9C0" },
+  selectedBox: {
+    padding: 14,
+    borderRadius: radius.md,
+    backgroundColor: colors.peach,
+    marginBottom: 14,
+  },
+  selectedName: { color: colors.ink, fontFamily: "Georgia", fontSize: 19, fontWeight: "700", marginTop: 4 },
   button: {
     minHeight: 50,
     borderRadius: radius.md,
