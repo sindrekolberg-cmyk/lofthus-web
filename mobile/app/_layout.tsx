@@ -1,3 +1,4 @@
+import "@/lib/notifications";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { colors } from "@/lib/theme";
@@ -16,6 +17,7 @@ export default function RootLayout() {
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="notifications" options={{ title: "Varsler", headerBackTitle: "Tilbake" }} />
         <Stack.Screen name="manager/[id]" options={{ title: "Manager", headerBackTitle: "Tilbake" }} />
         <Stack.Screen name="match/[id]" options={{ title: "Kamp", headerBackTitle: "Tilbake" }} />
       </Stack>

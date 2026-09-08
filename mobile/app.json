@@ -6,7 +6,10 @@
     "orientation": "portrait",
     "scheme": "lofthus",
     "userInterfaceStyle": "light",
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      "expo-notifications"
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "no.lofthus.roadopen"
