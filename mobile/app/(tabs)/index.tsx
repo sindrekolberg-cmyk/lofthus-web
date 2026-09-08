@@ -18,11 +18,11 @@ export default function HomeScreen() {
 
   return (
     <Screen refreshing={remote.refreshing} onRefresh={remote.refresh} flush>
+      <HomeHeader />
       {remote.loading && !data ? <Loading /> : null}
       {remote.error && !data ? <ErrorState message={remote.error} /> : null}
       {data ? (
         <>
-          <HomeHeader />
           <FixtureRail fixtures={data.pulse.fixtures || []} />
           <Snakkiser stories={stories} />
           <MiniTables top5={data.top5} monthName={data.month.name} monthRows={data.month.table} />
