@@ -94,7 +94,7 @@ async function get<T>(path: string, options: GetOptions = {}): Promise<T> {
 
 function tenantGet<T>(defaultPath: string, tenantPath: string, options: GetOptions = {}) {
   if (isDefaultLeague()) return get<T>(defaultPath, options);
-  return get<T>(`/api/tenant/${activeLeagueId}${tenantPath}`, { ...options, baseUrl: AUX_BASE });
+  return get<T>(`/api/tenant/${activeLeagueId}${tenantPath}`, options);
 }
 
 async function enrichOwnership(base: OwnershipPayload): Promise<OwnershipPayload> {
@@ -150,14 +150,14 @@ const emptyHall: HallPayload = { rows: [], overall: [], cup: [], monthly: [], ra
 export const api = {
   setLeague: setActiveLeagueId,
   activeLeagueId: getActiveLeagueId,
-  connectLeague: (leagueId: number) => get<LeagueConnectPayload>(`/api/tenant/connect?league_id=${Math.trunc(leagueId)}`, { timeoutMs: 30000, retries: 1, baseUrl: AUX_BASE }),
+  connectLeague: (leagueId: number) => get<LeagueConnectPayload>(`/api/tenant/connect?league_id=${Math.trunc(leagueId)}`, { timeoutMs: 30000, retries: 1 }),
   home: () => tenantGet<HomePayload>("/api/home", "/home", { timeoutMs: 25000, retries: 1 }),
   league: () => tenantGet<LeaguePayload>("/api/league", "/league", { timeoutMs: 25000, retries: 1 }),
   odds: () => isDefaultLeague()
     ? get<OddsPayload>("/api/odds", { timeoutMs: 65000, retries: 1 })
     : Promise.resolve({ ready: false, rows: [], note: "Tabelltipset er foreløpig bare tilgjengelig for Lofthus Road Open." }),
   preseasonTip: () => isDefaultLeague()
-    ? get<OddsPayload>("/api/preseason-tip", { timeoutMs: 65000, retries: 1, baseUrl: AUX_BASE })
+    ? get<OddsPayload>("/api/preseason-tip", { timeoutMs: 65000, retries: 1 })
     : Promise.resolve({ ready: false, rows: [], note: "Tabelltipset er foreløpig bare tilgjengelig for Lofthus Road Open." }),
   managers: () => tenantGet<{ managers: ManagerOption[] }>("/api/managers", "/managers", { timeoutMs: 25000, retries: 1 }),
   manager: (entry: number) => tenantGet<ManagerProfilePayload>(`/api/managers/${entry}`, `/managers/${entry}`, { timeoutMs: 25000, retries: 1 }),
@@ -169,7 +169,7 @@ export const api = {
     const path = isDefaultLeague()
       ? `/api/league-intelligence?${query.toString()}`
       : `/api/tenant/${activeLeagueId}/league-intelligence?${query.toString()}`;
-    return get<LeagueIntelligencePayload>(path, { timeoutMs: 65000, retries: 1, baseUrl: AUX_BASE });
+    return get<LeagueIntelligencePayload>(path, { timeoutMs: 65000, retries: 1 });
   },
   analysisCaptain: () => tenantGet<{ players: AnalysisPlayer[] }>("/api/analysis/captain", "/analysis/captain", { timeoutMs: 25000, retries: 1 }),
   analysisOwnership: async () => enrichOwnership(await tenantGet<OwnershipPayload>("/api/analysis/ownership", "/analysis/ownership", { timeoutMs: 30000, retries: 1 })),
@@ -188,7 +188,7 @@ export const api = {
     const path = isDefaultLeague()
       ? `/api/deep-analysis/transfers?${query.toString()}`
       : `/api/tenant/${activeLeagueId}/deep-analysis/transfers?${query.toString()}`;
-    return get<TransferStrategyPayload>(path, { timeoutMs: 65000, retries: 1, baseUrl: AUX_BASE });
+    return get<TransferStrategyPayload>(path, { timeoutMs: 65000, retries: 1 });
   },
   analysisWildcard: (params: { entry_id: number; strategy: string; risk: number; horizon: number }) => {
     const query = new URLSearchParams({
@@ -200,6 +200,6 @@ export const api = {
     const path = isDefaultLeague()
       ? `/api/deep-analysis/wildcard?${query.toString()}`
       : `/api/tenant/${activeLeagueId}/deep-analysis/wildcard?${query.toString()}`;
-    return get<WildcardPayload>(path, { timeoutMs: 65000, retries: 1, baseUrl: AUX_BASE });
+    return get<WildcardPayload>(path, { timeoutMs: 65000, retries: 1 });
   },
 };
