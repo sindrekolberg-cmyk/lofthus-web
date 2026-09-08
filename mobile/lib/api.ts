@@ -12,6 +12,7 @@ import type {
   RivalPayload,
   TransferStrategyPayload,
 } from "./types";
+import type { WildcardPayload } from "./wildcardTypes";
 
 export const API_BASE = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://lofthus-road-open-api.onrender.com").replace(/\/$/, "");
 export const AUX_BASE = (process.env.EXPO_PUBLIC_PUSH_BASE_URL || "https://lofthus-road-open-push.onrender.com").replace(/\/$/, "");
@@ -135,6 +136,19 @@ export const api = {
       position: "all",
     });
     return get<TransferStrategyPayload>(`/api/deep-analysis/transfers?${query.toString()}`, {
+      timeoutMs: 65000,
+      retries: 1,
+      baseUrl: AUX_BASE,
+    });
+  },
+  analysisWildcard: (params: { entry_id: number; strategy: string; risk: number; horizon: number }) => {
+    const query = new URLSearchParams({
+      entry_id: String(params.entry_id),
+      strategy: params.strategy,
+      risk: String(params.risk),
+      horizon: String(Math.max(5, params.horizon)),
+    });
+    return get<WildcardPayload>(`/api/deep-analysis/wildcard?${query.toString()}`, {
       timeoutMs: 65000,
       retries: 1,
       baseUrl: AUX_BASE,
