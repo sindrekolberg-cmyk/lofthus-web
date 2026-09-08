@@ -1,7 +1,10 @@
 import Constants from "expo-constants";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
-import { API_BASE } from "./api";
+
+const PUSH_BASE = (
+  process.env.EXPO_PUBLIC_PUSH_BASE_URL || "https://lofthus-road-open-push.onrender.com"
+).replace(/\/$/, "");
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -36,7 +39,7 @@ function projectId(): string | undefined {
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
+  const response = await fetch(`${PUSH_BASE}${path}`, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -47,7 +50,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
 
   const payload = (await response.json().catch(() => ({}))) as T & { detail?: string };
   if (!response.ok) {
-    throw new Error(payload.detail || `API svarte ${response.status}`);
+    throw new Error(payload.detail || `Push-serveren svarte ${response.status}`);
   }
   return payload;
 }
