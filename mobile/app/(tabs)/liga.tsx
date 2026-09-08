@@ -27,7 +27,7 @@ export default function LeagueScreen() {
   const [sortKey, setSortKey] = useState<LeagueSortKey>("rank");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const loader = useCallback(() => api.league(), []);
-  const oddsLoader = useCallback(() => api.odds(), []);
+  const oddsLoader = useCallback(() => api.preseasonTip(), []);
   const remote = useRemote(loader);
   const oddsRemote = useRemote(oddsLoader, mode === "tip");
 
@@ -66,10 +66,10 @@ export default function LeagueScreen() {
     const teams = new Map((remote.data?.table || []).map((row) => [row.entry, row.team]));
     return [...(oddsRemote.data?.rows || [])]
       .filter((row) => Number(row.preseason_odds) > 0)
-      .sort((a, b) => Number(a.preseason_odds) - Number(b.preseason_odds) || a.manager.localeCompare(b.manager))
+      .sort((a, b) => Number(a.rank || 9999) - Number(b.rank || 9999) || Number(a.preseason_odds) - Number(b.preseason_odds) || a.manager.localeCompare(b.manager))
       .map((row, index) => ({
         ...row,
-        tipRank: index + 1,
+        tipRank: Number(row.rank || index + 1),
         team: teams.get(row.entry) || "",
       }));
   }, [oddsRemote.data, remote.data]);
@@ -111,8 +111,8 @@ export default function LeagueScreen() {
       {mode === "tip" ? (
         <>
           <View style={styles.tipNote}>
-            <Text style={styles.tipKicker}>HJERNENS TIPS FØR GW1</Text>
-            <Text style={styles.tipCopy}>Fryst før sesongstart. Ingen september-fasitskriving her.</Text>
+            <Text style={styles.tipKicker}>TABELLTIPS FØR GW1</Text>
+            <Text style={styles.tipCopy}>Tabelltipset er fryst før sesongstart og endres ikke etter resultatene i ligaen.</Text>
           </View>
 
           <View style={styles.tipHeader}>
