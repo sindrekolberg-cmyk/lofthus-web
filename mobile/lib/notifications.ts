@@ -107,6 +107,7 @@ export async function registerRemotePush(entryId?: number | null): Promise<PushR
         league: true,
         deadline: true,
         personal: true,
+        live_events: true,
       },
     });
 
