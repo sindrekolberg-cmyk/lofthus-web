@@ -6,21 +6,35 @@ import { ErrorState, Loading } from "@/components/State";
 import { api } from "@/lib/api";
 import { colors, radius, space } from "@/lib/theme";
 import { useRemote } from "@/lib/useRemote";
-import type { AnalysisPlayer, ManagerOption, RivalPayload, TransferStrategyPayload } from "@/lib/types";
+import type { AnalysisPlayer, ManagerOption, RivalPayload, TransferPick, TransferStrategyPayload } from "@/lib/types";
 
-type ToolId = "rivalradar" | "transferstrategi" | "kaptein" | "ownership" | "differensialer" | "chips";
+type ToolId = "rivalradar" | "transferstrategi" | "kaptein" | "ownership";
+type OwnershipMode = "lofthus" | "global" | "differentials";
 
 const META: Record<ToolId, { kicker: string; title: string; intro: string }> = {
-  rivalradar: { kicker: "Sammenligning", title: "Rivalradar", intro: "Velg to managere og se hvilke forskjeller som påvirker avstanden mellom lagene." },
-  transferstrategi: { kicker: "Beslutningsstøtte", title: "Transferstrategi", intro: "Transferforslag basert på mål, risiko, kampprogram, spillerdata og posisjonen din i ligaen." },
-  kaptein: { kicker: "Kaptein", title: "Kaptein", intro: "Kapteinsvalg, eierskap og mulig utslag i ligaen." },
-  ownership: { kicker: "Eierskap", title: "Eierskap", intro: "Eierskap blant managerne i Lofthus Road Open." },
-  differensialer: { kicker: "Differensialer", title: "Differensialer", intro: "Spillere med lavt ligaeierskap og relevant sportslig grunnlag." },
-  chips: { kicker: "Sjetonger", title: "Sjetonger", intro: "Wildcard, Free Hit, Bench Boost og Triple Captain i ligaen." },
+  transferstrategi: {
+    kicker: "Beslutningsstøtte",
+    title: "Transferstrategi",
+    intro: "Transferforslag basert på mål, risiko, fem kommende kamper, spillerdata, eierskap og posisjonen din i ligaen.",
+  },
+  rivalradar: {
+    kicker: "Sammenligning",
+    title: "Rivalradar",
+    intro: "Velg to managere og se hvilke forskjeller som påvirker avstanden mellom lagene.",
+  },
+  ownership: {
+    kicker: "Eierskap",
+    title: "Eierskap",
+    intro: "Sammenlign eierskap i Lofthus med globalt FPL-eierskap, og finn spillere som gir reell differensialverdi i ligaen.",
+  },
+  kaptein: {
+    kicker: "Kaptein",
+    title: "Kaptein",
+    intro: "Kapteinsvalg, effektivt eierskap og mulig utslag i ligaen.",
+  },
 };
 
 const loadManagers = () => api.managers();
-const loadChips = () => api.analysisChips();
 
 function Chip({ label, active, onPress }: { label: string; active?: boolean; onPress: () => void }) {
   return (
@@ -43,7 +57,7 @@ function ManagerChooser({ title, managers, value, onChange, exclude = 0 }: { tit
   );
 }
 
-function PlayerRows({ players, mode }: { players: AnalysisPlayer[]; mode: "captain" | "ownership" | "differentials" }) {
+function CaptainRows({ players }: { players: AnalysisPlayer[] }) {
   if (!players.length) return <Text style={styles.empty}>Ingen data akkurat nå.</Text>;
   return (
     <View style={styles.table}>
@@ -55,10 +69,8 @@ function PlayerRows({ players, mode }: { players: AnalysisPlayer[]; mode: "capta
             <Text style={styles.rowMeta}>{p.club || ""} {p.fixture_status_label ? `· ${p.fixture_status_label}` : ""}</Text>
           </View>
           <View style={styles.right}>
-            {mode === "captain" ? <Text style={styles.value}>{p.captain_count} C</Text> : null}
-            {mode === "ownership" ? <Text style={styles.value}>{Number(p.ownership_pct || 0).toFixed(0)} %</Text> : null}
-            {mode === "differentials" ? <Text style={styles.value}>{p.event_points} p</Text> : null}
-            <Text style={styles.smallValue}>{p.ownership_count} eiere</Text>
+            <Text style={styles.value}>{p.captain_count} C</Text>
+            <Text style={styles.smallValue}>{Number(p.effective_ownership_pct || 0).toFixed(0)} % EO</Text>
           </View>
         </View>
       ))}
@@ -66,40 +78,93 @@ function PlayerRows({ players, mode }: { players: AnalysisPlayer[]; mode: "capta
   );
 }
 
-function SimplePlayerTool({ mode }: { mode: "captain" | "ownership" | "differentials" }) {
-  const loader = useMemo(() => {
-    if (mode === "captain") return () => api.analysisCaptain();
-    if (mode === "ownership") return () => api.analysisOwnership();
-    return () => api.analysisDifferentials();
-  }, [mode]);
-  const remote = useRemote(loader);
+function CaptainTool() {
+  const remote = useRemote(() => api.analysisCaptain());
   return (
     <>
       {remote.loading && !remote.data ? <Loading /> : null}
       {remote.error && !remote.data ? <ErrorState message={remote.error} /> : null}
-      {remote.data ? <PlayerRows players={remote.data.players || []} mode={mode} /> : null}
+      {remote.data ? <CaptainRows players={remote.data.players || []} /> : null}
     </>
   );
 }
 
-function ChipsTool() {
-  const remote = useRemote(loadChips);
+function OwnershipTool() {
+  const remote = useRemote(() => api.analysisOwnership());
+  const [mode, setMode] = useState<OwnershipMode>("lofthus");
+
+  const rows = useMemo(() => {
+    const all = [...(remote.data?.players || [])];
+    if (mode === "global") {
+      return all.sort((a, b) => Number(b.global_ownership_pct || 0) - Number(a.global_ownership_pct || 0) || a.player.localeCompare(b.player));
+    }
+    if (mode === "differentials") {
+      return all
+        .filter((p) => p.status === "a" || !p.status)
+        .sort((a, b) => Number(b.differential_score || 0) - Number(a.differential_score || 0) || Number(a.ownership_pct || 0) - Number(b.ownership_pct || 0));
+    }
+    return all.sort((a, b) => Number(b.ownership_pct || 0) - Number(a.ownership_pct || 0) || a.player.localeCompare(b.player));
+  }, [remote.data, mode]);
+
   return (
     <>
+      <View style={styles.modeRow}>
+        <Chip label="Lofthus" active={mode === "lofthus"} onPress={() => setMode("lofthus")} />
+        <Chip label="Globalt" active={mode === "global"} onPress={() => setMode("global")} />
+        <Chip label="Differensialer" active={mode === "differentials"} onPress={() => setMode("differentials")} />
+      </View>
       {remote.loading && !remote.data ? <Loading /> : null}
       {remote.error && !remote.data ? <ErrorState message={remote.error} /> : null}
-      <View style={styles.table}>
-        {(remote.data?.chips || []).map((row) => (
-          <View key={`${row.entry}-${row.chip}-${row.gw}`} style={styles.tableRow}>
-            <View style={styles.flex}>
-              <Text style={styles.rowTitle}>{row.manager}</Text>
-              <Text style={styles.rowMeta}>GW {row.gw}</Text>
-            </View>
-            <Text style={styles.value}>{row.chip || "–"}</Text>
-          </View>
-        ))}
-        {remote.data && !(remote.data.chips || []).length ? <Text style={styles.empty}>Ingen aktive sjetonger akkurat nå.</Text> : null}
-      </View>
+      {remote.data && remote.data.complete === false ? (
+        <Text style={styles.dataNote}>Eierskapslisten er foreløpig fordi ikke alle managerlag er lastet.</Text>
+      ) : null}
+      {remote.data ? (
+        <View style={styles.table}>
+          {rows.slice(0, 40).map((p, index) => {
+            const lofthus = Number(p.ownership_pct || 0);
+            const global = Number(p.global_ownership_pct || 0);
+            const gap = Number(p.ownership_gap_pct || lofthus - global);
+            return (
+              <View key={p.element} style={styles.ownershipRow}>
+                <Text style={styles.rank}>{index + 1}</Text>
+                <View style={styles.flex}>
+                  <Text style={styles.rowTitle}>{p.player}</Text>
+                  <Text style={styles.rowMeta}>
+                    {p.club || ""}
+                    {p.form !== undefined ? ` · form ${Number(p.form).toFixed(1)}` : ""}
+                    {p.xgi_per90 !== undefined && Number(p.xgi_per90) > 0 ? ` · ${Number(p.xgi_per90).toFixed(2)} xGI/90` : ""}
+                  </Text>
+                  {mode === "differentials" ? (
+                    <Text style={styles.detailLine}>
+                      Lofthus {lofthus.toFixed(0)} % · globalt {global.toFixed(0)} % · avvik {gap > 0 ? "+" : ""}{gap.toFixed(0)} pp
+                    </Text>
+                  ) : null}
+                </View>
+                <View style={styles.rightWide}>
+                  {mode === "lofthus" ? (
+                    <>
+                      <Text style={styles.value}>{lofthus.toFixed(0)} %</Text>
+                      <Text style={styles.smallValue}>globalt {global.toFixed(0)} %</Text>
+                    </>
+                  ) : null}
+                  {mode === "global" ? (
+                    <>
+                      <Text style={styles.value}>{global.toFixed(0)} %</Text>
+                      <Text style={styles.smallValue}>Lofthus {lofthus.toFixed(0)} %</Text>
+                    </>
+                  ) : null}
+                  {mode === "differentials" ? (
+                    <>
+                      <Text style={styles.value}>{Number(p.differential_score || 0).toFixed(0)}</Text>
+                      <Text style={styles.smallValue}>diff-score</Text>
+                    </>
+                  ) : null}
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      ) : null}
     </>
   );
 }
@@ -171,6 +236,25 @@ const strategies = [
   ["balanced", "Balansert"],
 ] as const;
 
+function TransferEvidence({ pick }: { pick: TransferPick }) {
+  const stats = pick.deep_stats || {};
+  const recent = stats.recent_5 || {};
+  const fields: string[] = [];
+  if (stats.xgi_per90 !== undefined) fields.push(`Sesong xGI/90 ${Number(stats.xgi_per90).toFixed(2)}`);
+  if (recent.xgi_per90 !== undefined) fields.push(`Siste ${recent.matches || 5}: ${Number(recent.xgi_per90).toFixed(2)} xGI/90`);
+  if (stats.global_ownership_pct !== undefined) fields.push(`Globalt eierskap ${Number(stats.global_ownership_pct).toFixed(0)} %`);
+  if (stats.weaker_defence_fixtures !== undefined && stats.next_fixture_count) fields.push(`${stats.weaker_defence_fixtures}/${stats.next_fixture_count} mot svakere forsvar`);
+  if (stats.penalties_order === 1) fields.push("Førstevalg på straffer");
+
+  return (
+    <>
+      {pick.confidence ? <Text style={styles.confidence}>Datagrunnlag: {pick.confidence}</Text> : null}
+      {fields.length ? <Text style={styles.metrics}>{fields.join(" · ")}</Text> : null}
+      {(pick.why || []).slice(0, 5).map((line) => <Text key={line} style={styles.line}>{line}</Text>)}
+    </>
+  );
+}
+
 function TransferTool() {
   const managers = useRemote(loadManagers);
   const [entry, setEntry] = useState(0);
@@ -196,6 +280,7 @@ function TransferTool() {
   return (
     <>
       {managers.loading && !managers.data ? <Loading /> : null}
+      {managers.error && !managers.data ? <ErrorState message={managers.error} /> : null}
       {managers.data ? <ManagerChooser title="MANAGER" managers={managers.data.managers} value={entry} onChange={(n) => { setEntry(n); setData(null); }} /> : null}
       <View style={styles.block}>
         <Text style={styles.label}>MÅL</Text>
@@ -209,7 +294,7 @@ function TransferTool() {
           <Chip label="Høy" active={risk === 85} onPress={() => { setRisk(85); setData(null); }} />
         </View>
       </View>
-      <Text style={styles.horizon}>Analysen vurderer de neste fem kampene.</Text>
+      <Text style={styles.horizon}>Vurderer de neste fem kampene. Gratisgrunnlaget inkluderer FPL-spillerdata, xG/xA/xGI, siste kamper, spilletid, dødballroller, kampprogram, globalt eierskap og Lofthus-eierskap.</Text>
       <Pressable disabled={!entry || busy} onPress={run} style={({ pressed }) => [styles.action, (!entry || busy) && styles.disabled, pressed && styles.pressed]}>
         <Text style={styles.actionText}>{busy ? "Analyserer ..." : "Kjør analyse"}</Text>
       </Pressable>
@@ -222,13 +307,18 @@ function TransferTool() {
             <View key={p.element} style={styles.pick}>
               <Text style={styles.pickRank}>{index + 1}</Text>
               <View style={styles.flex}>
-                <Text style={styles.rowTitle}>{p.player}</Text>
-                <Text style={styles.rowMeta}>{p.club} · {p.position} · £{Number(p.price).toFixed(1)}</Text>
-                {(p.why || []).slice(0, 5).map((line) => <Text key={line} style={styles.line}>{line}</Text>)}
+                <View style={styles.pickHead}>
+                  <View style={styles.flex}>
+                    <Text style={styles.rowTitle}>{p.player}</Text>
+                    <Text style={styles.rowMeta}>{p.club} · {p.position} · £{Number(p.price).toFixed(1)}</Text>
+                  </View>
+                  <Text style={styles.value}>{Number(p.strategy_score).toFixed(1)}</Text>
+                </View>
+                <TransferEvidence pick={p} />
               </View>
-              <Text style={styles.value}>{Number(p.strategy_score).toFixed(1)}</Text>
             </View>
           ))}
+          {!(data.recommendations || []).length ? <Text style={styles.empty}>Ingen lovlige ett-bytte-anbefalinger i dette datagrunnlaget.</Text> : null}
         </View>
       ) : null}
     </>
@@ -244,12 +334,10 @@ export default function AnalysisToolScreen() {
   return (
     <Screen kicker={meta.kicker} title={meta.title}>
       <Text style={styles.intro}>{meta.intro}</Text>
-      {id === "rivalradar" ? <RivalTool /> : null}
       {id === "transferstrategi" ? <TransferTool /> : null}
-      {id === "kaptein" ? <SimplePlayerTool mode="captain" /> : null}
-      {id === "ownership" ? <SimplePlayerTool mode="ownership" /> : null}
-      {id === "differensialer" ? <SimplePlayerTool mode="differentials" /> : null}
-      {id === "chips" ? <ChipsTool /> : null}
+      {id === "rivalradar" ? <RivalTool /> : null}
+      {id === "ownership" ? <OwnershipTool /> : null}
+      {id === "kaptein" ? <CaptainTool /> : null}
     </Screen>
   );
 }
@@ -260,6 +348,7 @@ const styles = StyleSheet.create({
   label: { color: colors.live, fontSize: 10, fontWeight: "900", letterSpacing: 1.3, marginBottom: 8 },
   chipRow: { gap: 8, paddingRight: 20 },
   wrapChips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  modeRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 },
   chip: { minHeight: 40, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, backgroundColor: colors.panel, paddingHorizontal: 13, alignItems: "center", justifyContent: "center" },
   chipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
   chipText: { color: colors.ink, fontSize: 12, fontWeight: "700" },
@@ -271,14 +360,18 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.62 },
   table: { borderTopWidth: 1, borderTopColor: colors.ink },
   tableRow: { minHeight: 68, flexDirection: "row", alignItems: "center", gap: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line, paddingVertical: 11 },
+  ownershipRow: { minHeight: 76, flexDirection: "row", alignItems: "center", gap: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line, paddingVertical: 11 },
   rank: { width: 22, color: colors.live, fontSize: 10, fontWeight: "900" },
   flex: { flex: 1 },
   right: { alignItems: "flex-end" },
+  rightWide: { width: 86, alignItems: "flex-end" },
   rowTitle: { color: colors.ink, fontFamily: "Georgia", fontSize: 17, fontWeight: "700" },
   rowMeta: { color: colors.muted, fontSize: 11, marginTop: 2 },
+  detailLine: { color: colors.muted, fontSize: 10, lineHeight: 15, marginTop: 4 },
   value: { color: colors.ink, fontSize: 13, fontWeight: "900" },
   smallValue: { color: colors.muted, fontSize: 10, marginTop: 2 },
   empty: { color: colors.muted, fontSize: 13, lineHeight: 19, paddingVertical: 14 },
+  dataNote: { color: colors.muted, fontSize: 11, lineHeight: 17, marginBottom: 10 },
   resultCard: { borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, backgroundColor: colors.panel, padding: space.lg, marginTop: 4 },
   resultTitle: { color: colors.ink, fontFamily: "Georgia", fontSize: 22, lineHeight: 27, fontWeight: "700", marginBottom: 14 },
   statGrid: { flexDirection: "row", gap: 8, marginBottom: 14 },
@@ -286,7 +379,10 @@ const styles = StyleSheet.create({
   statNumber: { color: colors.ink, fontSize: 20, fontWeight: "900" },
   statLabel: { color: colors.muted, fontSize: 9, marginTop: 2, textTransform: "uppercase" },
   sectionTitle: { color: colors.live, fontSize: 10, fontWeight: "900", letterSpacing: 1.1, marginTop: 12, marginBottom: 6 },
-  line: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: 2 },
-  pick: { flexDirection: "row", gap: 10, paddingVertical: 13, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line },
+  line: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: 3 },
+  pick: { flexDirection: "row", gap: 10, paddingVertical: 14, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line },
   pickRank: { color: colors.live, fontSize: 11, fontWeight: "900", paddingTop: 3 },
+  pickHead: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
+  confidence: { color: colors.ink, fontSize: 10, fontWeight: "800", marginTop: 7, textTransform: "uppercase" },
+  metrics: { color: colors.muted, fontSize: 11, lineHeight: 17, marginTop: 4 },
 });
