@@ -4,18 +4,18 @@ import { Screen } from "@/components/Screen";
 import { colors } from "@/lib/theme";
 
 const tools = [
-  { href: "/analyse/rivalradar", title: "Rivalradar", copy: "Se hvem som faktisk tjener og taper på forskjellene mellom to lag." },
-  { href: "/analyse/transferstrategi", title: "Transferstrategi", copy: "Kjøpsråd tilpasset hvor aggressivt du vil klatre i Lofthus eller OR." },
-  { href: "/analyse/kaptein", title: "Kaptein", copy: "Se kapteinsvalg, effektivt eierskap og hvor armbåndet kan flytte ligaen." },
-  { href: "/analyse/ownership", title: "Eierskap", copy: "Finn hvem ligaen eier, benker og satser på." },
-  { href: "/analyse/differensialer", title: "Differensialer", copy: "Spillere få i Lofthus sitter med, men som faktisk kan gjøre en forskjell." },
-  { href: "/analyse/chips", title: "Sjetonger", copy: "Følg Wildcard, Free Hit, Bench Boost og Triple Captain." },
+  { href: "/analyse/rivalradar", title: "Rivalradar", copy: "Sammenlign to managere og se hvilke spillere som skaper utslag mellom lagene." },
+  { href: "/analyse/transferstrategi", title: "Transferstrategi", copy: "Kjøpsråd tilpasset mål, risiko, kampprogram og posisjonen din i ligaen." },
+  { href: "/analyse/kaptein", title: "Kaptein", copy: "Kapteinsvalg, effektivt eierskap og mulig utslag i ligaen." },
+  { href: "/analyse/ownership", title: "Eierskap", copy: "Eierskap blant managerne i Lofthus Road Open." },
+  { href: "/analyse/differensialer", title: "Differensialer", copy: "Spillere med lavt ligaeierskap og relevant sportslig grunnlag." },
+  { href: "/analyse/chips", title: "Sjetonger", copy: "Oversikt over Wildcard, Free Hit, Bench Boost og Triple Captain." },
 ] as const;
 
 export default function AnalyseScreen() {
   return (
     <Screen kicker="Verktøy" title="Analyseverktøy">
-      <Text style={styles.lead}>Velg verktøy. Samme Lofthus-data som på web, pakket for mobilen.</Text>
+      <Text style={styles.lead}>Velg analyseverktøy.</Text>
       <View style={styles.list}>
         {tools.map((tool, index) => (
           <Link key={tool.href} href={tool.href} asChild>
