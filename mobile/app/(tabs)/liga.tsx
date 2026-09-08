@@ -23,13 +23,13 @@ type LeagueMode = "total" | "month" | "tip";
 
 export default function LeagueScreen() {
   const router = useRouter();
-  const loader = useCallback(() => api.league(), []);
-  const oddsLoader = useCallback(() => api.odds(), []);
-  const remote = useRemote(loader);
-  const oddsRemote = useRemote(oddsLoader);
   const [mode, setMode] = useState<LeagueMode>("total");
   const [sortKey, setSortKey] = useState<LeagueSortKey>("rank");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const loader = useCallback(() => api.league(), []);
+  const oddsLoader = useCallback(() => api.odds(), []);
+  const remote = useRemote(loader);
+  const oddsRemote = useRemote(oddsLoader, mode === "tip");
 
   function chooseMode(next: LeagueMode) {
     setMode(next);
@@ -76,11 +76,14 @@ export default function LeagueScreen() {
 
   const roundKicker = remote.data?.status.round_kicker || (remote.data?.status.event_id ? `Runde ${remote.data.status.event_id}` : "Liga");
   const kicker = mode === "tip" ? "Før sesongstart" : roundKicker;
-  // Randompremien gjelder sluttplasseringen i totaltabellen, ikke månedstabellen eller tabelltipset.
   const prize = mode === "total" ? randomPrizeFor(remote.data?.status.season) : null;
 
   async function refreshAll() {
-    await Promise.all([remote.refresh(), oddsRemote.refresh()]);
+    if (mode === "tip") {
+      await Promise.all([remote.refresh(), oddsRemote.refresh()]);
+    } else {
+      await remote.refresh();
+    }
   }
 
   return (
