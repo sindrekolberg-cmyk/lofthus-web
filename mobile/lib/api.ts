@@ -7,6 +7,7 @@ import type {
   ManagerOption,
   ManagerProfilePayload,
   MatchImpactPayload,
+  OddsPayload,
   RivalPayload,
   TransferStrategyPayload,
 } from "./types";
@@ -31,6 +32,7 @@ async function get<T>(path: string): Promise<T> {
 export const api = {
   home: () => get<HomePayload>("/api/home"),
   league: () => get<LeaguePayload>("/api/league"),
+  odds: () => get<OddsPayload>("/api/odds"),
   managers: () => get<{ managers: ManagerOption[] }>("/api/managers"),
   manager: (entry: number) => get<ManagerProfilePayload>(`/api/managers/${entry}`),
   hallOfFame: () => get<HallPayload>("/api/hall-of-fame"),

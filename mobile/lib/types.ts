@@ -94,6 +94,23 @@ export type LeaguePayload = {
   table: ManagerRow[];
 };
 
+export type OddsRow = {
+  entry: number;
+  manager: string;
+  rank: number;
+  win_pct: number;
+  odds: number;
+  preseason_odds: number;
+  note?: string;
+};
+
+export type OddsPayload = {
+  rows: OddsRow[];
+  ready: boolean;
+  event_id?: number;
+  note?: string;
+};
+
 export type ManagerProfilePayload = {
   manager?: ManagerRow & { bank?: number; team_value?: number; transfer_cost?: number };
   squad?: { xi?: Array<Record<string, unknown>>; bench?: Array<Record<string, unknown>> };
