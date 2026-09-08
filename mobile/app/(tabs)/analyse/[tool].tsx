@@ -7,9 +7,11 @@ import { api } from "@/lib/api";
 import { colors, radius, space } from "@/lib/theme";
 import { useRemote } from "@/lib/useRemote";
 import type { AnalysisPlayer, ManagerOption, RivalPayload, TransferPick, TransferStrategyPayload } from "@/lib/types";
+import type { WildcardPayload, WildcardPlayer } from "@/lib/wildcardTypes";
 
 type ToolId = "rivalradar" | "transferstrategi" | "kaptein" | "ownership";
 type OwnershipMode = "lofthus" | "global" | "differentials";
+type TransferMode = "single" | "wildcard";
 
 const META: Record<ToolId, { kicker: string; title: string; intro: string }> = {
   transferstrategi: {
@@ -257,23 +259,81 @@ function TransferEvidence({ pick }: { pick: TransferPick }) {
   );
 }
 
+function WildcardPlayerRow({ player }: { player: WildcardPlayer }) {
+  return (
+    <View style={styles.wildcardRow}>
+      <View style={styles.flex}>
+        <View style={styles.playerTitleRow}>
+          <Text style={styles.rowTitle}>{player.player}</Text>
+          {player.captain ? <Text style={styles.roleTag}>C</Text> : null}
+          {player.vice_captain ? <Text style={styles.roleTag}>VC</Text> : null}
+          {player.currently_owned ? <Text style={styles.keepTag}>BEHOLD</Text> : null}
+        </View>
+        <Text style={styles.rowMeta}>{player.club} · {player.position} · £{Number(player.price).toFixed(1)}</Text>
+        <Text style={styles.detailLine}>Lofthus {Number(player.league_ownership_pct || 0).toFixed(0)} % · globalt {Number(player.global_ownership_pct || 0).toFixed(0)} % · xGI/90 {Number(player.xgi_per90 || 0).toFixed(2)}</Text>
+        {(player.evidence || []).slice(0, 2).map((line) => <Text key={line} style={styles.line}>• {line}</Text>)}
+      </View>
+      <Text style={styles.value}>{Number(player.squad_score || 0).toFixed(1)}</Text>
+    </View>
+  );
+}
+
+function WildcardResult({ data }: { data: WildcardPayload }) {
+  return (
+    <View style={styles.resultCard}>
+      <Text style={styles.label}>WILDCARD-FORSLAG</Text>
+      <Text style={styles.resultTitle}>{data.manager.manager}</Text>
+      <View style={styles.statGrid}>
+        <View style={styles.stat}><Text style={styles.statNumber}>£{Number(data.budget.available).toFixed(1)}</Text><Text style={styles.statLabel}>budsjett</Text></View>
+        <View style={styles.stat}><Text style={styles.statNumber}>£{Number(data.budget.used).toFixed(1)}</Text><Text style={styles.statLabel}>brukt</Text></View>
+        <View style={styles.stat}><Text style={styles.statNumber}>£{Number(data.budget.remaining).toFixed(1)}</Text><Text style={styles.statLabel}>igjen</Text></View>
+      </View>
+      {!data.budget.exact ? <Text style={styles.dataNote}>Budsjettet er estimert fordi alle salgspriser ikke var tilgjengelige.</Text> : null}
+
+      <Text style={styles.sectionTitle}>FØRSTEELLEVER</Text>
+      {(data.starting_xi || []).map((player) => <WildcardPlayerRow key={`xi-${player.element}`} player={player} />)}
+
+      <Text style={styles.sectionTitle}>BENK</Text>
+      {(data.bench || []).map((player) => <WildcardPlayerRow key={`bench-${player.element}`} player={player} />)}
+
+      <Text style={styles.sectionTitle}>ENDRINGER FRA DITT NÅVÆRENDE LAG</Text>
+      <Text style={styles.changeHeading}>Inn ({data.transfers_in?.length || 0})</Text>
+      {(data.transfers_in || []).map((player) => <Text key={`in-${player.element}`} style={styles.changeLine}>+ {player.player} · {player.position} · £{Number(player.price).toFixed(1)}</Text>)}
+      <Text style={styles.changeHeading}>Ut ({data.transfers_out?.length || 0})</Text>
+      {(data.transfers_out || []).map((player) => <Text key={`out-${player.element}`} style={styles.changeLine}>− {player.player}{player.selling_price !== undefined && player.selling_price !== null ? ` · £${Number(player.selling_price).toFixed(1)}` : ""}</Text>)}
+    </View>
+  );
+}
+
 function TransferTool() {
   const managers = useRemote(loadManagers);
   const [entry, setEntry] = useState(0);
   const [strategy, setStrategy] = useState("rapid_lofthus");
   const [risk, setRisk] = useState(55);
+  const [mode, setMode] = useState<TransferMode>("single");
   const [data, setData] = useState<TransferStrategyPayload | null>(null);
+  const [wildcard, setWildcard] = useState<WildcardPayload | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  function clearResults() {
+    setData(null);
+    setWildcard(null);
+  }
 
   async function run() {
     if (!entry) return;
     setBusy(true);
     setError("");
+    clearResults();
     try {
-      setData(await api.analysisTransfers({ entry_id: entry, strategy, risk, horizon: 5 }));
+      if (mode === "wildcard") {
+        setWildcard(await api.analysisWildcard({ entry_id: entry, strategy, risk, horizon: 5 }));
+      } else {
+        setData(await api.analysisTransfers({ entry_id: entry, strategy, risk, horizon: 5 }));
+      }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Kunne ikke bygge transferstrategien.");
+      setError(e instanceof Error ? e.message : mode === "wildcard" ? "Kunne ikke bygge wildcard-forslaget." : "Kunne ikke bygge transferstrategien.");
     } finally {
       setBusy(false);
     }
@@ -283,22 +343,29 @@ function TransferTool() {
     <>
       {managers.loading && !managers.data ? <Loading /> : null}
       {managers.error && !managers.data ? <ErrorState message={managers.error} /> : null}
-      {managers.data ? <ManagerChooser title="MANAGER" managers={managers.data.managers} value={entry} onChange={(n) => { setEntry(n); setData(null); }} /> : null}
+      {managers.data ? <ManagerChooser title="MANAGER" managers={managers.data.managers} value={entry} onChange={(n) => { setEntry(n); clearResults(); }} /> : null}
+      <View style={styles.block}>
+        <Text style={styles.label}>TYPE RÅD</Text>
+        <View style={styles.wrapChips}>
+          <Chip label="Enkeltbytte" active={mode === "single"} onPress={() => { setMode("single"); clearResults(); }} />
+          <Chip label="Wildcard" active={mode === "wildcard"} onPress={() => { setMode("wildcard"); clearResults(); }} />
+        </View>
+      </View>
       <View style={styles.block}>
         <Text style={styles.label}>MÅL</Text>
-        <View style={styles.wrapChips}>{strategies.map(([id, label]) => <Chip key={id} label={label} active={strategy === id} onPress={() => { setStrategy(id); setData(null); }} />)}</View>
+        <View style={styles.wrapChips}>{strategies.map(([id, label]) => <Chip key={id} label={label} active={strategy === id} onPress={() => { setStrategy(id); clearResults(); }} />)}</View>
       </View>
       <View style={styles.block}>
         <Text style={styles.label}>RISIKO</Text>
         <View style={styles.wrapChips}>
-          <Chip label="Lav" active={risk === 25} onPress={() => { setRisk(25); setData(null); }} />
-          <Chip label="Middels" active={risk === 55} onPress={() => { setRisk(55); setData(null); }} />
-          <Chip label="Høy" active={risk === 85} onPress={() => { setRisk(85); setData(null); }} />
+          <Chip label="Lav" active={risk === 25} onPress={() => { setRisk(25); clearResults(); }} />
+          <Chip label="Middels" active={risk === 55} onPress={() => { setRisk(55); clearResults(); }} />
+          <Chip label="Høy" active={risk === 85} onPress={() => { setRisk(85); clearResults(); }} />
         </View>
       </View>
-      <Text style={styles.horizon}>Vurderer de neste fem kampene. Gratisgrunnlaget inkluderer FPL-spillerdata, xG/xA/xGI, siste kamper, spilletid, dødballroller, kampprogram, globalt eierskap og Lofthus-eierskap.</Text>
+      <Text style={styles.horizon}>Vurderer de neste fem kampene. Datagrunnlaget inkluderer FPL-spillerdata, xG/xA/xGI, form, spilletid, dødballroller, kampprogram, globalt eierskap, Lofthus-eierskap og faktisk budsjett.</Text>
       <Pressable disabled={!entry || busy} onPress={run} style={({ pressed }) => [styles.action, (!entry || busy) && styles.disabled, pressed && styles.pressed]}>
-        <Text style={styles.actionText}>{busy ? "Analyserer ..." : "Kjør analyse"}</Text>
+        <Text style={styles.actionText}>{busy ? "Analyserer ..." : mode === "wildcard" ? "Bygg wildcard-lag" : "Kjør analyse"}</Text>
       </Pressable>
       {error ? <ErrorState message={error} /> : null}
       {data ? (
@@ -323,6 +390,7 @@ function TransferTool() {
           {!(data.recommendations || []).length ? <Text style={styles.empty}>Ingen lovlige ett-bytte-anbefalinger i dette datagrunnlaget.</Text> : null}
         </View>
       ) : null}
+      {wildcard ? <WildcardResult data={wildcard} /> : null}
     </>
   );
 }
@@ -374,17 +442,23 @@ const styles = StyleSheet.create({
   smallValue: { color: colors.muted, fontSize: 10, marginTop: 2 },
   empty: { color: colors.muted, fontSize: 13, lineHeight: 19, paddingVertical: 14 },
   dataNote: { color: colors.muted, fontSize: 11, lineHeight: 17, marginBottom: 10 },
-  resultCard: { borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, backgroundColor: colors.panel, padding: space.lg, marginTop: 4 },
+  resultCard: { borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, backgroundColor: colors.panel, padding: space.lg, marginTop: 4, marginBottom: 16 },
   resultTitle: { color: colors.ink, fontFamily: "Georgia", fontSize: 22, lineHeight: 27, fontWeight: "700", marginBottom: 14 },
   statGrid: { flexDirection: "row", gap: 8, marginBottom: 14 },
   stat: { flex: 1, backgroundColor: colors.paper, borderRadius: radius.md, padding: 10 },
   statNumber: { color: colors.ink, fontSize: 20, fontWeight: "900" },
   statLabel: { color: colors.muted, fontSize: 9, marginTop: 2, textTransform: "uppercase" },
-  sectionTitle: { color: colors.live, fontSize: 10, fontWeight: "900", letterSpacing: 1.1, marginTop: 12, marginBottom: 6 },
+  sectionTitle: { color: colors.live, fontSize: 10, fontWeight: "900", letterSpacing: 1.1, marginTop: 16, marginBottom: 6 },
   line: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: 3 },
   pick: { flexDirection: "row", gap: 10, paddingVertical: 14, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line },
   pickRank: { color: colors.live, fontSize: 11, fontWeight: "900", paddingTop: 3 },
   pickHead: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
   confidence: { color: colors.ink, fontSize: 10, fontWeight: "800", marginTop: 7, textTransform: "uppercase" },
   metrics: { color: colors.muted, fontSize: 11, lineHeight: 17, marginTop: 4 },
+  wildcardRow: { flexDirection: "row", gap: 10, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line, paddingVertical: 11 },
+  playerTitleRow: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 5 },
+  roleTag: { color: colors.white, backgroundColor: colors.ink, borderRadius: 8, overflow: "hidden", paddingHorizontal: 5, paddingVertical: 2, fontSize: 8, fontWeight: "900" },
+  keepTag: { color: colors.muted, backgroundColor: colors.paper, borderRadius: 8, overflow: "hidden", paddingHorizontal: 5, paddingVertical: 2, fontSize: 8, fontWeight: "900" },
+  changeHeading: { color: colors.ink, fontSize: 11, fontWeight: "900", marginTop: 9, marginBottom: 3 },
+  changeLine: { color: colors.muted, fontSize: 12, lineHeight: 18 },
 });
