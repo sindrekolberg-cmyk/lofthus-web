@@ -9,6 +9,7 @@ import { Snakkiser } from "@/components/home/Snakkiser";
 import { MiniTables } from "@/components/home/MiniTables";
 import { TalkersRail } from "@/components/home/TalkersRail";
 import { Movers } from "@/components/home/Movers";
+import { LeagueIntelCard } from "@/components/home/LeagueIntelCard";
 
 export default function HomeScreen() {
   const loader = useCallback(() => api.home(), []);
@@ -19,6 +20,7 @@ export default function HomeScreen() {
   return (
     <Screen refreshing={remote.refreshing} onRefresh={remote.refresh} flush>
       <HomeHeader />
+      <LeagueIntelCard />
       {remote.loading && !data ? <Loading /> : null}
       {remote.error && !data ? <ErrorState message={remote.error} /> : null}
       {data ? (
