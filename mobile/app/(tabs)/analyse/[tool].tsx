@@ -11,12 +11,12 @@ import type { AnalysisPlayer, ManagerOption, RivalPayload, TransferStrategyPaylo
 type ToolId = "rivalradar" | "transferstrategi" | "kaptein" | "ownership" | "differensialer" | "chips";
 
 const META: Record<ToolId, { kicker: string; title: string; intro: string }> = {
-  rivalradar: { kicker: "Hvem jakter deg", title: "Rivalradar", intro: "Velg to managere og se hvem som faktisk tjener på forskjellene." },
-  transferstrategi: { kicker: "Neste trekk", title: "Transferstrategi", intro: "Råd som endrer seg etter hvor hardt du vil angripe ligaen." },
-  kaptein: { kicker: "Armbindet", title: "Kaptein", intro: "Hvem bar C-en, hvor mange fulgte etter og hva valget ga." },
-  ownership: { kicker: "Feltet", title: "Eierskap", intro: "Hvem alle har, hvem få har og hvor stort eierskapet faktisk er i Lofthus." },
-  differensialer: { kicker: "Skjevt", title: "Differensialer", intro: "Lavt eierskap, faktisk avkastning og potensial til å flytte deg." },
-  chips: { kicker: "Timing", title: "Sjetonger", intro: "Wildcard, Free Hit, Bench Boost og Triple Captain i ligaen." },
+  rivalradar: { kicker: "Sammenligning", title: "Rivalradar", intro: "Velg to managere og se hvilke forskjeller som påvirker avstanden mellom lagene." },
+  transferstrategi: { kicker: "Beslutningsstøtte", title: "Transferstrategi", intro: "Transferforslag basert på mål, risiko, kampprogram, spillerdata og posisjonen din i ligaen." },
+  kaptein: { kicker: "Kaptein", title: "Kaptein", intro: "Kapteinsvalg, eierskap og mulig utslag i ligaen." },
+  ownership: { kicker: "Eierskap", title: "Eierskap", intro: "Eierskap blant managerne i Lofthus Road Open." },
+  differensialer: { kicker: "Differensialer", title: "Differensialer", intro: "Spillere med lavt ligaeierskap og relevant sportslig grunnlag." },
+  chips: { kicker: "Sjetonger", title: "Sjetonger", intro: "Wildcard, Free Hit, Bench Boost og Triple Captain i ligaen." },
 };
 
 const loadManagers = () => api.managers();
@@ -107,16 +107,16 @@ function ChipsTool() {
 function RivalResult({ data }: { data: RivalPayload }) {
   return (
     <View style={styles.resultCard}>
-      <Text style={styles.label}>LIVE-DUELL</Text>
+      <Text style={styles.label}>LIVE-SAMMENLIGNING</Text>
       <Text style={styles.resultTitle}>{data.me.manager} vs. {data.rival.manager}</Text>
       <View style={styles.statGrid}>
         <View style={styles.stat}><Text style={styles.statNumber}>{data.live_gap > 0 ? "+" : ""}{data.live_gap}</Text><Text style={styles.statLabel}>live gap</Text></View>
         <View style={styles.stat}><Text style={styles.statNumber}>{data.gw_gap > 0 ? "+" : ""}{data.gw_gap}</Text><Text style={styles.statLabel}>GW-gap</Text></View>
         <View style={styles.stat}><Text style={styles.statNumber}>{data.common_players}</Text><Text style={styles.statLabel}>felles</Text></View>
       </View>
-      <Text style={styles.sectionTitle}>Du heier på</Text>
+      <Text style={styles.sectionTitle}>POSITIVT UTSLAG FOR DEG</Text>
       {(data.cheer_for || []).slice(0, 6).map((r) => <Text key={`c-${r.element}`} style={styles.line}>• {r.player}: {r.headline}</Text>)}
-      <Text style={styles.sectionTitle}>Du håper blanker</Text>
+      <Text style={styles.sectionTitle}>POSITIVT UTSLAG FOR RIVALEN</Text>
       {(data.hope_blank || []).slice(0, 6).map((r) => <Text key={`h-${r.element}`} style={styles.line}>• {r.player}: {r.headline}</Text>)}
     </View>
   );
@@ -137,7 +137,7 @@ function RivalTool() {
     try {
       setData(await api.rival(me, rival));
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Kunne ikke bygge duellen.");
+      setError(e instanceof Error ? e.message : "Kunne ikke bygge sammenligningen.");
     } finally {
       setBusy(false);
     }
@@ -152,7 +152,7 @@ function RivalTool() {
           <ManagerChooser title="MEG" managers={managers.data.managers} value={me} onChange={(n) => { setMe(n); setData(null); }} exclude={rival} />
           <ManagerChooser title="RIVAL" managers={managers.data.managers} value={rival} onChange={(n) => { setRival(n); setData(null); }} exclude={me} />
           <Pressable disabled={!me || !rival || busy} onPress={run} style={({ pressed }) => [styles.action, (!me || !rival || busy) && styles.disabled, pressed && styles.pressed]}>
-            <Text style={styles.actionText}>{busy ? "Bygger duell ..." : "Kjør rivalradar"}</Text>
+            <Text style={styles.actionText}>{busy ? "Analyserer ..." : "Kjør rivalradar"}</Text>
           </Pressable>
         </>
       ) : null}
@@ -185,7 +185,7 @@ function TransferTool() {
     setBusy(true);
     setError("");
     try {
-      setData(await api.analysisTransfers({ entry_id: entry, strategy, risk, horizon: 3 }));
+      setData(await api.analysisTransfers({ entry_id: entry, strategy, risk, horizon: 5 }));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Kunne ikke bygge transferstrategien.");
     } finally {
@@ -196,7 +196,7 @@ function TransferTool() {
   return (
     <>
       {managers.loading && !managers.data ? <Loading /> : null}
-      {managers.data ? <ManagerChooser title="HVEM ER DU?" managers={managers.data.managers} value={entry} onChange={(n) => { setEntry(n); setData(null); }} /> : null}
+      {managers.data ? <ManagerChooser title="MANAGER" managers={managers.data.managers} value={entry} onChange={(n) => { setEntry(n); setData(null); }} /> : null}
       <View style={styles.block}>
         <Text style={styles.label}>MÅL</Text>
         <View style={styles.wrapChips}>{strategies.map(([id, label]) => <Chip key={id} label={label} active={strategy === id} onPress={() => { setStrategy(id); setData(null); }} />)}</View>
@@ -204,13 +204,14 @@ function TransferTool() {
       <View style={styles.block}>
         <Text style={styles.label}>RISIKO</Text>
         <View style={styles.wrapChips}>
-          <Chip label="Trygg" active={risk === 25} onPress={() => { setRisk(25); setData(null); }} />
-          <Chip label="Balansert" active={risk === 55} onPress={() => { setRisk(55); setData(null); }} />
-          <Chip label="Full send" active={risk === 85} onPress={() => { setRisk(85); setData(null); }} />
+          <Chip label="Lav" active={risk === 25} onPress={() => { setRisk(25); setData(null); }} />
+          <Chip label="Middels" active={risk === 55} onPress={() => { setRisk(55); setData(null); }} />
+          <Chip label="Høy" active={risk === 85} onPress={() => { setRisk(85); setData(null); }} />
         </View>
       </View>
+      <Text style={styles.horizon}>Analysen vurderer de neste fem kampene.</Text>
       <Pressable disabled={!entry || busy} onPress={run} style={({ pressed }) => [styles.action, (!entry || busy) && styles.disabled, pressed && styles.pressed]}>
-        <Text style={styles.actionText}>{busy ? "Regner ..." : "Gi meg råd"}</Text>
+        <Text style={styles.actionText}>{busy ? "Analyserer ..." : "Kjør analyse"}</Text>
       </Pressable>
       {error ? <ErrorState message={error} /> : null}
       {data ? (
@@ -223,7 +224,7 @@ function TransferTool() {
               <View style={styles.flex}>
                 <Text style={styles.rowTitle}>{p.player}</Text>
                 <Text style={styles.rowMeta}>{p.club} · {p.position} · £{Number(p.price).toFixed(1)}</Text>
-                {(p.why || []).slice(0, 2).map((line) => <Text key={line} style={styles.line}>{line}</Text>)}
+                {(p.why || []).slice(0, 5).map((line) => <Text key={line} style={styles.line}>{line}</Text>)}
               </View>
               <Text style={styles.value}>{Number(p.strategy_score).toFixed(1)}</Text>
             </View>
@@ -263,6 +264,7 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
   chipText: { color: colors.ink, fontSize: 12, fontWeight: "700" },
   chipTextActive: { color: colors.white },
+  horizon: { color: colors.muted, fontSize: 11, lineHeight: 17, marginTop: -6, marginBottom: 12 },
   action: { minHeight: 50, borderRadius: radius.md, backgroundColor: colors.dark, alignItems: "center", justifyContent: "center", paddingHorizontal: 16, marginBottom: 20 },
   actionText: { color: colors.white, fontSize: 14, fontWeight: "900" },
   disabled: { opacity: 0.4 },
