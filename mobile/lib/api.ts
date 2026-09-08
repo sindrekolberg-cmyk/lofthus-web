@@ -79,11 +79,15 @@ export const api = {
       entry_id: String(params.entry_id),
       strategy: params.strategy,
       risk: String(params.risk),
-      horizon: String(params.horizon),
+      horizon: String(Math.max(5, params.horizon)),
       target: "",
       rival_id: "0",
       position: "all",
     });
-    return get<TransferStrategyPayload>(`/api/analysis/transfers?${query.toString()}`);
+    return get<TransferStrategyPayload>(`/api/deep-analysis/transfers?${query.toString()}`, {
+      timeoutMs: 65000,
+      retries: 1,
+      baseUrl: AUX_BASE,
+    });
   },
 };
