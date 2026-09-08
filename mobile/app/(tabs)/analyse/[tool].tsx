@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Screen } from "@/components/Screen";
@@ -79,7 +79,8 @@ function CaptainRows({ players }: { players: AnalysisPlayer[] }) {
 }
 
 function CaptainTool() {
-  const remote = useRemote(() => api.analysisCaptain());
+  const loader = useCallback(() => api.analysisCaptain(), []);
+  const remote = useRemote(loader);
   return (
     <>
       {remote.loading && !remote.data ? <Loading /> : null}
@@ -90,7 +91,8 @@ function CaptainTool() {
 }
 
 function OwnershipTool() {
-  const remote = useRemote(() => api.analysisOwnership());
+  const loader = useCallback(() => api.analysisOwnership(), []);
+  const remote = useRemote(loader);
   const [mode, setMode] = useState<OwnershipMode>("lofthus");
 
   const rows = useMemo(() => {
