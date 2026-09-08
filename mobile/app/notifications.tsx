@@ -13,7 +13,7 @@ import {
 } from "@/lib/notifications";
 
 export default function NotificationsScreen() {
-  const managers = useRemote(() => api.managers());
+  const managers = useRemote(api.managers);
   const [entryId, setEntryId] = useState(0);
   const [message, setMessage] = useState(
     "Velg deg selv først. Da vet Lofthus hvem som skal få personlige livevarsler.",
