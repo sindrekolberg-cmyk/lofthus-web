@@ -8,6 +8,7 @@ import type {
   ManagerProfilePayload,
   MatchImpactPayload,
   OddsPayload,
+  OwnershipPayload,
   RivalPayload,
   TransferStrategyPayload,
 } from "./types";
@@ -71,7 +72,7 @@ export const api = {
   match: (id: number) => get<MatchImpactPayload>(`/api/live/matches/${id}`),
   rival: (a: number, b: number) => get<RivalPayload>(`/api/rival?manager_a=${a}&manager_b=${b}`),
   analysisCaptain: () => get<{ players: AnalysisPlayer[] }>("/api/analysis/captain"),
-  analysisOwnership: () => get<{ players: AnalysisPlayer[]; league_size?: number }>("/api/analysis/ownership"),
+  analysisOwnership: () => get<OwnershipPayload>("/api/deep-analysis/ownership", { timeoutMs: 45000, retries: 1, baseUrl: AUX_BASE }),
   analysisChips: () => get<{ chips: ChipRow[] }>("/api/analysis/chips"),
   analysisDifferentials: () => get<{ players: AnalysisPlayer[] }>("/api/analysis/differentials"),
   analysisTransfers: (params: { entry_id: number; strategy: string; risk: number; horizon: number }) => {
