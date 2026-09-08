@@ -13,10 +13,12 @@ import type {
 } from "./types";
 
 export const API_BASE = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://lofthus-road-open-api.onrender.com").replace(/\/$/, "");
+export const AUX_BASE = (process.env.EXPO_PUBLIC_PUSH_BASE_URL || "https://lofthus-road-open-push.onrender.com").replace(/\/$/, "");
 
 type GetOptions = {
   timeoutMs?: number;
   retries?: number;
+  baseUrl?: string;
 };
 
 function isRetryableFetchError(error: unknown) {
@@ -27,13 +29,14 @@ function isRetryableFetchError(error: unknown) {
 async function get<T>(path: string, options: GetOptions = {}): Promise<T> {
   const timeoutMs = options.timeoutMs ?? 15000;
   const retries = options.retries ?? 0;
+  const baseUrl = options.baseUrl ?? API_BASE;
   let lastError: unknown = null;
 
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetch(`${API_BASE}${path}`, {
+      const response = await fetch(`${baseUrl}${path}`, {
         headers: { Accept: "application/json" },
         signal: controller.signal,
       });
@@ -61,6 +64,7 @@ export const api = {
   home: () => get<HomePayload>("/api/home"),
   league: () => get<LeaguePayload>("/api/league"),
   odds: () => get<OddsPayload>("/api/odds", { timeoutMs: 65000, retries: 1 }),
+  preseasonTip: () => get<OddsPayload>("/api/preseason-tip", { timeoutMs: 65000, retries: 1, baseUrl: AUX_BASE }),
   managers: () => get<{ managers: ManagerOption[] }>("/api/managers"),
   manager: (entry: number) => get<ManagerProfilePayload>(`/api/managers/${entry}`),
   hallOfFame: () => get<HallPayload>("/api/hall-of-fame"),
