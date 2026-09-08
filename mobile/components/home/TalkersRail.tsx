@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { PopularPlayer } from "@/lib/types";
 import { playerImageCandidates } from "@/lib/clubCrests";
 import { colors, radius } from "@/lib/theme";
@@ -24,13 +25,19 @@ export function TalkersRail({ players }: { players: PopularPlayer[] }) {
 }
 
 function TalkerCard({ player }: { player: PopularPlayer }) {
+  const router = useRouter();
   const candidates = playerImageCandidates(player.image_url);
   const [index, setIndex] = useState(0);
   const [failed, setFailed] = useState(false);
   const uri = !failed ? candidates[index] || "" : "";
 
   return (
-    <View style={styles.card}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Se hvem som eier ${player.player}`}
+      onPress={() => router.push(`/player/${player.element}`)}
+      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+    >
       {uri ? (
         <View style={styles.face}>
           <Image
@@ -61,7 +68,7 @@ function TalkerCard({ player }: { player: PopularPlayer }) {
         </Text>
         <Text style={styles.round}>GW-poeng</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -72,6 +79,7 @@ const styles = StyleSheet.create({
   title: { color: colors.ink, fontFamily: "Georgia", fontSize: 20, lineHeight: 24, fontWeight: "700" },
   rail: { paddingHorizontal: 16, paddingTop: 7, gap: 6 },
   card: { width: 164, height: 88, backgroundColor: colors.white, borderRadius: radius.sm, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, overflow: "hidden", flexDirection: "row" },
+  pressed: { opacity: 0.62 },
   face: { width: 76, overflow: "hidden", backgroundColor: colors.player },
   image: { width: 76, height: 108, marginTop: -6 },
   fallback: { width: 76, alignSelf: "stretch", backgroundColor: colors.player, alignItems: "center", justifyContent: "center" },
