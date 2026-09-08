@@ -23,6 +23,17 @@ export type ManagerRow = {
   chip?: string;
 };
 
+export type ManagerOption = {
+  entry: number;
+  manager: string;
+  team: string;
+  rank: number;
+  gw?: number;
+  total?: number;
+  rank_change?: number;
+  players_remaining?: number;
+};
+
 export type Fixture = {
   id: number;
   home: string;
@@ -59,6 +70,15 @@ export type PopularPlayer = {
   image_url?: string;
 };
 
+export type AnalysisPlayer = PopularPlayer & {
+  ownership_count: number;
+  captain_count: number;
+  triple_captain_count: number;
+  effective_ownership_pct?: number;
+  fixture_status?: string;
+  fixture_status_label?: string;
+};
+
 export type HomePayload = {
   status: Status;
   top5: ManagerRow[];
@@ -79,6 +99,64 @@ export type ManagerProfilePayload = {
   squad?: { xi?: Array<Record<string, unknown>>; bench?: Array<Record<string, unknown>> };
   form?: Array<{ event: number; points: number; league_rank: number; round_rank: number; is_live?: boolean }>;
   lofthus_membership?: unknown;
+};
+
+export type RivalEdge = {
+  element: number;
+  player: string;
+  event_points: number;
+  live_swing: number;
+  headline: string;
+};
+
+export type RivalPayload = {
+  me: ManagerRow;
+  rival: ManagerRow;
+  live_gap: number;
+  pre_gw_gap: number;
+  total_gap: number;
+  gw_gap: number;
+  common_players: number;
+  captains: { me: string; rival: string };
+  players_remaining: { me: number; rival: number };
+  cheer_for: RivalEdge[];
+  hope_blank: RivalEdge[];
+  my_unique: RivalEdge[];
+  rival_unique: RivalEdge[];
+  provisional: boolean;
+  is_live: boolean;
+  event_id: number;
+};
+
+export type TransferPick = {
+  element: number;
+  player: string;
+  club: string;
+  position: string;
+  price: number;
+  strategy_score: number;
+  league_ownership_pct: number;
+  league_owners: number;
+  league_size: number;
+  why: string[];
+};
+
+export type TransferStrategyPayload = {
+  ok: boolean;
+  strategy: { id: string; label: string; risk: number; horizon: number };
+  context: { summary: string };
+  recommendations: TransferPick[];
+  safe: TransferPick[];
+  aggressive: TransferPick[];
+  differentials: TransferPick[];
+  warnings?: string[];
+};
+
+export type ChipRow = {
+  entry: number;
+  manager: string;
+  chip: string;
+  gw: number;
 };
 
 export type HallRow = {
