@@ -13,6 +13,7 @@ import type {
   TransferStrategyPayload,
 } from "./types";
 import type { WildcardPayload } from "./wildcardTypes";
+import type { LeagueIntelligencePayload } from "./leagueIntelligenceTypes";
 
 export const API_BASE = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://lofthus-road-open-api.onrender.com").replace(/\/$/, "");
 export const AUX_BASE = (process.env.EXPO_PUBLIC_PUSH_BASE_URL || "https://lofthus-road-open-push.onrender.com").replace(/\/$/, "");
@@ -121,6 +122,14 @@ export const api = {
   hallOfFame: () => get<HallPayload>("/api/hall-of-fame"),
   match: (id: number) => get<MatchImpactPayload>(`/api/live/matches/${id}`),
   rival: (a: number, b: number) => get<RivalPayload>(`/api/rival?manager_a=${a}&manager_b=${b}`),
+  leagueIntelligence: (entryId: number, goal = "auto") => {
+    const query = new URLSearchParams({ entry_id: String(entryId), goal });
+    return get<LeagueIntelligencePayload>(`/api/league-intelligence?${query.toString()}`, {
+      timeoutMs: 65000,
+      retries: 1,
+      baseUrl: AUX_BASE,
+    });
+  },
   analysisCaptain: () => get<{ players: AnalysisPlayer[] }>("/api/analysis/captain"),
   analysisOwnership: async () => enrichOwnership(await get<OwnershipPayload>("/api/analysis/ownership", { timeoutMs: 25000, retries: 1 })),
   analysisChips: () => get<{ chips: ChipRow[] }>("/api/analysis/chips"),
