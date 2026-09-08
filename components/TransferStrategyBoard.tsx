@@ -8,6 +8,9 @@ import { leagueOwnership } from "@/lib/format";
 import { ApiState, LoadingBlock } from "@/components/ApiState";
 import { PlayerImage } from "@/components/PlayerImage";
 import type { TransferPick } from "@/lib/types";
+import type { WildcardPayload, WildcardPlayer } from "@/lib/wildcard";
+
+type TransferMode = "single" | "wildcard";
 
 const GOALS = [
   { id: "rapid_lofthus", label: "Klatre raskt i Lofthus", line: "Jakt de foran deg." },
@@ -98,6 +101,114 @@ function PickCard({ row, kicker }: { row: TransferPick; kicker: string }) {
   );
 }
 
+function WildcardPlayerRow({ player }: { player: WildcardPlayer }) {
+  return (
+    <li className="flex justify-between gap-3 border-b border-rule py-3">
+      <div className="min-w-0">
+        <p className="flex flex-wrap items-center gap-1.5 font-serif text-lg leading-tight">
+          {player.player}
+          {player.captain ? (
+            <span className="bg-ink px-1.5 py-0.5 font-condensed text-[9px] tracking-[0.12em] text-paper uppercase">C</span>
+          ) : null}
+          {player.vice_captain ? (
+            <span className="bg-ink px-1.5 py-0.5 font-condensed text-[9px] tracking-[0.12em] text-paper uppercase">VC</span>
+          ) : null}
+          {player.currently_owned ? (
+            <span className="bg-black/[0.05] px-1.5 py-0.5 font-condensed text-[9px] tracking-[0.12em] text-muted uppercase">
+              Behold
+            </span>
+          ) : null}
+        </p>
+        <p className="mt-1 text-sm text-muted">
+          {player.club} · {player.position} · £{Number(player.price).toFixed(1)}
+        </p>
+        <p className="mt-1 text-[11px] text-muted">
+          Lofthus {Number(player.league_ownership_pct || 0).toFixed(0)} % · globalt{" "}
+          {Number(player.global_ownership_pct || 0).toFixed(0)} % · xGI/90 {Number(player.xgi_per90 || 0).toFixed(2)}
+        </p>
+      </div>
+      <p className="font-condensed text-lg tabular-nums">{Number(player.squad_score || 0).toFixed(1)}</p>
+    </li>
+  );
+}
+
+function WildcardResult({ data }: { data: WildcardPayload }) {
+  return (
+    <div className="space-y-8 border-t border-ink pt-6">
+      <section>
+        <p className="font-condensed text-[12px] tracking-[0.16em] uppercase">Wildcard-forslag</p>
+        <h2 className="mt-2 font-serif text-3xl leading-none">{data.manager.manager}</h2>
+        <dl className="mt-5 grid grid-cols-3 gap-3">
+          <div className="border border-rule bg-white/50 p-3">
+            <dt className="text-[11px] tracking-[0.12em] text-muted uppercase">Budsjett</dt>
+            <dd className="font-condensed text-2xl">£{Number(data.budget.available).toFixed(1)}</dd>
+          </div>
+          <div className="border border-rule bg-white/50 p-3">
+            <dt className="text-[11px] tracking-[0.12em] text-muted uppercase">Brukt</dt>
+            <dd className="font-condensed text-2xl">£{Number(data.budget.used).toFixed(1)}</dd>
+          </div>
+          <div className="border border-rule bg-white/50 p-3">
+            <dt className="text-[11px] tracking-[0.12em] text-muted uppercase">Igjen</dt>
+            <dd className="font-condensed text-2xl">£{Number(data.budget.remaining).toFixed(1)}</dd>
+          </div>
+        </dl>
+        {!data.budget.exact ? (
+          <p className="mt-3 text-sm text-muted">
+            Budsjettet er estimert fordi alle salgspriser ikke var tilgjengelige.
+          </p>
+        ) : null}
+        {data.captain ? (
+          <p className="mt-4 text-sm text-muted">
+            Kaptein: {data.captain.player}
+            {data.vice_captain ? ` · Visekaptein: ${data.vice_captain.player}` : ""}
+          </p>
+        ) : null}
+      </section>
+
+      <section>
+        <h3 className="font-condensed text-[12px] tracking-[0.16em] uppercase">Førsteellever</h3>
+        <ul className="mt-3 border-t border-ink">
+          {(data.starting_xi || []).map((player) => (
+            <WildcardPlayerRow key={`xi-${player.element}`} player={player} />
+          ))}
+        </ul>
+      </section>
+
+      <section>
+        <h3 className="font-condensed text-[12px] tracking-[0.16em] uppercase">Benk</h3>
+        <ul className="mt-3 border-t border-ink">
+          {(data.bench || []).map((player) => (
+            <WildcardPlayerRow key={`bench-${player.element}`} player={player} />
+          ))}
+        </ul>
+      </section>
+
+      <section>
+        <h3 className="font-condensed text-[12px] tracking-[0.16em] uppercase">Endringer fra ditt nåværende lag</h3>
+        <p className="mt-4 font-condensed text-[11px] tracking-[0.12em] uppercase">Inn ({data.transfers_in?.length || 0})</p>
+        <ul className="mt-2 space-y-1 text-sm">
+          {(data.transfers_in || []).map((player) => (
+            <li key={`in-${player.element}`}>
+              + {player.player} · {player.position} · £{Number(player.price).toFixed(1)}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 font-condensed text-[11px] tracking-[0.12em] uppercase">Ut ({data.transfers_out?.length || 0})</p>
+        <ul className="mt-2 space-y-1 text-sm">
+          {(data.transfers_out || []).map((player) => (
+            <li key={`out-${player.element}`}>
+              − {player.player}
+              {player.selling_price !== undefined && player.selling_price !== null
+                ? ` · £${Number(player.selling_price).toFixed(1)}`
+                : ""}
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  );
+}
+
 export function TransferStrategyBoard() {
   const { entryId, setEntryId } = useSelectedManager();
   const managers = useLofthus("managers", () => api.managers(), { live: false });
@@ -108,8 +219,12 @@ export function TransferStrategyBoard() {
   const [target, setTarget] = useState("");
   const [rivalId, setRivalId] = useState(0);
   const [position, setPosition] = useState("all");
+  const [mode, setMode] = useState<TransferMode>("single");
+  const [wildcard, setWildcard] = useState<WildcardPayload | null>(null);
+  const [wildcardError, setWildcardError] = useState("");
+  const [wildcardBusy, setWildcardBusy] = useState(false);
 
-  const ready = Boolean(entryId && (strategy !== "beat_rival" || rivalId));
+  const ready = Boolean(entryId && mode === "single" && (strategy !== "beat_rival" || rivalId));
   const key = ready
     ? ["transfers", entryId, strategy, risk, horizon, target, rivalId, position]
     : null;
@@ -131,8 +246,53 @@ export function TransferStrategyBoard() {
   const rivals = useMemo(() => options.filter((m) => m.entry !== entryId), [options, entryId]);
   const data = payload.data;
 
+  function clearWildcard() {
+    setWildcard(null);
+    setWildcardError("");
+  }
+
+  async function runWildcard() {
+    if (!entryId) return;
+    setWildcardBusy(true);
+    setWildcardError("");
+    setWildcard(null);
+    try {
+      setWildcard(await api.analysisWildcard({ entry_id: entryId, strategy, risk, horizon: 5 }));
+    } catch (error) {
+      setWildcardError(error instanceof Error ? error.message : "Kunne ikke bygge wildcard-forslaget.");
+    } finally {
+      setWildcardBusy(false);
+    }
+  }
+
   return (
     <div className="space-y-10">
+      <section>
+        <h2 className="font-condensed text-[12px] tracking-[0.16em] uppercase">Type råd</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {(
+            [
+              ["single", "Enkeltbytte"],
+              ["wildcard", "Wildcard"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => {
+                setMode(id);
+                clearWildcard();
+              }}
+              className={`min-h-11 border px-3 font-condensed text-[12px] tracking-[0.12em] uppercase ${
+                mode === id ? "border-ink bg-ink text-paper" : "border-rule text-muted hover:border-ink hover:text-ink"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </section>
+
       <section>
         <h2 className="font-condensed text-[12px] tracking-[0.16em] uppercase">Hva prøver du å oppnå?</h2>
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -140,7 +300,10 @@ export function TransferStrategyBoard() {
             <button
               key={goal.id}
               type="button"
-              onClick={() => setStrategy(goal.id)}
+              onClick={() => {
+                setStrategy(goal.id);
+                clearWildcard();
+              }}
               className={`min-h-14 border px-4 py-3 text-left ${
                 strategy === goal.id ? "border-ink bg-white" : "border-rule bg-white/40"
               }`}
@@ -161,7 +324,10 @@ export function TransferStrategyBoard() {
             min={0}
             max={100}
             value={risk}
-            onChange={(e) => setRisk(Number(e.target.value))}
+            onChange={(e) => {
+              setRisk(Number(e.target.value));
+              clearWildcard();
+            }}
             className="mt-4 w-full"
             aria-label="Risikovilje"
           />
@@ -183,23 +349,31 @@ export function TransferStrategyBoard() {
               </button>
             ))}
           </div>
-          <p className="mt-6 font-condensed text-[12px] tracking-[0.16em] uppercase">Posisjon</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {POSITIONS.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => setPosition(p.id)}
-                className={`min-h-11 border px-3 text-sm ${position === p.id ? "border-ink bg-white" : "border-rule"}`}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
+          {mode === "single" ? (
+            <>
+              <p className="mt-6 font-condensed text-[12px] tracking-[0.16em] uppercase">Posisjon</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {POSITIONS.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setPosition(p.id)}
+                    className={`min-h-11 border px-3 text-sm ${position === p.id ? "border-ink bg-white" : "border-rule"}`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="mt-6 text-sm text-muted">
+              Wildcard vurderer de neste fem kampene. Datagrunnlaget inkluderer FPL-spillerdata, eierskap og faktisk budsjett.
+            </p>
+          )}
         </div>
       </section>
 
-      {strategy !== "climb_or" && strategy !== "beat_rival" ? (
+      {mode === "single" && strategy !== "climb_or" && strategy !== "beat_rival" ? (
         <label className="block text-sm">
           <span className="font-condensed text-[12px] tracking-[0.16em] uppercase">Målgruppe</span>
           <select
@@ -216,7 +390,7 @@ export function TransferStrategyBoard() {
         </label>
       ) : null}
 
-      {strategy === "beat_rival" ? (
+      {mode === "single" && strategy === "beat_rival" ? (
         <label className="block text-sm">
           <span className="font-condensed text-[12px] tracking-[0.16em] uppercase">Rival</span>
           <select
@@ -241,7 +415,10 @@ export function TransferStrategyBoard() {
           <select
             className="mt-4 w-full max-w-md border border-rule bg-paper px-3 py-2"
             value=""
-            onChange={(e) => setEntryId(Number(e.target.value))}
+            onChange={(e) => {
+              setEntryId(Number(e.target.value));
+              clearWildcard();
+            }}
           >
             <option value="">Finn meg i Lofthus</option>
             {options.map((m) => (
@@ -259,7 +436,10 @@ export function TransferStrategyBoard() {
             <select
               className="border border-rule bg-paper px-3 py-2 text-sm"
               value={entryId}
-              onChange={(e) => setEntryId(Number(e.target.value))}
+              onChange={(e) => {
+                setEntryId(Number(e.target.value));
+                clearWildcard();
+              }}
             >
               {options.map((m) => (
                 <option key={m.entry} value={m.entry}>
@@ -271,11 +451,27 @@ export function TransferStrategyBoard() {
         </section>
       )}
 
-      {entryId && strategy === "beat_rival" && !rivalId ? (
+      {mode === "single" && entryId && strategy === "beat_rival" && !rivalId ? (
         <p className="text-sm text-muted">Velg rivalen du skal slå.</p>
       ) : null}
 
-      {entryId && (strategy !== "beat_rival" || rivalId) ? (
+      {mode === "wildcard" && entryId ? (
+        <>
+          <button
+            type="button"
+            disabled={wildcardBusy}
+            onClick={runWildcard}
+            className="min-h-12 border border-ink bg-ink px-5 font-condensed text-[13px] tracking-[0.14em] text-paper uppercase disabled:opacity-40"
+          >
+            {wildcardBusy ? "Analyserer …" : "Bygg wildcard-lag"}
+          </button>
+          {wildcardBusy ? <LoadingBlock label="Bygger wildcard-lag. Dette kan ta opptil ett minutt…" /> : null}
+          {wildcardError ? <ApiState message={wildcardError} /> : null}
+          {wildcard ? <WildcardResult data={wildcard} /> : null}
+        </>
+      ) : null}
+
+      {mode === "single" && entryId && (strategy !== "beat_rival" || rivalId) ? (
         <>
           {payload.loading && !data ? <LoadingBlock label="Bygger strategi…" /> : null}
           {payload.error && !data ? <ApiState message={payload.error} /> : null}

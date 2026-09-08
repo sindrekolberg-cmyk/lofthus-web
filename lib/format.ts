@@ -49,6 +49,22 @@ export function monthPodiums(row: { monthly_gold: number; monthly_silver: number
   return row.monthly_gold + row.monthly_silver + row.monthly_bronze;
 }
 
+export function namesList(value?: string) {
+  return (value || "")
+    .split(/\s*(?:\/|,|&)\s*/)
+    .map((name) => name.trim())
+    .filter(Boolean);
+}
+
+export function nameMatches(value: string | undefined, manager: string) {
+  const needle = manager.trim().toLocaleLowerCase("nb");
+  return namesList(value).some((name) => name.toLocaleLowerCase("nb") === needle);
+}
+
+export function newestSeasonFirst(a: string, b: string) {
+  return b.localeCompare(a, "nb");
+}
+
 export function storyCategory(category: string) {
   const value = (category || "").toLowerCase();
   if (value === "live") return "Live";

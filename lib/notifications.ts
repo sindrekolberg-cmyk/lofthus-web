@@ -55,5 +55,5 @@ export async function postPushSubscription(body: PushSubscribeBody) {
   if (!res.ok) {
     throw new Error("Kunne ikke lagre varslingsabonnement");
   }
-  return res.json() as Promise<{ ok: boolean; stored: boolean }>;
+  return res.json() as Promise<{ ok: boolean; stored: boolean; message?: string }>;
 }

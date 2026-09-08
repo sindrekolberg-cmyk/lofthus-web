@@ -6,7 +6,7 @@ export default function TransferstrategiPage() {
     <AnalysisShell
       kicker="Bytter"
       title="Transferstrategi"
-      intro="Beste bytte avhenger av hva du prøver å oppnå. Dette er ikke en generell topp-liste."
+      intro="Enkeltbytte eller wildcard. Beste trekk avhenger av hva du prøver å oppnå — dette er ikke en generell topp-liste."
     >
       <TransferStrategyBoard />
     </AnalysisShell>

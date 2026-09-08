@@ -9,11 +9,13 @@ import type {
   ManagerProfile,
   MatchImpact,
   MonthPayload,
+  OddsPayload,
   PlayerCard,
   RivalPayload,
   Status,
   TransferStrategyPayload,
 } from "./types";
+import type { WildcardPayload } from "./wildcard";
 
 function configuredBase() {
   return (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
@@ -36,6 +38,15 @@ export function getApiBase() {
 
 export const API_BASE = getApiBase();
 
+export function getAuxBase() {
+  return (process.env.NEXT_PUBLIC_PUSH_BASE_URL || "https://lofthus-road-open-push.onrender.com").replace(
+    /\/$/,
+    "",
+  );
+}
+
+export const AUX_BASE = getAuxBase();
+
 export class ApiError extends Error {
   status: number;
 
@@ -49,8 +60,21 @@ export function apiConfigured() {
   return Boolean(getApiBase());
 }
 
-export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
-  const base = getApiBase();
+type GetOptions = RequestInit & {
+  timeoutMs?: number;
+  baseUrl?: string;
+  retries?: number;
+};
+
+function isRetryableFetchError(error: unknown) {
+  if (error instanceof ApiError) return error.status === 0;
+  const text = error instanceof Error ? `${error.name} ${error.message}` : String(error);
+  return /abort|cancel|fetch failed|network request failed|timed out|timeout/i.test(text);
+}
+
+export async function apiGet<T>(path: string, init?: GetOptions): Promise<T> {
+  const { timeoutMs, baseUrl, retries = 0, signal, headers, ...rest } = init || {};
+  const base = (baseUrl ?? getApiBase()).replace(/\/$/, "");
   if (!base) {
     throw new ApiError(
       "Kunne ikke hente live-data akkurat nå. Prøv igjen om litt.",
@@ -58,27 +82,53 @@ export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
     );
   }
   const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
-  let res: Response;
-  try {
-    res = await fetch(url, {
-      ...init,
-      headers: { Accept: "application/json", ...(init?.headers || {}) },
-      cache: "no-store",
-    });
-  } catch {
-    throw new ApiError("Kunne ikke hente live-data akkurat nå.", 0);
-  }
-  if (!res.ok) {
-    let detail = `API-feil (${res.status})`;
-    try {
-      const body = (await res.json()) as { detail?: string };
-      if (body.detail) detail = body.detail;
-    } catch {
-      /* ignore */
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    const controller = timeoutMs ? new AbortController() : null;
+    const timeout = timeoutMs && controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+    if (signal && controller) {
+      if (signal.aborted) controller.abort();
+      else signal.addEventListener("abort", () => controller.abort(), { once: true });
     }
-    throw new ApiError(detail, res.status);
+    try {
+      const res = await fetch(url, {
+        ...rest,
+        headers: { Accept: "application/json", ...(headers || {}) },
+        cache: "no-store",
+        signal: controller?.signal ?? signal,
+      });
+      if (!res.ok) {
+        let detail = `API-feil (${res.status})`;
+        try {
+          const body = (await res.json()) as { detail?: string };
+          if (body.detail) detail = body.detail;
+        } catch {
+          /* ignore */
+        }
+        throw new ApiError(detail, res.status);
+      }
+      return (await res.json()) as T;
+    } catch (error) {
+      lastError = error;
+      if (error instanceof ApiError && error.status !== 0) throw error;
+      if (attempt < retries && isRetryableFetchError(error)) {
+        await new Promise((resolve) => setTimeout(resolve, 700 * (attempt + 1)));
+        continue;
+      }
+      if (isRetryableFetchError(error)) {
+        throw new ApiError("Serveren brukte for lang tid på å svare. Prøv igjen.", 0);
+      }
+      if (error instanceof ApiError) throw error;
+      throw new ApiError("Kunne ikke hente live-data akkurat nå.", 0);
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
   }
-  return (await res.json()) as T;
+
+  throw lastError instanceof ApiError
+    ? lastError
+    : new ApiError("Kunne ikke hente live-data akkurat nå.", 0);
 }
 
 export const api = {
@@ -139,19 +189,25 @@ export const api = {
     });
     return apiGet<TransferStrategyPayload>(`/api/analysis/transfers?${q}`);
   },
-  odds: () =>
-    apiGet<{
-      rows: {
-        entry: number;
-        manager: string;
-        rank: number;
-        win_pct: number;
-        odds: number;
-        preseason_odds: number;
-        note: string;
-      }[];
-      ready: boolean;
-      note?: string;
-    }>("/api/odds"),
+  odds: () => apiGet<OddsPayload>("/api/odds"),
+  preseasonTip: () =>
+    apiGet<OddsPayload>("/api/preseason-tip", {
+      timeoutMs: 65000,
+      retries: 1,
+      baseUrl: getAuxBase(),
+    }),
+  analysisWildcard: (params: { entry_id: number; strategy: string; risk: number; horizon: number }) => {
+    const q = new URLSearchParams({
+      entry_id: String(params.entry_id),
+      strategy: params.strategy,
+      risk: String(params.risk),
+      horizon: String(Math.max(5, params.horizon)),
+    });
+    return apiGet<WildcardPayload>(`/api/deep-analysis/wildcard?${q}`, {
+      timeoutMs: 65000,
+      retries: 1,
+      baseUrl: getAuxBase(),
+    });
+  },
   archive: () => apiGet<{ snapshots: unknown[] }>("/api/archive"),
 };

@@ -124,14 +124,10 @@ export function OwnershipTable({
               return (
                 <tr key={p.element} className="border-b border-rule hover:bg-black/[0.03]">
                   <td className="py-2 pr-3">
-                    <button
-                      type="button"
-                      className="min-h-11 text-left"
-                      onClick={() => setOpen(p)}
-                    >
+                    <Link href={`/player/${p.element}`} className="block min-h-11 text-left hover:underline">
                       <span className="block text-[0.95rem] leading-tight">{p.player}</span>
                       <span className="block text-xs text-muted md:hidden">{p.club}</span>
-                    </button>
+                    </Link>
                   </td>
                   <td className="hidden py-2 pr-3 text-sm text-muted md:table-cell">{p.club}</td>
                   <td className="py-2 pr-3 font-condensed text-sm tabular-nums">
@@ -172,7 +168,9 @@ export function OwnershipTable({
               {open.club} · {fixtureStatusLabel(open.fixture_status, open.fixture_status_label)}
             </p>
             <h2 id="ownership-detail-title" className="mt-2 font-serif text-3xl leading-none">
-              {open.player}
+              <Link href={`/player/${open.element}`} className="hover:underline">
+                {open.player}
+              </Link>
             </h2>
             <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-ink pt-4 sm:grid-cols-4">
               <div>

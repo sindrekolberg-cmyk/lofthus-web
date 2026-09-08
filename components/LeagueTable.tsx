@@ -17,6 +17,7 @@ type Props = {
   remaining?: boolean;
   sortable?: boolean;
   prize?: RandomPrize | null;
+  variant?: "total" | "month";
 };
 
 const SORTS: { id: SortKey; label: string }[] = [
@@ -28,15 +29,30 @@ function defaultDirection(key: SortKey): SortDirection {
   return key === "rank" || key === "captain" ? "asc" : "desc";
 }
 
-export function LeagueTable({ rows, status, compact, highlight, remaining, sortable, prize }: Props) {
+export function LeagueTable({
+  rows,
+  status,
+  compact,
+  highlight,
+  remaining,
+  sortable,
+  prize,
+  variant = "total",
+}: Props) {
+  const monthView = variant === "month";
   const provisional = Boolean(status?.provisional);
   const [sort, setSort] = useState<SortKey>("total");
   const [direction, setDirection] = useState<SortDirection>("desc");
+  const activeSort: SortKey = monthView && sort === "total" ? "month" : sort;
   const prevTops = useRef(new Map<number, number>());
   const prevRanks = useRef(new Map<number, number>());
+  const placeOf = (row: ManagerRow) => (monthView ? row.month_rank || row.rank : row.rank);
+  const scoreOf = (row: ManagerRow) => (monthView ? row.month_points : row.total);
+  const scoreKey: SortKey = monthView ? "month" : "total";
+  const scoreLabel = monthView ? "Måned" : "Total";
 
   const changeSort = (key: SortKey) => {
-    if (sort === key) {
+    if (activeSort === key) {
       setDirection((current) => (current === "desc" ? "asc" : "desc"));
       return;
     }
@@ -49,7 +65,7 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
     const factor = direction === "desc" ? -1 : 1;
 
     copy.sort((a, b) => {
-      if (sort === "captain") {
+      if (activeSort === "captain") {
         const captainA = (a.captain || "").replace(/\s*\([^)]*\)\s*$/, "").trim();
         const captainB = (b.captain || "").replace(/\s*\([^)]*\)\s*$/, "").trim();
         const emptyA = captainA ? 0 : 1;
@@ -59,20 +75,20 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
         if (captainDiff !== 0) return captainDiff * factor;
       } else {
         let diff = 0;
-        if (sort === "rank") diff = a.rank - b.rank;
-        else if (sort === "total") diff = a.total - b.total;
-        else if (sort === "gw") diff = a.gw - b.gw;
-        else if (sort === "month") diff = a.month_points - b.month_points;
-        else if (sort === "move") diff = a.rank_change - b.rank_change;
+        if (activeSort === "rank") diff = placeOf(a) - placeOf(b);
+        else if (activeSort === "total") diff = a.total - b.total;
+        else if (activeSort === "gw") diff = a.gw - b.gw;
+        else if (activeSort === "month") diff = a.month_points - b.month_points;
+        else if (activeSort === "move") diff = a.rank_change - b.rank_change;
 
         if (diff !== 0) return diff * factor;
       }
 
-      return a.rank - b.rank || a.manager.localeCompare(b.manager, "nb");
+      return placeOf(a) - placeOf(b) || a.rank - b.rank || a.manager.localeCompare(b.manager, "nb");
     });
 
     return copy;
-  }, [rows, sort, direction]);
+  }, [rows, activeSort, direction, monthView]);
 
   useLayoutEffect(() => {
     if (typeof window === "undefined") return;
@@ -84,6 +100,7 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
       const top = el.getBoundingClientRect().top;
       const prev = prevTops.current.get(row.entry);
       const prevRank = prevRanks.current.get(row.entry);
+      const nextRank = placeOf(row);
       nextTops.set(row.entry, top);
       if (prev != null && Math.abs(prev - top) > 2) {
         const dy = prev - top;
@@ -94,15 +111,15 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
           el.style.transform = "";
         });
       }
-      if (prevRank != null && prevRank !== row.rank) {
+      if (prevRank != null && prevRank !== nextRank) {
         el.classList.remove("row-up", "row-down");
-        el.classList.add(row.rank < prevRank ? "row-up" : "row-down");
+        el.classList.add(nextRank < prevRank ? "row-up" : "row-down");
         window.setTimeout(() => el.classList.remove("row-up", "row-down"), 1400);
       }
-      prevRanks.current.set(row.entry, row.rank);
+      prevRanks.current.set(row.entry, nextRank);
     });
     prevTops.current = nextTops;
-  }, [sorted]);
+  }, [sorted, monthView]);
 
   const arrow = direction === "desc" ? "↓" : "↑";
 
@@ -118,7 +135,7 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
 
   const sortableHeader = (label: string, key: SortKey, alignRight = true) => {
     if (!sortable) return label;
-    const active = sort === key;
+    const active = activeSort === key;
     return (
       <button
         type="button"
@@ -136,10 +153,10 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
 
   return (
     <div>
-      {sortable ? (
+      {sortable && !monthView ? (
         <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
           {SORTS.map((item) => {
-            const active = sort === item.id;
+            const active = activeSort === item.id;
             return (
               <button
                 key={item.id}
@@ -168,9 +185,11 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
                 <th className="hidden py-3 pr-3 font-medium md:table-cell">{sortableHeader("Kaptein", "captain", false)}</th>
               ) : null}
               <th className="py-3 pr-3 text-right font-medium">{sortableHeader("GW", "gw")}</th>
-              <th className="py-3 pr-3 text-right font-medium">{sortableHeader("Total", "total")}</th>
+              <th className="py-3 pr-3 text-right font-medium">{sortableHeader(scoreLabel, scoreKey)}</th>
               {sortable && !compact ? (
-                <th className="hidden py-3 pr-3 text-right font-medium lg:table-cell">{sortableHeader("Måned", "month")}</th>
+                <th className="hidden py-3 pr-3 text-right font-medium lg:table-cell">
+                  {sortableHeader(monthView ? "Total" : "Måned", monthView ? "total" : "month")}
+                </th>
               ) : null}
               {remaining ? <th className="hidden py-3 pr-3 text-right font-medium sm:table-cell">Igjen</th> : null}
               <th className="py-3 text-right font-medium">{sortableHeader("+/-", "move")}</th>
@@ -185,7 +204,9 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
                   highlight === row.entry ? "bg-[#fff6d8]" : prize && row.rank === prize.rank ? "bg-gold/10" : ""
                 }`}
               >
-                <td className="py-2.5 pr-2 font-condensed text-base tabular-nums sm:py-3 sm:pr-3 sm:text-lg">{row.rank}</td>
+                <td className="py-2.5 pr-2 font-condensed text-base tabular-nums sm:py-3 sm:pr-3 sm:text-lg">
+                  {placeOf(row)}
+                </td>
                 <td className="py-2.5 pr-2 sm:py-3 sm:pr-3">
                   <Link href={`/manager/${row.entry}`} className="inline-flex min-h-11 items-center text-[0.95rem] leading-tight hover:underline">
                     {row.manager}
@@ -205,9 +226,13 @@ export function LeagueTable({ rows, status, compact, highlight, remaining, sorta
                 {!compact ? <td className="hidden py-3 pr-3 text-sm text-muted sm:table-cell">{row.team}</td> : null}
                 {!compact ? <td className="hidden py-3 pr-3 text-sm md:table-cell">{row.captain || "–"}</td> : null}
                 <td className="py-2.5 pr-2 text-right font-condensed text-base tabular-nums sm:py-3 sm:pr-3 sm:text-lg">{row.gw}</td>
-                <td className="py-2.5 pr-2 text-right font-condensed text-base font-semibold tabular-nums sm:py-3 sm:pr-3 sm:text-lg">{row.total}</td>
+                <td className="py-2.5 pr-2 text-right font-condensed text-base font-semibold tabular-nums sm:py-3 sm:pr-3 sm:text-lg">
+                  {scoreOf(row)}
+                </td>
                 {sortable && !compact ? (
-                  <td className="hidden py-3 pr-3 text-right font-condensed tabular-nums lg:table-cell">{row.month_points}</td>
+                  <td className="hidden py-3 pr-3 text-right font-condensed tabular-nums lg:table-cell">
+                    {monthView ? row.total : row.month_points}
+                  </td>
                 ) : null}
                 {remaining ? (
                   <td className="hidden py-3 pr-3 text-right font-condensed tabular-nums text-muted sm:table-cell">{row.players_remaining}</td>

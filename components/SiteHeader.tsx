@@ -70,22 +70,56 @@ export function SiteHeader() {
             })}
           </nav>
 
-          <div className="hidden w-[12rem] lg:w-[16rem] md:block">
-            <ManagerSearch compact />
+          <div className="hidden items-center gap-2 md:flex">
+            <Link
+              href="/varsler"
+              className="flex h-11 w-11 items-center justify-center text-ink"
+              aria-label="Varsler"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path
+                  d="M6 9a6 6 0 1 1 12 0c0 4 2 5.5 2 5.5H4S6 13 6 9Z"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinejoin="round"
+                />
+                <path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+              </svg>
+            </Link>
+            <div className="w-[12rem] lg:w-[16rem]">
+              <ManagerSearch compact />
+            </div>
           </div>
 
-          <button
-            type="button"
-            className="flex h-11 w-11 items-center justify-center md:hidden"
-            aria-expanded={searchOpen}
-            aria-label={searchOpen ? "Lukk søk" : "Finn meg"}
-            onClick={() => setSearchOpen((v) => !v)}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.7" />
-              <path d="M16 16.5 20 20.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-            </svg>
-          </button>
+          <div className="flex items-center md:hidden">
+            <Link
+              href="/varsler"
+              className="flex h-11 w-11 items-center justify-center"
+              aria-label="Varsler"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path
+                  d="M6 9a6 6 0 1 1 12 0c0 4 2 5.5 2 5.5H4S6 13 6 9Z"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinejoin="round"
+                />
+                <path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+              </svg>
+            </Link>
+            <button
+              type="button"
+              className="flex h-11 w-11 items-center justify-center"
+              aria-expanded={searchOpen}
+              aria-label={searchOpen ? "Lukk søk" : "Finn meg"}
+              onClick={() => setSearchOpen((v) => !v)}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.7" />
+                <path d="M16 16.5 20 20.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {searchOpen ? (

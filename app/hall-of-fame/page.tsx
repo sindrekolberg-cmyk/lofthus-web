@@ -4,7 +4,8 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useLofthus } from "@/lib/useLofthus";
-import { monthPodiums } from "@/lib/format";
+import { monthPodiums, newestSeasonFirst } from "@/lib/format";
+import { legendMerits, legendRanking } from "@/lib/hall";
 import { ApiState, LoadingBlock } from "@/components/ApiState";
 import { QueryTabs } from "@/components/QueryTabs";
 
@@ -135,28 +136,48 @@ function HallInner() {
 
             {data && tab === "overview" ? (
               <>
-                {data.records ? (
-                  <dl className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-                    {Object.values(data.records)
-                      .filter(Boolean)
-                      .map((rec) =>
-                        rec ? (
-                          <div key={rec.field} className="border border-rule bg-white/40 p-4">
-                            <dt className="font-condensed text-[11px] tracking-[0.14em] text-muted uppercase">
-                              {rec.label}
-                            </dt>
-                            <dd className="mt-2 font-serif text-2xl">{rec.manager}</dd>
-                            <dd className="font-condensed text-sm text-muted">{rec.value}</dd>
-                          </div>
-                        ) : null,
-                      )}
-                  </dl>
-                ) : null}
-                <p className="mt-8 text-sm text-muted">
-                  Rangert etter ligatitler, deretter cupgull, sammenlagtsølv og sammenlagtbronse, og til slutt
-                  månedsmeritter.
-                </p>
-                <div className="mt-4 overflow-x-auto">
+                <section className="mt-8">
+                  <h2 className="font-serif text-3xl leading-none">Topp 5 Lofthus-legender gjennom tidene</h2>
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
+                    Rangert etter ligatitler, deretter cupgull, sammenlagtsølv og sammenlagtbronse, og til slutt
+                    månedsmeritter.
+                  </p>
+                  <ul className="mt-6 space-y-2">
+                    {legendRanking(data.rows).map((row, index) => (
+                      <li key={row.manager}>
+                        <button
+                          type="button"
+                          onClick={() => chooseManager(row.manager)}
+                          className={`flex w-full min-h-16 items-center gap-4 border px-4 py-3 text-left ${
+                            index === 0 ? "border-gold bg-gold/10" : "border-rule bg-white/40"
+                          }`}
+                        >
+                          <span className="w-8 font-serif text-2xl">{index + 1}</span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block font-serif text-xl leading-tight">{row.manager}</span>
+                            <span className="mt-2 flex flex-wrap gap-1.5">
+                              {legendMerits(row).map((item) => (
+                                <span
+                                  key={item.key}
+                                  className={`font-condensed text-[10px] tracking-[0.12em] uppercase px-2 py-1 ${
+                                    item.key === "cup" ? "border border-bronze bg-gold/20 text-ink" : "bg-black/[0.04] text-muted"
+                                  }`}
+                                >
+                                  {item.key === "cup" ? "🏆 " : ""}
+                                  {item.value} {item.label}
+                                </span>
+                              ))}
+                            </span>
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  {!legendRanking(data.rows).length ? (
+                    <p className="mt-4 text-sm text-muted">Ingen meritter er registrert ennå.</p>
+                  ) : null}
+                </section>
+                <div className="mt-10 overflow-x-auto">
                   <table className="w-full min-w-[720px] text-left text-sm">
                     <thead>
                       <tr className="border-b border-ink font-condensed text-[11px] tracking-[0.14em] text-muted uppercase">
@@ -188,15 +209,69 @@ function HallInner() {
             ) : null}
 
             {data && tab === "seasons" ? (
-              <ul className="mt-8 divide-y divide-rule border-y border-rule">
-                {(data.overall || []).map((row) => (
-                  <li key={row.season} className="grid gap-1 py-4 sm:grid-cols-12">
-                    <span className="font-condensed sm:col-span-2">{row.season}</span>
-                    <span className="sm:col-span-3">1. {row.winner || "ikke registrert"}</span>
-                    <span className="text-muted sm:col-span-3">2. {row.runner_up || "ikke registrert"}</span>
-                    <span className="text-muted sm:col-span-4">3. {row.third_place || "ikke registrert"}</span>
-                  </li>
-                ))}
+              <ul className="mt-8 space-y-4">
+                {[...(data.overall || [])]
+                  .sort((a, b) => newestSeasonFirst(a.season, b.season))
+                  .map((row) => {
+                    const cup = (data.cup || []).find((item) => item.season === row.season);
+                    const months = (data.monthly || []).filter((item) => item.season === row.season && (item.winner || "").trim());
+                    return (
+                      <li key={row.season} className="border border-rule bg-white/40 px-4 py-5">
+                        <p className="font-serif text-2xl">{row.season}</p>
+                        <dl className="mt-4 space-y-2 border-t border-rule pt-3">
+                          <div className="flex gap-3">
+                            <dt className="w-6 font-serif text-lg text-live">1</dt>
+                            <dd>
+                              <span className="block text-xs text-muted">Vinner</span>
+                              <span>{row.winner || "Ikke registrert"}</span>
+                            </dd>
+                          </div>
+                          <div className="flex gap-3">
+                            <dt className="w-6 font-serif text-lg text-live">2</dt>
+                            <dd>
+                              <span className="block text-xs text-muted">Andreplass</span>
+                              <span>{row.runner_up || "Ikke registrert"}</span>
+                            </dd>
+                          </div>
+                          <div className="flex gap-3">
+                            <dt className="w-6 font-serif text-lg text-live">3</dt>
+                            <dd>
+                              <span className="block text-xs text-muted">Tredjeplass</span>
+                              <span>{row.third_place || "Ikke registrert"}</span>
+                            </dd>
+                          </div>
+                        </dl>
+                        {cup?.winner ? (
+                          <div className="mt-4 border border-gold/60 bg-gold/10 px-4 py-4">
+                            <p className="font-condensed text-[11px] tracking-[0.18em] text-bronze uppercase">
+                              🏆 Lofthus Cup
+                            </p>
+                            <p className="mt-2 font-serif text-2xl">{cup.winner}</p>
+                            <p className="mt-1 text-sm text-muted">
+                              {cup.runner_up ? `Vant finalen mot ${cup.runner_up}` : "Finalist er ikke registrert"}
+                            </p>
+                          </div>
+                        ) : null}
+                        {months.length ? (
+                          <div className="mt-4 border-t border-rule pt-3">
+                            <p className="font-condensed text-[11px] tracking-[0.16em] text-muted uppercase">
+                              Månedsvinnere
+                            </p>
+                            <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+                              {months.map((month) => (
+                                <li key={`${month.season}-${month.month}`}>
+                                  <p className="font-condensed text-[10px] tracking-[0.14em] text-muted uppercase">
+                                    {month.month}
+                                  </p>
+                                  <p className="font-medium">{month.winner}</p>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : null}
+                      </li>
+                    );
+                  })}
               </ul>
             ) : null}
 

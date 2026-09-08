@@ -46,10 +46,10 @@ test("homepage uses Topp 5 sammenlagt and API talkers", () => {
   assert.equal((home.match(/Topp 5 sammenlagt/g) || []).length, 1);
   assert.equal((home.match(/Hele måneden/g) || []).length, 1);
   const body = home.slice(home.indexOf("return ("));
-  assert.ok(body.indexOf("<MatchStrip") < body.indexOf("Topp 5 sammenlagt"));
-  assert.ok(body.indexOf("Topp 5 sammenlagt") < body.indexOf("Snakkiser"));
-  assert.ok(body.indexOf("Snakkiser") < body.indexOf("Største utslag"));
-  assert.match(home, /lg:grid-cols-\[minmax\(0,1\.85fr\)_minmax\(12rem,1fr\)\]/);
+  assert.ok(body.indexOf("<MatchStrip") < body.indexOf("Snakkiser"));
+  assert.ok(body.indexOf("Snakkiser") < body.indexOf("Topp 5 sammenlagt"));
+  assert.ok(body.indexOf("Topp 5 sammenlagt") < body.indexOf("Største utslag"));
+  assert.match(home, /href=\{`\/player\/\$\{p\.element\}`\}/);
   assert.match(home, /Største klatrere/);
   assert.match(home, /Største fall/);
   assert.doesNotMatch(home, /Foreløpig endring akkurat nå/);
@@ -79,6 +79,7 @@ test("hall of fame shows merits instead of an invented points score", () => {
   assert.match(hof, /Ligatitler/);
   assert.match(hof, /Cupgull/);
   assert.match(hof, /Månedspodier/);
+  assert.match(hof, /Topp 5 Lofthus-legender/);
   assert.doesNotMatch(hof, /Totalt antall poeng/);
   assert.doesNotMatch(hof, /poengsystem/);
   assert.doesNotMatch(hof, /historicalPoints/);

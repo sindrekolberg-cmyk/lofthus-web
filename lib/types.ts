@@ -82,6 +82,7 @@ export type PlayerCard = {
   kicker?: string;
   headline?: string;
   dek?: string;
+  global_ownership_pct?: number;
 };
 
 export type PlayerOwner = {
@@ -481,18 +482,32 @@ export const bottomNav = [
   { href: "/hall-of-fame", label: "Hall of Fame" },
 ];
 
+export type OddsPayload = {
+  rows: {
+    entry: number;
+    manager: string;
+    rank: number;
+    win_pct: number;
+    odds: number;
+    preseason_odds: number;
+    note: string;
+  }[];
+  ready: boolean;
+  note?: string;
+};
+
 export const analysisEntries = [
+  {
+    href: "/analyse/transferstrategi",
+    kicker: "Neste trekk",
+    title: "Transferstrategi",
+    line: "Enkeltbytte eller wildcard: tilpassede råd etter målet ditt, risikoen du tåler og hvem du prøver å slå.",
+  },
   {
     href: "/analyse/rivalradar",
     kicker: "Hvem jakter deg",
     title: "Rivalradar",
     line: "Live-avstand, kapteiner, heia på og håp på blank.",
-  },
-  {
-    href: "/analyse/transferstrategi",
-    kicker: "Neste trekk",
-    title: "Transferstrategi",
-    line: "Tilpassede kjøpsråd etter målet ditt, risikoen du tåler og hvem du prøver å slå.",
   },
   {
     href: "/analyse/kaptein",

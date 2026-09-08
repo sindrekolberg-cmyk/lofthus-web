@@ -66,7 +66,38 @@ export function HomePage() {
         </section>
       ) : null}
 
-      <section className="border-b border-ink/10 bg-[#f6e4d8]">
+      {polled.error ? (
+        <div className="mx-auto max-w-[1400px] px-4 pt-6 sm:px-6">
+          <ApiState title="Viser siste kjente data" message={polled.error} />
+        </div>
+      ) : null}
+
+      <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6">
+        <section>
+          <h2 className="font-serif text-2xl sm:text-3xl">Snakkiser</h2>
+          {snakkiser.length ? (
+            <ul className="mt-3 divide-y divide-rule border-y border-rule">
+              {snakkiser.map((s) => (
+                <li key={s.key}>
+                  <Link href={storyHref(s)} className="flex min-h-11 items-baseline gap-3 py-2.5 hover:bg-black/[0.02] sm:gap-4">
+                    <span className="w-20 shrink-0 font-condensed text-[11px] tracking-[0.16em] text-live uppercase sm:w-28">
+                      {storyCategory(s.category)}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block font-serif text-lg leading-snug sm:text-xl">{s.headline}</span>
+                      {s.meta ? <span className="mt-0.5 block text-sm text-muted">{s.meta}</span> : null}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm text-muted">Ingen sterke historier akkurat nå.</p>
+          )}
+        </section>
+      </div>
+
+      <section className="border-y border-ink/10 bg-[#f6e4d8]">
         <div className="mx-auto max-w-[1400px] px-4 py-4 sm:px-6">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
             <section>
@@ -112,10 +143,12 @@ export function HomePage() {
               <ul className="mt-2 divide-y divide-rule border-y border-rule">
                 {talkers.length ? talkers.map((p) => (
                   <li key={p.element} className="flex items-center gap-2.5 py-1.5">
-                    <div className="relative h-8 w-8 shrink-0 overflow-hidden bg-[#d8d1c4]">
-                      <PlayerImage src={p.image_url} alt={p.player} variant="squad" />
-                    </div>
-                    <p className="min-w-0 flex-1 truncate text-sm">{p.player}</p>
+                    <Link href={`/player/${p.element}`} className="flex min-w-0 flex-1 items-center gap-2.5 hover:underline">
+                      <div className="relative h-8 w-8 shrink-0 overflow-hidden bg-[#d8d1c4]">
+                        <PlayerImage src={p.image_url} alt={p.player} variant="squad" />
+                      </div>
+                      <p className="min-w-0 flex-1 truncate text-sm">{p.player}</p>
+                    </Link>
                     <p className="shrink-0 font-condensed text-[11px] tabular-nums text-muted">
                       {Math.round(p.ownership_pct)}% · {p.event_points} p
                     </p>
@@ -129,39 +162,9 @@ export function HomePage() {
         </div>
       </section>
 
-      {polled.error ? (
-        <div className="mx-auto max-w-[1400px] px-4 pt-6 sm:px-6">
-          <ApiState title="Viser siste kjente data" message={polled.error} />
-        </div>
-      ) : null}
-
       <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6">
-        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.85fr)_minmax(12rem,1fr)] lg:gap-10">
-          <section>
-            <h2 className="font-serif text-2xl sm:text-3xl">Snakkiser</h2>
-            {snakkiser.length ? (
-              <ul className="mt-3 divide-y divide-rule border-y border-rule">
-                {snakkiser.map((s) => (
-                  <li key={s.key}>
-                    <Link href={storyHref(s)} className="flex min-h-11 items-baseline gap-3 py-2.5 hover:bg-black/[0.02] sm:gap-4">
-                      <span className="w-20 shrink-0 font-condensed text-[11px] tracking-[0.16em] text-live uppercase sm:w-28">
-                        {storyCategory(s.category)}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block font-serif text-lg leading-snug sm:text-xl">{s.headline}</span>
-                        {s.meta ? <span className="mt-0.5 block text-sm text-muted">{s.meta}</span> : null}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-3 text-sm text-muted">Ingen sterke historier akkurat nå.</p>
-            )}
-          </section>
-
-          <section>
-            <h2 className="font-serif text-2xl">Største utslag</h2>
+        <section>
+          <h2 className="font-serif text-2xl">Største utslag</h2>
             <ul className="mt-3 space-y-1">
               <li className="font-condensed text-[11px] tracking-[0.16em] text-[#2f6a32] uppercase">Største klatrere</li>
               {climbers.length ? climbers.map((m) => (
@@ -181,7 +184,6 @@ export function HomePage() {
               )) : <li className="text-sm text-muted">Ingen ennå</li>}
             </ul>
           </section>
-        </div>
       </div>
     </main>
   );

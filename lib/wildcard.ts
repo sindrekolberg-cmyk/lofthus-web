@@ -1,0 +1,45 @@
+export type WildcardPlayer = {
+  element: number;
+  player: string;
+  club: string;
+  team_id: number;
+  position_id: number;
+  position: string;
+  price: number;
+  projection_index: number;
+  squad_score: number;
+  captain_score: number;
+  league_ownership_pct: number;
+  cohort_ownership_pct: number;
+  global_ownership_pct: number;
+  form: number;
+  points_per_game: number;
+  xgi_per90: number;
+  minutes: number;
+  starts: number;
+  status: string;
+  chance_next?: number | null;
+  confidence?: string;
+  evidence?: string[];
+  currently_owned?: boolean;
+  starting_xi?: boolean;
+  captain?: boolean;
+  vice_captain?: boolean;
+};
+
+export type WildcardPayload = {
+  ok: boolean;
+  manager: { entry: number; manager: string; team: string; rank: number };
+  strategy: { id: string; risk: number; horizon: number; cohort?: string };
+  budget: { available: number; used: number; remaining: number; exact: boolean };
+  starting_xi: WildcardPlayer[];
+  bench: WildcardPlayer[];
+  squad: WildcardPlayer[];
+  captain?: WildcardPlayer | null;
+  vice_captain?: WildcardPlayer | null;
+  transfers_in: WildcardPlayer[];
+  transfers_out: Array<{ element: number; player: string; position?: string; selling_price?: number | null }>;
+  analysis_horizon?: { event_ids?: number[]; matches?: number; starts_after_current_deadline?: boolean };
+  quality_control?: Record<string, unknown>;
+  data_sources?: string[];
+};
