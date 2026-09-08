@@ -14,25 +14,53 @@ import type {
 
 export const API_BASE = (process.env.EXPO_PUBLIC_API_BASE_URL || "https://lofthus-road-open-api.onrender.com").replace(/\/$/, "");
 
-async function get<T>(path: string): Promise<T> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-  try {
-    const response = await fetch(`${API_BASE}${path}`, {
-      headers: { Accept: "application/json" },
-      signal: controller.signal,
-    });
-    if (!response.ok) throw new Error(`API svarte ${response.status}`);
-    return (await response.json()) as T;
-  } finally {
-    clearTimeout(timeout);
+type GetOptions = {
+  timeoutMs?: number;
+  retries?: number;
+};
+
+function isRetryableFetchError(error: unknown) {
+  const text = error instanceof Error ? `${error.name} ${error.message}` : String(error);
+  return /abort|cancel|fetch failed|network request failed|timed out|timeout/i.test(text);
+}
+
+async function get<T>(path: string, options: GetOptions = {}): Promise<T> {
+  const timeoutMs = options.timeoutMs ?? 15000;
+  const retries = options.retries ?? 0;
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(`${API_BASE}${path}`, {
+        headers: { Accept: "application/json" },
+        signal: controller.signal,
+      });
+      if (!response.ok) throw new Error(`API svarte ${response.status}`);
+      return (await response.json()) as T;
+    } catch (error) {
+      lastError = error;
+      if (attempt < retries && isRetryableFetchError(error)) {
+        await new Promise((resolve) => setTimeout(resolve, 700 * (attempt + 1)));
+        continue;
+      }
+      if (isRetryableFetchError(error)) {
+        throw new Error("Serveren brukte for lang tid på å svare. Dra ned for å prøve igjen.");
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeout);
+    }
   }
+
+  throw lastError instanceof Error ? lastError : new Error("Kunne ikke hente data.");
 }
 
 export const api = {
   home: () => get<HomePayload>("/api/home"),
   league: () => get<LeaguePayload>("/api/league"),
-  odds: () => get<OddsPayload>("/api/odds"),
+  odds: () => get<OddsPayload>("/api/odds", { timeoutMs: 65000, retries: 1 }),
   managers: () => get<{ managers: ManagerOption[] }>("/api/managers"),
   manager: (entry: number) => get<ManagerProfilePayload>(`/api/managers/${entry}`),
   hallOfFame: () => get<HallPayload>("/api/hall-of-fame"),
