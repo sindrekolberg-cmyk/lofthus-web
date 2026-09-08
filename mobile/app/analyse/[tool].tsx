@@ -6,12 +6,7 @@ import { ErrorState, Loading } from "@/components/State";
 import { api } from "@/lib/api";
 import { colors, radius, space } from "@/lib/theme";
 import { useRemote } from "@/lib/useRemote";
-import type {
-  AnalysisPlayer,
-  ManagerOption,
-  RivalPayload,
-  TransferStrategyPayload,
-} from "@/lib/types";
+import type { AnalysisPlayer, ManagerOption, RivalPayload, TransferStrategyPayload } from "@/lib/types";
 
 type ToolId = "rivalradar" | "transferstrategi" | "kaptein" | "ownership" | "differensialer" | "chips";
 
@@ -24,6 +19,9 @@ const META: Record<ToolId, { kicker: string; title: string; intro: string }> = {
   chips: { kicker: "Timing", title: "Sjetonger", intro: "Wildcard, Free Hit, Bench Boost og Triple Captain i ligaen." },
 };
 
+const loadManagers = () => api.managers();
+const loadChips = () => api.analysisChips();
+
 function Chip({ label, active, onPress }: { label: string; active?: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.chip, active && styles.chipActive, pressed && styles.pressed]}>
@@ -33,12 +31,13 @@ function Chip({ label, active, onPress }: { label: string; active?: boolean; onP
 }
 
 function ManagerChooser({ title, managers, value, onChange, exclude = 0 }: { title: string; managers: ManagerOption[]; value: number; onChange: (entry: number) => void; exclude?: number }) {
-  const rows = managers.filter((m) => m.entry !== exclude);
   return (
     <View style={styles.block}>
       <Text style={styles.label}>{title}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-        {rows.map((m) => <Chip key={m.entry} label={`${m.manager} · ${m.rank || "–"}`} active={value === m.entry} onPress={() => onChange(m.entry)} />)}
+        {managers.filter((m) => m.entry !== exclude).map((m) => (
+          <Chip key={m.entry} label={`${m.manager} · ${m.rank || "–"}`} active={value === m.entry} onPress={() => onChange(m.entry)} />
+        ))}
       </ScrollView>
     </View>
   );
@@ -84,7 +83,7 @@ function SimplePlayerTool({ mode }: { mode: "captain" | "ownership" | "different
 }
 
 function ChipsTool() {
-  const remote = useRemote(() => api.analysisChips());
+  const remote = useRemote(loadChips);
   return (
     <>
       {remote.loading && !remote.data ? <Loading /> : null}
@@ -124,7 +123,7 @@ function RivalResult({ data }: { data: RivalPayload }) {
 }
 
 function RivalTool() {
-  const managers = useRemote(() => api.managers());
+  const managers = useRemote(loadManagers);
   const [me, setMe] = useState(0);
   const [rival, setRival] = useState(0);
   const [data, setData] = useState<RivalPayload | null>(null);
@@ -133,9 +132,15 @@ function RivalTool() {
 
   async function run() {
     if (!me || !rival || me === rival) return;
-    setBusy(true); setError("");
-    try { setData(await api.rival(me, rival)); } catch (e) { setError(e instanceof Error ? e.message : "Kunne ikke bygge duellen."); }
-    finally { setBusy(false); }
+    setBusy(true);
+    setError("");
+    try {
+      setData(await api.rival(me, rival));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Kunne ikke bygge duellen.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -167,7 +172,7 @@ const strategies = [
 ] as const;
 
 function TransferTool() {
-  const managers = useRemote(() => api.managers());
+  const managers = useRemote(loadManagers);
   const [entry, setEntry] = useState(0);
   const [strategy, setStrategy] = useState("rapid_lofthus");
   const [risk, setRisk] = useState(55);
@@ -177,10 +182,15 @@ function TransferTool() {
 
   async function run() {
     if (!entry) return;
-    setBusy(true); setError("");
-    try { setData(await api.analysisTransfers({ entry_id: entry, strategy, risk, horizon: 3 })); }
-    catch (e) { setError(e instanceof Error ? e.message : "Kunne ikke bygge transferstrategien."); }
-    finally { setBusy(false); }
+    setBusy(true);
+    setError("");
+    try {
+      setData(await api.analysisTransfers({ entry_id: entry, strategy, risk, horizon: 3 }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Kunne ikke bygge transferstrategien.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
