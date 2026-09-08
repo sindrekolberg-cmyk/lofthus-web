@@ -1,12 +1,12 @@
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { colors } from "@/lib/theme";
 
-export function Loading({ label = "Henter Lofthus …" }: { label?: string }) {
+export function Loading({ label = "Henter data …" }: { label?: string }) {
   return <View style={styles.row}><ActivityIndicator color={colors.live} /><Text style={styles.text}>{label}</Text></View>;
 }
 
 export function ErrorState({ message }: { message: string }) {
-  return <View style={styles.error}><Text style={styles.errorTitle}>Dataene tok en pause</Text><Text style={styles.text}>{message}</Text></View>;
+  return <View style={styles.error}><Text style={styles.errorTitle}>Kunne ikke hente data</Text><Text style={styles.text}>{message}</Text></View>;
 }
 
 const styles = StyleSheet.create({
