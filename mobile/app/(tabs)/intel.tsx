@@ -1,15 +1,13 @@
 import { useCallback, useState } from "react";
 import { Link } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Screen } from "@/components/Screen";
 import { ErrorState, Loading } from "@/components/State";
 import { api } from "@/lib/api";
+import { useProfile } from "@/lib/profile";
 import { colors, radius, space } from "@/lib/theme";
 import { useRemote } from "@/lib/useRemote";
-import type { ManagerOption } from "@/lib/types";
 import type { LeagueIntelligencePayload, LeagueIntelPlayer } from "@/lib/leagueIntelligenceTypes";
-
-const loadManagers = () => api.managers();
 
 const goals = [
   ["auto", "Automatisk"],
@@ -20,26 +18,19 @@ const goals = [
   ["beat_next", "Nærmeste rival"],
 ] as const;
 
+const strategyLabels: Record<string, string> = {
+  defend: "Forsvar posisjonen",
+  win_month: "Vinn måneden",
+  win_lofthus: "Jakt ligaseieren",
+  rapid_lofthus: "Klatre raskt",
+  balanced: "Balansert",
+};
+
 function Choice({ label, active, onPress }: { label: string; active?: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.choice, active && styles.choiceActive, pressed && styles.pressed]}>
       <Text style={[styles.choiceText, active && styles.choiceTextActive]}>{label}</Text>
     </Pressable>
-  );
-}
-
-function ManagerPicker({ managers, value, onChange }: { managers: ManagerOption[]; value: number; onChange: (entry: number) => void }) {
-  return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.managerRow}>
-      {managers.map((manager) => (
-        <Choice
-          key={manager.entry}
-          label={`${manager.manager} · ${manager.rank || "–"}`}
-          active={value === manager.entry}
-          onPress={() => onChange(manager.entry)}
-        />
-      ))}
-    </ScrollView>
   );
 }
 
@@ -59,7 +50,7 @@ function PlayerLine({ player, live = false }: { player: LeagueIntelPlayer; live?
       <View style={styles.playerMain}>
         <Text style={styles.playerName}>{player.player}</Text>
         <Text style={styles.playerMeta}>
-          {player.club} · {player.projection_index.toFixed(1)} proj. · målgruppe {player.target_ownership_pct.toFixed(0)} %
+          {player.club} · projeksjon {Number(player.projection_index || 0).toFixed(1)} · målgruppe {Number(player.target_ownership_pct || 0).toFixed(0)} %
         </Text>
         {!live && player.evidence?.[0] ? <Text style={styles.evidence}>{player.evidence[0]}</Text> : null}
       </View>
@@ -68,7 +59,9 @@ function PlayerLine({ player, live = false }: { player: LeagueIntelPlayer; live?
           {swing > 0 ? "+" : ""}{swing.toFixed(1)}
         </Text>
       ) : (
-        <Text style={styles.projection}>{player.xgi_per90 > 0 ? `${player.xgi_per90.toFixed(2)} xGI/90` : `${player.form.toFixed(1)} form`}</Text>
+        <Text style={styles.projection}>
+          {Number(player.xgi_per90 || 0) > 0 ? `${Number(player.xgi_per90).toFixed(2)} xGI/90` : `${Number(player.form || 0).toFixed(1)} form`}
+        </Text>
       )}
     </View>
   );
@@ -89,7 +82,10 @@ function PlayerSection({ title, rows, live = false }: { title: string; rows: Lea
 function Result({ data }: { data: LeagueIntelligencePayload }) {
   const mission = data.mission;
   const forecast = data.forecast;
-  const phaseLabel = data.phase === "live" ? "LIVE BATTLE" : data.phase === "verdict" ? "VERDICT" : "PLAN";
+  const phaseLabel = data.phase === "live" ? "LIVE" : data.phase === "verdict" ? "ETTER RUNDEN" : "FØR DEADLINE";
+  const required = Number(mission.required_gain_per_round || 0);
+  const strategy = mission.recommended_strategy ? strategyLabels[mission.recommended_strategy] || mission.recommended_strategy : "";
+  const coverage = data.coverage;
 
   return (
     <View>
@@ -97,18 +93,27 @@ function Result({ data }: { data: LeagueIntelligencePayload }) {
         <Text style={styles.heroKicker}>{phaseLabel} · {data.goal.label.toUpperCase()}</Text>
         <Text style={styles.heroTitle}>{mission.headline}</Text>
         <Text style={styles.heroCopy}>{mission.detail}</Text>
+        {required > 0 && !mission.defending ? (
+          <Text style={styles.heroDetail}>Nødvendig innhenting: ca. {required.toFixed(1)} poeng per runde.</Text>
+        ) : null}
         <View style={styles.heroMeta}>
           <Text style={styles.heroMetaText}>Nr. {data.manager.rank} · {data.manager.total} poeng</Text>
           <Text style={styles.risk}>RISIKO: {mission.recommended_risk.toUpperCase()}</Text>
         </View>
+        {strategy ? <Text style={styles.strategy}>Anbefalt retning: {strategy}</Text> : null}
       </View>
 
       <Text style={styles.sectionTitle}>PROGNOSE</Text>
       <View style={styles.statGrid}>
-        <Stat value={`${forecast.win_pct.toFixed(0)} %`} label="vinne" />
-        <Stat value={`${forecast.top3_pct.toFixed(0)} %`} label="topp 3" />
-        <Stat value={`${forecast.top10_pct.toFixed(0)} %`} label="topp 10" />
-        <Stat value={forecast.expected_rank.toFixed(1)} label="forv. plass" />
+        <Stat value={`${Number(forecast.win_pct || 0).toFixed(0)} %`} label="vinne" />
+        <Stat value={`${Number(forecast.top3_pct || 0).toFixed(0)} %`} label="topp 3" />
+        <Stat value={`${Number(forecast.top10_pct || 0).toFixed(0)} %`} label="topp 10" />
+        <Stat value={Number(forecast.expected_rank || data.manager.rank).toFixed(1)} label="forv. plass" />
+      </View>
+      <View style={styles.modelGrid}>
+        {forecast.manager_expected_gw !== undefined ? <Stat value={Number(forecast.manager_expected_gw).toFixed(1)} label="forv. GW" /> : null}
+        {forecast.manager_volatility !== undefined ? <Stat value={Number(forecast.manager_volatility).toFixed(1)} label="variasjon" /> : null}
+        {forecast.manager_uniqueness_pct !== undefined ? <Stat value={`${Number(forecast.manager_uniqueness_pct).toFixed(0)} %`} label="unikhet" /> : null}
       </View>
       <Text style={styles.modelNote}>{forecast.model_note}</Text>
 
@@ -130,7 +135,16 @@ function Result({ data }: { data: LeagueIntelligencePayload }) {
           <Text style={styles.cardKicker}>RUNDEN</Text>
           <Text style={styles.verdictTitle}>{data.verdict.headline}</Text>
           <Text style={styles.verdictCopy}>
-            {data.verdict.gw_points} poeng · målgruppen {data.verdict.target_average_gw.toFixed(1)} · relativt {data.verdict.relative_to_target > 0 ? "+" : ""}{data.verdict.relative_to_target.toFixed(1)}
+            {data.verdict.gw_points} poeng · målgruppen {Number(data.verdict.target_average_gw || 0).toFixed(1)} · relativt {data.verdict.relative_to_target > 0 ? "+" : ""}{Number(data.verdict.relative_to_target || 0).toFixed(1)}
+          </Text>
+        </View>
+      ) : null}
+
+      {coverage ? (
+        <View style={styles.coverageCard}>
+          <Text style={styles.cardKicker}>DATAGRUNNLAG</Text>
+          <Text style={styles.coverageText}>
+            {coverage.loaded_managers || coverage.league_size || 0}/{coverage.league_size || 0} managere · {coverage.history_managers || 0} med sesonghistorikk · {coverage.projected_players || 0} spillere modellert · neste fem runder vurdert
           </Text>
         </View>
       ) : null}
@@ -152,82 +166,83 @@ function Result({ data }: { data: LeagueIntelligencePayload }) {
 }
 
 export default function LeagueIntelligenceScreen() {
-  const managers = useRemote(useCallback(loadManagers, []));
-  const [entry, setEntry] = useState(0);
+  const { profile, hasIdentity } = useProfile();
   const [goal, setGoal] = useState("auto");
-  const [data, setData] = useState<LeagueIntelligencePayload | null>(null);
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  async function run() {
-    if (!entry) return;
-    setBusy(true);
-    setError("");
-    try {
-      setData(await api.leagueIntelligence(entry, goal));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Kunne ikke bygge liga-analysen.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  function chooseEntry(next: number) {
-    setEntry(next);
-    setData(null);
-  }
-
-  function chooseGoal(next: string) {
-    setGoal(next);
-    setData(null);
-  }
+  const loader = useCallback(
+    () => api.leagueIntelligence(profile.entryId, goal),
+    [profile.entryId, profile.leagueId, goal],
+  );
+  const remote = useRemote(loader, hasIdentity);
 
   return (
-    <Screen kicker="League Intelligence" title="Din liga" refreshing={managers.refreshing} onRefresh={managers.refresh}>
-      <Text style={styles.intro}>Personlig plan, rivalbilde, live-utslag og rundeanalyse basert på situasjonen din i ligaen.</Text>
+    <Screen kicker="League Intelligence" title="Din liga" refreshing={remote.refreshing} onRefresh={remote.refresh}>
+      {!hasIdentity ? (
+        <View style={styles.setupCard}>
+          <Text style={styles.setupTitle}>Koble til manageren din</Text>
+          <Text style={styles.intro}>Velg FPL-liga og manager én gang. Deretter brukes profilen automatisk i analyse, rivaler og varsler.</Text>
+          <Link href="/profile" asChild>
+            <Pressable style={({ pressed }) => [styles.primaryAction, pressed && styles.pressed]}>
+              <Text style={styles.primaryActionText}>Sett opp profil</Text>
+            </Pressable>
+          </Link>
+        </View>
+      ) : (
+        <>
+          <View style={styles.identityRow}>
+            <View style={styles.identityCopy}>
+              <Text style={styles.identityLeague}>{profile.leagueName}</Text>
+              <Text style={styles.identityManager}>{profile.managerName} · {profile.team}</Text>
+            </View>
+            <Link href="/profile" asChild>
+              <Pressable style={({ pressed }) => [styles.changeButton, pressed && styles.pressed]}>
+                <Text style={styles.changeText}>Endre</Text>
+              </Pressable>
+            </Link>
+          </View>
 
-      <Text style={styles.label}>HVEM ER DU?</Text>
-      {managers.loading && !managers.data ? <Loading /> : null}
-      {managers.error && !managers.data ? <ErrorState message={managers.error} /> : null}
-      {managers.data ? <ManagerPicker managers={managers.data.managers || []} value={entry} onChange={chooseEntry} /> : null}
+          <Text style={styles.label}>MÅL</Text>
+          <View style={styles.goalRow}>
+            {goals.map(([id, label]) => <Choice key={id} label={label} active={goal === id} onPress={() => setGoal(id)} />)}
+          </View>
 
-      <Text style={styles.label}>MÅL</Text>
-      <View style={styles.goalRow}>
-        {goals.map(([id, label]) => <Choice key={id} label={label} active={goal === id} onPress={() => chooseGoal(id)} />)}
-      </View>
-
-      <Pressable disabled={!entry || busy} onPress={run} style={({ pressed }) => [styles.buildButton, (!entry || busy) && styles.disabled, pressed && styles.pressed]}>
-        <Text style={styles.buildButtonText}>{busy ? "Analyserer ligaen …" : "Bygg min plan"}</Text>
-      </Pressable>
-
-      {error ? <ErrorState message={error} /> : null}
-      {data ? <Result data={data} /> : null}
+          {remote.loading && !remote.data ? <Loading label="Bygger personlig ligaanalyse …" /> : null}
+          {remote.error && !remote.data ? <ErrorState message={remote.error} /> : null}
+          {remote.data ? <Result data={remote.data} /> : null}
+        </>
+      )}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  intro: { color: colors.muted, fontSize: 14, lineHeight: 21, marginTop: -6, marginBottom: 20 },
+  intro: { color: colors.muted, fontSize: 14, lineHeight: 21, marginTop: 5, marginBottom: 18 },
   label: { color: colors.live, fontSize: 10, fontWeight: "900", letterSpacing: 1.25, marginBottom: 8, marginTop: 2 },
-  managerRow: { gap: 8, paddingRight: 20, paddingBottom: 18 },
-  goalRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 },
+  goalRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 20 },
   choice: { minHeight: 39, borderRadius: 20, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, backgroundColor: colors.panel, paddingHorizontal: 12, alignItems: "center", justifyContent: "center" },
   choiceActive: { backgroundColor: colors.ink, borderColor: colors.ink },
   choiceText: { color: colors.ink, fontSize: 11, fontWeight: "800" },
   choiceTextActive: { color: colors.white },
-  buildButton: { minHeight: 52, backgroundColor: colors.dark, borderRadius: radius.md, alignItems: "center", justifyContent: "center", marginBottom: 24 },
-  buildButtonText: { color: colors.white, fontSize: 14, fontWeight: "900" },
-  disabled: { opacity: 0.4 },
+  setupCard: { backgroundColor: colors.panel, borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, padding: space.lg },
+  setupTitle: { color: colors.ink, fontFamily: "Georgia", fontSize: 23, fontWeight: "700" },
+  identityRow: { flexDirection: "row", alignItems: "center", gap: 12, borderTopWidth: 1, borderTopColor: colors.ink, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line, paddingVertical: 13, marginBottom: 18 },
+  identityCopy: { flex: 1 },
+  identityLeague: { color: colors.ink, fontFamily: "Georgia", fontSize: 18, fontWeight: "700" },
+  identityManager: { color: colors.muted, fontSize: 10, marginTop: 3 },
+  changeButton: { minHeight: 34, borderRadius: 17, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, paddingHorizontal: 12, alignItems: "center", justifyContent: "center" },
+  changeText: { color: colors.ink, fontSize: 10, fontWeight: "800" },
   pressed: { opacity: 0.62 },
   hero: { backgroundColor: colors.ink, borderRadius: radius.lg, padding: space.lg, marginBottom: 22 },
   heroKicker: { color: "#D9A08F", fontSize: 9, fontWeight: "900", letterSpacing: 1.1 },
   heroTitle: { color: colors.white, fontFamily: "Georgia", fontSize: 27, lineHeight: 32, fontWeight: "700", marginTop: 8 },
   heroCopy: { color: "#D4CEC4", fontSize: 13, lineHeight: 20, marginTop: 7 },
+  heroDetail: { color: colors.white, fontSize: 11, lineHeight: 16, marginTop: 8, fontWeight: "700" },
   heroMeta: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 16, gap: 8 },
   heroMetaText: { color: colors.white, fontSize: 11, fontWeight: "800" },
   risk: { color: "#D9A08F", fontSize: 9, fontWeight: "900", letterSpacing: 0.8 },
+  strategy: { color: "#D4CEC4", fontSize: 10, marginTop: 8 },
   sectionTitle: { color: colors.live, fontSize: 10, fontWeight: "900", letterSpacing: 1.15, marginTop: 8, marginBottom: 8 },
-  statGrid: { flexDirection: "row", gap: 6, marginBottom: 8 },
+  statGrid: { flexDirection: "row", gap: 6, marginBottom: 6 },
+  modelGrid: { flexDirection: "row", gap: 6, marginBottom: 8 },
   stat: { flex: 1, backgroundColor: colors.panel, borderRadius: radius.md, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, paddingHorizontal: 7, paddingVertical: 11 },
   statValue: { color: colors.ink, fontSize: 18, fontWeight: "900", fontVariant: ["tabular-nums"] },
   statLabel: { color: colors.muted, fontSize: 8, textTransform: "uppercase", marginTop: 3 },
@@ -250,7 +265,9 @@ const styles = StyleSheet.create({
   verdictCard: { backgroundColor: colors.panel, borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, padding: space.lg, marginTop: 10, marginBottom: 16 },
   verdictTitle: { color: colors.ink, fontFamily: "Georgia", fontSize: 22, fontWeight: "700", marginTop: 5 },
   verdictCopy: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: 5 },
-  actions: { gap: 8, marginTop: 12 },
+  coverageCard: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line, paddingTop: 13, marginTop: 10 },
+  coverageText: { color: colors.muted, fontSize: 10, lineHeight: 16 },
+  actions: { gap: 8, marginTop: 18 },
   primaryAction: { minHeight: 48, backgroundColor: colors.ink, borderRadius: radius.md, alignItems: "center", justifyContent: "center" },
   primaryActionText: { color: colors.white, fontSize: 12, fontWeight: "900" },
   secondaryAction: { minHeight: 48, backgroundColor: colors.panel, borderRadius: radius.md, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.line, alignItems: "center", justifyContent: "center" },
